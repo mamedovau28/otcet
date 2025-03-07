@@ -16,6 +16,12 @@ st.title("Генератор еженедельных отчётов")
 mp_file = st.file_uploader("Загрузите файл с медиапланом", type=["xlsx"])
 metki_file = st.file_uploader("Загрузите файл с метками UTM", type=["xlsx"])
 
+# Вводим количество первичных и целевых обращений
+tp_primary_calls = st.number_input("Введите количество: Первичных обращений для Тематических площадок", min_value=0, step=1)
+tp_target_calls = st.number_input("Введите количество: ЦО для Тематических площадок", min_value=0, step=1)
+oh_primary_calls = st.number_input("Введите количество: Первичных обращений для Охватного размещения", min_value=0, step=1)
+oh_target_calls = st.number_input("Введите количество: ЦО для Охватного размещения", min_value=0, step=1)
+
 if mp_file and metki_file:
     # Читаем файлы
     df_mp = load_excel(mp_file, header=4)
@@ -233,12 +239,6 @@ if mp_file and metki_file:
     # Извлекаем KPI для "Тематических площадок" и "Охватного размещения"
     kpi_tp = report_week_df_kpi.loc[report_week_df_kpi['Категория'] == 'Тематические площадки','KPI на неделю'].sum()
     kpi_oh = report_week_df_kpi.loc[report_week_df_kpi['Категория'] == 'Охватное размещение','KPI на неделю'].sum()
-
-    # Вводим количество первичных и целевых обращений
-    tp_primary_calls = st.number_input("Введите количество: Первичных обращений для Тематических площадок", min_value=0, step=1)
-    tp_target_calls = st.number_input("Введите количество: ЦО для Тематических площадок", min_value=0, step=1)
-    oh_primary_calls = st.number_input("Введите количество: Первичных обращений для Охватного размещения", min_value=0, step=1)
-    oh_target_calls = st.number_input("Введите количество: ЦО для Охватного размещения", min_value=0, step=1)
 
     # Выводим значения после их определения
     st.write(f"oh_target_calls: {oh_target_calls}, kpi_oh: {kpi_oh}")

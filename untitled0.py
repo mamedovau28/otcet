@@ -247,7 +247,7 @@ if mp_file and metki_file:
     st.subheader("Фильтрованные UTM-данные")
     st.dataframe(df_filtered)
 
-    st.subheader("Сводные показатели")
+    st.subheader("Поведенческие показатели Медийной РК")
     st.dataframe(pd.DataFrame({
         'Время на сайте': [weighted_avg_time_str],
         'Отказы': [weighted_avg_otkazy],

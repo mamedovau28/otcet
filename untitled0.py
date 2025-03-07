@@ -234,19 +234,15 @@ if mp_file and metki_file:
     tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].sum()
     oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю'].sum()
 
-    # Инициализация переменных, если они еще не были заданы
-    tp_target_calls = 0
-    oh_target_calls = 0
+    # Получаем прогнозные значения
+    kpi_tp = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Тематические площадки']['KPI на неделю'].sum()
+    kpi_oh = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Охватное размещение']['KPI на неделю'].sum()
 
     # Вводим количество первичных и целевых обращений
     tp_primary_calls = st.number_input("Введите количество: Первичных обращений для Тематических площадок", min_value=0, step=1)
     tp_target_calls = st.number_input("Введите количество: ЦО для Тематических площадок", min_value=0, step=1)
     oh_primary_calls = st.number_input("Введите количество: Первичных обращений для Охватного размещения", min_value=0, step=1)
     oh_target_calls = st.number_input("Введите количество: ЦО для Охватного размещения", min_value=0, step=1)
-
-    # Получаем прогнозные значения
-    kpi_tp = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Тематические площадки']['KPI на неделю'].sum()
-    kpi_oh = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Охватное размещение']['KPI на неделю'].sum()
 
     # Выводим значения после их определения
     st.write(f"oh_target_calls: {oh_target_calls}, kpi_oh: {kpi_oh}")

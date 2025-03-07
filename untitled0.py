@@ -244,8 +244,8 @@ if mp_file and metki_file:
     st.write(f"oh_target_calls: {oh_target_calls}, kpi_oh: {kpi_oh}")
 
     # Вычисление отклонения по проценту от KPI прогноза
-    tp_status = f"{((tp_target_calls - kpi_tp) / kpi_tp) * 100:.1f}%" if kpi_tp == nan else "100%"
-    oh_status = f"{((oh_primary_calls - kpi_oh) / kpi_oh) * 100:.1f}%" if kpi_tp == nan else "100%"
+    tp_status = f"{((tp_target_calls - kpi_tp) / kpi_tp) * 100:.1f}%" if pd.notna(kpi_tp) else "100%"
+    oh_status = f"{((oh_primary_calls - kpi_oh) / kpi_oh) * 100:.1f}%" if pd.notna(kpi_oh) else "100%"
 
     # Рассчитываем CPL для первичных обращений
     tp_cpl = tp_budget / tp_primary_calls if tp_primary_calls > 0 else 0

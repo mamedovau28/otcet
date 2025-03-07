@@ -231,12 +231,12 @@ if mp_file and metki_file:
     ]
 
     # Извлекаем бюджет для "Тематических площадок" и "Охватного размещения"
-    tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю']
-    oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю']
+    tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].sum()
+    oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю'].sum()
 
     # Получаем прогнозные значения
-    kpi_tp = df_weekly_category_kpi.loc[df_weekly_category_kpi['Категория'] == 'Тематические площадки','KPI на неделю']
-    kpi_oh = df_weekly_category_kpi.loc[df_weekly_category_kpi['Категория'] == 'Охватное размещение','KPI на неделю']
+    kpi_tp = df_weekly_category_kpi.loc[df_weekly_category_kpi['Категория'] == 'Тематические площадки','KPI на неделю'].sum()
+    kpi_oh = df_weekly_category_kpi.loc[df_weekly_category_kpi['Категория'] == 'Охватное размещение','KPI на неделю'].sum()
 
     # Вводим количество первичных и целевых обращений
     tp_primary_calls = st.number_input("Введите количество: Первичных обращений для Тематических площадок", min_value=0, step=1)

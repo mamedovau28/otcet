@@ -110,13 +110,10 @@ if mp_file and metki_file:
             total_days = (end_date - start_date).days + 1
         # Пропорциональный KPI
             week_kpi = round(row['KPI прогноз'] * (days_in_week / total_days), 1)
-
         # Добавляем данные
             weeks.append((week_start, week_end, week_kpi))
-
         # Следующая неделя
             week_start = week_end + pd.Timedelta(days=1)
-    
         return weeks
     
     # Функция для корректного распределения KPI по неделям
@@ -126,6 +123,8 @@ if mp_file and metki_file:
     for idx, row in df.iterrows():
         week_kpi_data.extend(calculate_kpi_per_week(row))
 
+    df_week_budget['KPI прогноз'] = week_kpi_data
+    
     # Создаем DataFrame для KPI
     df_week_kpi = pd.DataFrame(week_kpi_data, columns=['Неделя с', 'Неделя по', 'KPI на неделю'])
     

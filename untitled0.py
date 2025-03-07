@@ -1,4 +1,4 @@
-
+import streamlit as st
 import subprocess
 import streamlit as st
 import pandas as pd
@@ -154,7 +154,20 @@ if mp_file and metki_file:
     oh_budget_str = f"{oh_budget:,.2f}".replace(',', ' ') if oh_budget > 0 else "0"
     tp_cpl_str = f"{tp_cpl:,.2f}".replace(',', ' ') if tp_cpl > 0 else "0"
     oh_cpl_str = f"{oh_cpl:,.2f}".replace(',', ' ') if oh_cpl > 0 else "0"
-    
+
+    # Функция для добавления кнопки и копирования текста
+    def copy_to_clipboard(text):
+        js_code = f"""
+        <script>
+        navigator.clipboard.writeText(`{text}`).then(function() {{
+            alert('Текст скопирован в буфер обмена!');
+        }}, function(err) {{
+            alert('Ошибка при копировании текста: ' + err);
+        }});
+        </script>
+        """
+        st.markdown(js_code, unsafe_allow_html=True)
+ 
     # Генерация отчёта
     report_text = f"""
     Медийная реклама {report_start.strftime('%d.%m')}-{report_end.strftime('%d.%m')}
@@ -185,7 +198,10 @@ if mp_file and metki_file:
     # Вывод данных в Streamlit
     st.subheader("Отчёт")
     st.text(report_text)
-    
+    # Кнопка для копирования
+    if st.button("Скопировать отчет"):
+        copy_to_clipboard(report_text)
+
     # Проверяем, что строки найдены
     if report_week_df.empty:
         st.error("Ошибка: не найден бюджет для указанного периода!")

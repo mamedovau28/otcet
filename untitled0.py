@@ -167,10 +167,6 @@ if mp_file and metki_file:
     utm_summary["Время на сайте"] = utm_summary["Время на сайте (сек)"].apply(format_seconds)
     utm_summary.drop(columns=["Время на сайте (сек)"], inplace=True)
 
-    # Вывод таблицы с агрегированными данными
-    st.subheader("Анализ по UTM Source")
-    st.dataframe(utm_summary)
-
     # Проверяем условия и формируем предупреждения
     warnings = []
     for _, row in utm_summary.iterrows():
@@ -180,14 +176,7 @@ if mp_file and metki_file:
             warnings.append(f"⚠ Высокая роботность ({row['Роботность']:.2%}) для источника {row['UTM Source']}")
         if pd.to_timedelta(row["Время на сайте"]) < pd.Timedelta(minutes=1):
             warnings.append(f"⚠ Низкое время на сайте ({row['Время на сайте']}) для источника {row['UTM Source']}")
-
-    # Вывод предупреждений
-    if warnings:
-        st.subheader("⚠ Предупреждения")
-        for warning in warnings:
-            st.warning(warning)
     # Доп код конец
-
     
     # Проверяем диапазон дат
     report_week_df = df_week_budget[
@@ -244,6 +233,16 @@ if mp_file and metki_file:
     # Вывод данных в Streamlit
     st.subheader("Отчёт")
     st.text_area(report_text, height=100)
+
+    # Вывод предупреждений
+    if warnings:
+        st.subheader("⚠ Предупреждения")
+        for warning in warnings:
+            st.warning(warning)
+    
+    # Вывод таблицы с агрегированными данными
+    st.subheader("Анализ по UTM Source")
+    st.dataframe(utm_summary)
 
     # Проверяем, что строки найдены
     if report_week_df.empty:

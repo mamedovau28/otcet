@@ -243,13 +243,16 @@ if mp_file and metki_file:
     # Выводим значения после их определения
     st.write(f"oh_target_calls: {oh_target_calls}, kpi_oh: {kpi_oh}")
 
-    # Проверка, есть ли данные по KPI для Тематических площадок и Охватного размещения
-    if pd.notna(kpi_tp) and pd.notna(kpi_oh):
-        tp_status = f"{((tp_target_calls - kpi_tp) / kpi_tp) * 100:.1f}%" if pd.notna(kpi_tp) else "100%"
-        oh_status = f"{((oh_primary_calls - kpi_oh) / kpi_oh) * 100:.1f}%" if pd.notna(kpi_oh) else "100%"
+    # Проверяем, что KPI прогноз не NaN
+    if pd.notna(kpi_tp) and kpi_tp != 0:  # Проверка на NaN и 0
+        tp_status = f"{((tp_target_calls - kpi_tp) / kpi_tp) * 100:.1f} %" if pd.notna(tp_target_calls) else "0 %"
     else:
-        tp_status = "100%"
-        oh_status = "100%"
+        tp_status = "Нет данных по KPI для Тематических площадок"
+
+    if pd.notna(kpi_oh) and kpi_oh != 0:  # Проверка на NaN и 0
+        oh_status = f"{((oh_target_calls - kpi_oh) / kpi_oh) * 100:.1f} %" if pd.notna(oh_target_calls) else "0 %"
+    else:
+        oh_status = "Нет данных по KPI для Охватного размещения"
 
     # Рассчитываем CPL для первичных обращений
     tp_cpl = tp_budget / tp_primary_calls if tp_primary_calls > 0 else 0

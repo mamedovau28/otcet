@@ -194,7 +194,6 @@ if mp_file and metki_file:
     # Кнопка для копирования
     if st.button("Скопировать отчет"):
         copy_to_clipboard(report_text)
-        st.subheader("Отчёт скопирован")
 
     # Проверяем, что строки найдены
     if report_week_df.empty:

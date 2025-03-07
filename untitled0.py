@@ -1,4 +1,4 @@
-import math
+
 import subprocess
 import streamlit as st
 import pandas as pd
@@ -125,7 +125,7 @@ if mp_file and metki_file:
             total_days = (end_date - start_date).days + 1
 
         # Пропорциональный KPI
-            week_kpi = math.ceil(row['KPI прогноз'] * (days_in_week / total_days))
+            week_kpi = row['KPI прогноз'] * (days_in_week / total_days)
 
         # Добавляем данные
             weeks.append((week_start, week_end, week_kpi))

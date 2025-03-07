@@ -129,8 +129,6 @@ if mp_file and metki_file:
 
     # Создаем DataFrame для KPI
     df_week_kpi = pd.DataFrame(week_kpi_data, columns=['Неделя с', 'Неделя по', 'KPI на неделю'])
-
-    st.write(f"oh_target_calls: {oh_target_calls}, kpi_oh: {kpi_oh}")
     
     # Добавляем категорию и сайт
     df_week_kpi['Категория'] = np.repeat(df['Категория'].values, [len(calculate_kpi_per_week(row)) for _, row in df.iterrows()])
@@ -240,6 +238,8 @@ if mp_file and metki_file:
     fact_tp = 0
     fact_oh = 0
 
+    st.write(f"oh_target_calls: {oh_target_calls}, kpi_oh: {kpi_oh}")
+    
     # Вводим количество первичных и целевых обращений
     tp_primary_calls = st.number_input("Введите количество: Первичных обращений для Тематических площадок", min_value=0, step=1)
     tp_target_calls = st.number_input("Введите количество: ЦО для Тематических площадок", min_value=0, step=1)

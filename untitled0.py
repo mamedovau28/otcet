@@ -317,6 +317,8 @@ if mp_file and metki_file:
 
     st.subheader("Распределение бюджета по неделям")
     st.dataframe(df_weekly_category_budget)
+
+    st.subheader("Распределение KPI по неделям")
     st.dataframe(df_week_kpi)
     
     # Проверяем, что строки найдены

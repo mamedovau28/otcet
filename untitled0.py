@@ -157,7 +157,7 @@ if mp_file and metki_file:
 
     # Генерация отчёта
     report_text = f"""
-    Медийная реклама {report_start.strftime('%d.%m')}-{report_end.strftime('%d.%m')}
+    **Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})**
 
     Тематические площадки:
     Выполнение по бюджету плановое ({tp_budget_str} ₽ с НДС)

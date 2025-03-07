@@ -186,14 +186,22 @@ if mp_file and metki_file:
     Плановые работы:
     - Следить за динамикой
     """
+    # Вставляем кнопку для копирования с помощью JavaScript
+    st.text(report_text)
+
+    st.markdown("""
+        <button onclick="navigator.clipboard.writeText(`""" + report_text.replace("\n", " ").replace("`", "\`") + """`);">Скопировать отчет</button>
+        <script>
+        document.querySelector('button').style.backgroundColor = '#4CAF50';
+        document.querySelector('button').style.color = 'white';
+        document.querySelector('button').style.padding = '10px 20px';
+        document.querySelector('button').style.fontSize = '16px';
+        </script>
+    """, unsafe_allow_html=True)
 
     # Вывод данных в Streamlit
     st.subheader("Отчёт")
     st.text(report_text)
-    
-    # Кнопка для копирования
-    if st.button("Скопировать отчет"):
-        copy_to_clipboard(report_text)
 
     # Проверяем, что строки найдены
     if report_week_df.empty:

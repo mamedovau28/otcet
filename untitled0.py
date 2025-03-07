@@ -27,43 +27,71 @@ if mp_file and metki_file:
     df['Категория'] = df['Название сайта'].where(df['№'].isna()).ffill()
     df = df[~df['Период'].isna()]
 
-    # Функция для извлечения дат
-    def extract_dates(period):
-        start_date, end_date = period.split('-')
-        return pd.to_datetime(start_date.strip(), format='%d.%m.%Y'), pd.to_datetime(end_date.strip(), format='%d.%m.%Y')
+    # Функция для извлечения начальной и конечной даты
+def extract_dates(period):
+    start_date, end_date = period.split('-')
+    start_date = pd.to_datetime(start_date.strip(), format='%d.%m.%Y')
+    end_date = pd.to_datetime(end_date.strip(), format='%d.%m.%Y')
+    return start_date, end_date
 
-    df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
+# Применение функции и создание новых столбцов с начальной и конечной датой
+df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
 
-    # Функция для расчета бюджета по неделям
-    def calculate_budget_per_week(row):
-        start_date, end_date = row['Start Date'], row['End Date']
-        week_start = start_date - pd.Timedelta(days=start_date.weekday())
-        weeks = []
-        while week_start <= end_date:
-            week_end = week_start + pd.Timedelta(days=6)
-            if week_end > end_date:
-                week_end = end_date
-            days_in_week = (week_end - week_start).days + 1
-            total_days = (end_date - start_date).days + 1
-            week_budget = row['Общая стоимость с учетом НДС и АК'] * (days_in_week / total_days)
-            weeks.append((week_start, week_end, week_budget))
-            week_start = week_end + pd.Timedelta(days=1)
-        return weeks
+# Функция для корректного распределения бюджета по неделям
+def calculate_budget_per_week(row):
+    start_date = row['Start Date']
+    end_date = row['End Date']
 
-    # Применение расчета бюджета по неделям
-    week_budget_data = []
-    for _, row in df.iterrows():
-        week_budget_data.extend(calculate_budget_per_week(row))
+    # Начинаем с первой недели, которая содержит start_date
+    week_start = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник недели, в которой start_date
+    weeks = []
 
-    df_week_budget = pd.DataFrame(week_budget_data, columns=['Неделя с', 'Неделя по', 'Бюджет на неделю'])
-    df_week_budget['№'] = np.repeat(df['№'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
-    df_week_budget['Название сайта'] = np.repeat(df['Название сайта'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
-    df_week_budget['Категория'] = np.repeat(df['Категория'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
-    df_week_budget['KPI прогноз'] = np.repeat(df['KPI прогноз'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
-    df_week_budget['Период'] = np.repeat(df['Период'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
+    while week_start <= end_date:
+        # Определяем конец недели (воскресенье)
+        week_end = week_start + pd.Timedelta(days=6)
 
-    # Группировка бюджета по категориям и неделям
-    df_weekly_category_budget = df_week_budget.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['Бюджет на неделю'].sum()
+        # Если начало недели в прошлом месяце, но есть дни в текущем, берём только текущий месяц
+        if week_start.month < start_date.month:
+            week_start = start_date  # Сдвигаем начало недели на первый день периода
+
+        # Если конец недели выходит за границы периода, ограничиваем его
+        if week_end > end_date:
+            week_end = end_date
+
+        # Количество дней, попадающих в период
+        days_in_week = (week_end - week_start).days + 1
+
+        # Общие дни в периоде
+        total_days = (end_date - start_date).days + 1
+
+        # Пропорциональный бюджет
+        week_budget = row['Общая стоимость с учетом НДС и АК'] * (days_in_week / total_days)
+
+        # Добавляем данные
+        weeks.append((week_start, week_end, week_budget))
+
+        # Следующая неделя
+        week_start = week_end + pd.Timedelta(days=1)
+
+    return weeks
+
+# Применение функции для всех строк
+week_budget_data = []
+for idx, row in df.iterrows():
+    week_budget_data.extend(calculate_budget_per_week(row))
+
+# Создаём DataFrame для распределённых бюджетов по неделям
+df_week_budget = pd.DataFrame(week_budget_data, columns=['Неделя с', 'Неделя по', 'Бюджет на неделю'])
+
+# Добавляем информацию о сайте и периоде для каждой недели
+df_week_budget['№'] = np.repeat(df['№'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
+df_week_budget['Название сайта'] = np.repeat(df['Название сайта'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
+df_week_budget['Категория'] = np.repeat(df['Категория'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
+df_week_budget['KPI прогноз'] = np.repeat(df['KPI прогноз'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
+df_week_budget['Период'] = np.repeat(df['Период'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
+
+# Группировка по категории и неделе, суммирование бюджета
+df_weekly_category_budget = df_week_budget.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['Бюджет на неделю'].sum()
 
     # Обрабатываем UTM-метки
     df_raw = load_excel(metki_file, header=None)

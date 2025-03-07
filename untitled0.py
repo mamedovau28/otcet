@@ -230,15 +230,15 @@ if mp_file and metki_file:
     - Следить за динамикой
     """
 
-    # Вывод данных в Streamlit
-    st.subheader("Отчёт")
-    st.text_area(report_text, report_text, height=100)
-
     # Вывод предупреждений
     if warnings:
         st.subheader("⚠ Предупреждения")
         for warning in warnings:
             st.warning(warning)
+    
+    # Вывод данных в Streamlit
+    st.subheader("Еженедельный отчет")
+    st.text_area(report_text, report_text, height=100)
     
     # Вывод таблицы с агрегированными данными
     st.subheader("Анализ по UTM Source")

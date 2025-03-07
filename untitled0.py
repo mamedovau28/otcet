@@ -142,13 +142,13 @@ if mp_file and metki_file:
     Выполнение по бюджету плановое ({tp_budget_str} ₽ с НДС)
     Первичные обращения — {tp_primary_calls}
     Целевые обращения — {tp_target_calls}
-    CPL (первичных обращений) — {tp_cpl} ₽ с НДС
+    CPL (первичных обращений) — {tp_cpl_str} ₽ с НДС
 
     Охват:
     Выполнение по бюджету плановое ({oh_budget_str} ₽ с НДС)
     Первичные обращения — {oh_primary_calls}
     Целевые обращения — {oh_target_calls}
-    CPL (первичных обращений) — {oh_cpl} ₽ с НДС
+    CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
 
     Метрики:
     - Отказы: {weighted_avg_otkazy * 100:.2f}%

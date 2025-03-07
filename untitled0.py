@@ -144,6 +144,7 @@ if mp_file and metki_file:
     CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
 
     Метрики:
+    - Выполнение плана по бюджету 100%
     - Отказы: {weighted_avg_otkazy * 100:.2f}%
     - Глубина просмотра: {weighted_avg_glubina:.2f}
     - Время на сайте: {weighted_avg_time_str}
@@ -155,7 +156,7 @@ if mp_file and metki_file:
 
     # Вывод данных в Streamlit
     st.subheader("Отчёт")
-    st.text_area(report_text)
+    st.subheader(report_text)
     
     # Проверяем, что строки найдены
     if report_week_df.empty:

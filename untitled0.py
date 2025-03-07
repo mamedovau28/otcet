@@ -9,7 +9,7 @@ import subprocess
 subprocess.run(["pip", "install", "openpyxl"], check=True)
 
 # Функция загрузки Excel-файла
-@st.cache
+@st.cache_data
 def load_excel(file, sheet=0, header=4):
     return pd.read_excel(file, sheet_name=sheet, header=header)
 

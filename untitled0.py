@@ -130,6 +130,8 @@ if mp_file and metki_file:
     # Создаем DataFrame для KPI
     df_week_kpi = pd.DataFrame(week_kpi_data, columns=['Неделя с', 'Неделя по', 'KPI на неделю'])
 
+    st.write(f"oh_target_calls: {oh_target_calls}, kpi_oh: {kpi_oh}")
+    
     # Добавляем категорию и сайт
     df_week_kpi['Категория'] = np.repeat(df['Категория'].values, [len(calculate_kpi_per_week(row)) for _, row in df.iterrows()])
     df_week_kpi['Название сайта'] = np.repeat(df['Название сайта'].values, [len(calculate_kpi_per_week(row)) for _, row in df.iterrows()])

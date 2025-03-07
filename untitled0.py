@@ -244,7 +244,7 @@ if mp_file and metki_file:
     st.subheader("Анализ по UTM Source")
     st.dataframe(utm_summary)
 
-        st.subheader("Фильтрованные UTM-данные")
+    st.subheader("Фильтрованные UTM-данные")
     st.dataframe(df_filtered)
 
     st.subheader("Сводные показатели")

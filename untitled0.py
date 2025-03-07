@@ -181,7 +181,6 @@ st.dataframe(pd.DataFrame({
     'время на сайте': [weighted_avg_time_str]
 }))
 
-    st.subheader("Отчёт")
-    st.text_area("Сформированный отчёт", report_text, height=300)
-else:
-    st.error("Ошибка: не удалось извлечь период из заголовка UTM-меток!")
+
+st.subheader("Отчёт")
+st.text_area("Сформированный отчёт", report_text, height=300)

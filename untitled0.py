@@ -101,26 +101,27 @@ if mp_file and metki_file:
 
     weighted_avg_time_str = format_seconds(weighted_avg_time_sec)
 
-   # Фильтруем строки, где хотя бы одна дата совпадает
+  # Приводим даты к нужному формату
+df_week_budget['Неделя с'] = pd.to_datetime(df_week_budget['Неделя с'])
+df_week_budget['Неделя по'] = pd.to_datetime(df_week_budget['Неделя по'])
+
+# Проверяем диапазон дат
 report_week_df = df_week_budget[
-    (df_week_budget['Неделя с'] == report_start) |
-    (df_week_budget['Неделя по'] == report_end) |
-    ((df_week_budget['Неделя с'] <= report_start) & (df_week_budget['Неделя по'] >= report_end))
+    (df_week_budget['Неделя с'] <= report_end) & (df_week_budget['Неделя по'] >= report_start)
 ]
 
-# Проверяем, есть ли найденные строки
+# Проверяем, что строки найдены
 if report_week_df.empty:
-    raise ValueError("Не найдена строка с нужной неделей в бюджете!")
+    st.error("Ошибка: не найден бюджет для указанного периода!")
+    st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
+else:
+    st.write("Найденные данные:", report_week_df)
 
 # Извлекаем бюджет для "Тематических площадок" и "Охватного размещения"
-tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю']
-oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю']
+tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].sum()
+oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю'].sum()
 
-# Преобразуем в число (если строка есть, иначе 0)
-tp_budget = tp_budget.values[0] if not tp_budget.empty else 0
-oh_budget = oh_budget.values[0] if not oh_budget.empty else 0
-
-# Форматируем суммы в читаемый вид
+# Приводим к строковому формату
 tp_budget_str = f"{tp_budget:,.2f}".replace(',', ' ') if tp_budget > 0 else "0"
 oh_budget_str = f"{oh_budget:,.2f}".replace(',', ' ') if oh_budget > 0 else "0"
 

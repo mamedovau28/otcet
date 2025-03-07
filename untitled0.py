@@ -232,7 +232,7 @@ if mp_file and metki_file:
 
     # Вывод данных в Streamlit
     st.subheader("Отчёт")
-    st.text_area(report_text, текст, height=100)
+    st.text_area(report_text, "текст", height=100)
 
     # Вывод предупреждений
     if warnings:

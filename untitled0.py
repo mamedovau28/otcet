@@ -1,4 +1,4 @@
-> Юлия Мамедова:
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -87,7 +87,6 @@ if mp_file and metki_file:
     total_visits = df_filtered['Визиты'].sum()
     total_visitors = df_filtered['Посетители'].sum()
 
-> Юлия Мамедова:
 weighted_avg_otkazy = (df_filtered['Отказы'] * df_filtered['Визиты']).sum() / total_visits
     weighted_avg_glubina = (df_filtered['Глубина просмотра'] * df_filtered['Визиты']).sum() / total_visits
     weighted_avg_robotnost = (df_filtered['Роботность'] * df_filtered['Визиты']).sum() / total_visits
@@ -101,3 +100,85 @@ weighted_avg_otkazy = (df_filtered['Отказы'] * df_filtered['Визиты']
         return f"{hours}:{minutes:02d}:{seconds:02d}"
 
     weighted_avg_time_str = format_seconds(weighted_avg_time_sec)
+
+# Приводим даты к нужному формату
+    df_week_budget['Неделя с'] = pd.to_datetime(df_week_budget['Неделя с'])
+    df_week_budget['Неделя по'] = pd.to_datetime(df_week_budget['Неделя по'])
+
+    # Проверяем диапазон дат
+    if 'report_start' in locals() and 'report_end' in locals():
+        report_week_df = df_week_budget[
+            (df_week_budget['Неделя с'] <= report_end) & (df_week_budget['Неделя по'] >= report_start)
+        ]
+
+        # Проверяем, что строки найдены
+        if report_week_df.empty:
+            st.error("Ошибка: не найден бюджет для указанного периода!")
+            st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
+        else:
+            st.write("Найденные данные:", report_week_df)
+
+            # Извлекаем бюджет для "Тематических площадок" и "Охватного размещения"
+            tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].sum()
+            oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю'].sum()
+
+            # Проверка на NaN
+            tp_budget = tp_budget if not np.isnan(tp_budget) else 0
+            oh_budget = oh_budget if not np.isnan(oh_budget) else 0
+
+            # Приводим к строковому формату
+            tp_budget_str = f"{tp_budget:,.2f}".replace(',', ' ') if tp_budget > 0 else "0"
+            oh_budget_str = f"{oh_budget:,.2f}".replace(',', ' ') if oh_budget > 0 else "0"
+
+            # Форматируем даты в нужный вид (дд.мм-дд.мм)
+            report_period_str = f"{report_start.strftime('%d.%m')}-{report_end.strftime('%d.%m')}"
+
+            # Подстановка в отчёт
+            report_text = f"""
+Медийная реклама {report_period_str}
+
+Тематические площадки:
+Выполнение по бюджету плановое ({tp_budget_str} ₽ с НДС)
+Первичные обращения — { 'нет данных' }
+Целевые обращения — { 'нет данных' }
+CPL (первичных обращений) — { 'нет данных' } ₽ с НДС
+
+Охват:
+Выполнение по бюджету плановое ({oh_budget_str} ₽ с НДС)
+Первичные обращения — { 'нет данных' }
+Целевые обращения — { 'нет данных' }
+CPL (первичных обращений) — { 'нет данных' } ₽ с НДС
+
+Комментарий:
+Расход на дату — 100 %
+Отказы — {weighted_avg_otkazy_pct:.2f} %
+Глубина просмотра — {weighted_avg_glubina:.2f}
+Время на сайте — {weighted_avg_time_str}
+Роботность — {weighted_avg_robotnost_pct:.2f} %
+
+Проделанные работы:
+- Запуск РК
+- Написали площадкам по оптимизации РК
+
+Плановые работы:
+- Следить за динамикой открута и выполнением по ЦО
+"""
+
+            # Вывод данных в Streamlit
+            st.subheader("Распределение бюджета по неделям")
+            st.dataframe(df_weekly_category_budget)
+
+            st.subheader("Фильтрованные UTM-данные")
+            st.dataframe(df_filtered)
+
+            st.subheader("Сводные показатели")
+            st.dataframe(pd.DataFrame({
+                'визиты': [total_visits],
+                'посетители': [total_visitors],
+                'время на сайте': [weighted_avg_time_str]
+            }))
+
+            st.subheader("Отчёт")
+            st.text_area("Сформированный отчёт", report_text, height=300)
+    else:
+        st.error("Ошибка: не удалось извлечь период из заголовка UTM-меток!")

@@ -158,7 +158,7 @@ if mp_file and metki_file:
 
     # Функция копирования текста
     def copy_to_clipboard(text):
-        pyperclip.copy(tex)
+        pyperclip.copy(text)
  
     # Генерация отчёта
     report_text = f"""

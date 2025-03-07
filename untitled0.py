@@ -273,14 +273,14 @@ if mp_file and metki_file:
     Первичные обращения — {tp_primary_calls}
     CPL (первичных обращений) — {tp_cpl_str} ₽ с НДС
     ЦО — {tp_target_calls}
-    Выполнение по ЦО плановое: {tp_status}
+    Выполнение плана ЦО: {tp_status}
 
     Охват:
     Выполнение по бюджету плановое ({oh_budget_str} ₽ с НДС)
     Первичные обращения — {oh_primary_calls}
     CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
     Целевые обращения — {oh_target_calls}
-    Выполнение по ЦО плановое: {oh_status}
+    Выполнение плана ЦО: {oh_status}
 
     Метрики:
     - Выполнение плана по бюджету 100%
@@ -330,10 +330,3 @@ if mp_file and metki_file:
         st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
     else:
         st.write("Найденные данные:", report_week_df)
-
-    # Проверяем, что строки найдены
-    if report_week_df_kpi.empty:
-        st.error("Ошибка: не найден бюджет для указанного периода!")
-        st.write("Доступные даты:", df_week_kpi[['Неделя с', 'Неделя по']].drop_duplicates())
-    else:
-        st.write("Найденные данные:", df_week_kpi)

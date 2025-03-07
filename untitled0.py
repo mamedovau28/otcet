@@ -234,7 +234,7 @@ if mp_file and metki_file:
     tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].sum()
     oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю'].sum()
 
-    # Получаем прогнозные значения
+    # Извлекаем KPI для "Тематических площадок" и "Охватного размещения"
     kpi_tp = df_weekly_category_kpi.loc[df_weekly_category_kpi['Категория'] == 'Тематические площадки','KPI на неделю'].sum()
     kpi_oh = df_weekly_category_kpi.loc[df_weekly_category_kpi['Категория'] == 'Охватное размещение','KPI на неделю'].sum()
 

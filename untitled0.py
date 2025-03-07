@@ -255,6 +255,9 @@ if mp_file and metki_file:
         'Роботность': [weighted_avg_robotnost]
     }))
 
+    st.subheader("Распределение бюджета по неделям")
+    st.dataframe(df_weekly_category_budget)
+    
     # Проверяем, что строки найдены
     if report_week_df.empty:
         st.error("Ошибка: не найден бюджет для указанного периода!")
@@ -262,6 +265,5 @@ if mp_file and metki_file:
     else:
         st.write("Найденные данные:", report_week_df)
     
-    st.subheader("Распределение бюджета по неделям")
-    st.dataframe(df_weekly_category_budget)
+
 

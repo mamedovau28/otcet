@@ -235,8 +235,8 @@ if mp_file and metki_file:
     oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю'].sum()
 
     # Инициализация переменных, если они еще не были заданы
-    fact_tp = 0
-    fact_oh = 0
+    tp_target_calls = 0
+    oh_target_calls = 0
 
     # Вводим количество первичных и целевых обращений
     tp_primary_calls = st.number_input("Введите количество: Первичных обращений для Тематических площадок", min_value=0, step=1)

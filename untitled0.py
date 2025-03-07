@@ -260,8 +260,8 @@ if mp_file and metki_file:
     kpi_oh = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Охватное размещение']['KPI на неделю'].sum()
 
     # Сравнение фактических значений с прогнозом
-    tp_status = "Совпадает" if fact_tp == round(kpi_tp) else f"Отклонение: {fact_tp - round(kpi_tp)}"
-    oh_status = "Совпадает" if fact_oh == round(kpi_oh) else f"Отклонение: {fact_oh - round(kpi_oh)}"
+    tp_status = "Совпадает" if tp_target_calls == round(kpi_tp) else f"Отклонение: {fact_tp - round(kpi_tp)}"
+    oh_status = "Совпадает" if oh_target_calls == round(kpi_oh) else f"Отклонение: {fact_oh - round(kpi_oh)}"
 
     # Генерация отчёта
     report_text = f"""

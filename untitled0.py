@@ -97,26 +97,41 @@ if mp_file and metki_file:
     df['KPI прогноз'] = df['KPI прогноз'].replace("-", np.nan)  # Заменяем "-" на NaN
     df['KPI прогноз'] = pd.to_numeric(df['KPI прогноз'], errors='coerce').fillna(0)  # Конвертируем в числа, заменяем NaN на 0
 
-    # Функция для корректного распределения KPI по неделям
+    # Функция для корректного распределения бюджета по неделям
     def calculate_kpi_per_week(row):
         start_date = row['Start Date']
         end_date = row['End Date']
+
+    # Начинаем с первой недели, которая содержит start_date
+        week_start = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник недели, в которой start_date
         weeks = []
-    
-        week_start = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник недели
-        total_days = (end_date - start_date).days + 1  # Общее количество дней в периоде
-    
+
         while week_start <= end_date:
+        # Определяем конец недели (воскресенье)
             week_end = week_start + pd.Timedelta(days=6)
 
+        # Если начало недели в прошлом месяце, но есть дни в текущем, берём только текущий месяц
+            if week_start.month < start_date.month:
+                week_start = start_date  # Сдвигаем начало недели на первый день периода
+
+        # Если конец недели выходит за границы периода, ограничиваем его
             if week_end > end_date:
                 week_end = end_date
 
-            days_in_week = (week_end - week_start).days + 1  # Количество дней в текущей неделе
-            week_kpi = round(row['KPI прогноз'] * (days_in_week / total_days))  # Округление до целого числа
+        # Количество дней, попадающих в период
+            days_in_week = (week_end - week_start).days + 1
 
+        # Общие дни в периоде
+            total_days = (end_date - start_date).days + 1
+
+        # Пропорциональный бюджет
+            week_budget = round(row['KPI прогноз'] * (days_in_week / total_days))
+
+        # Добавляем данные
             weeks.append((week_start, week_end, week_kpi))
-            week_start = week_end + pd.Timedelta(days=1)  # Переход на следующую неделю
+
+        # Следующая неделя
+            week_start = week_end + pd.Timedelta(days=1)
     
         return weeks
     

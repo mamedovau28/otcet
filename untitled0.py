@@ -107,7 +107,7 @@ if mp_file and metki_file:
         # Общие дни в периоде
             total_days = (end_date - start_date).days + 1
         # Пропорциональный KPI
-            week_kpi = round(row['KPI прогноз'] * (days_in_week / total_days), 1)
+            week_kpi = round(row['KPI прогноз'] * (days_in_week / total_days), 0)
         # Добавляем данные
             weeks.append((week_start, week_end, week_kpi))
         # Следующая неделя

@@ -122,8 +122,6 @@ if mp_file and metki_file:
     week_kpi_data = []
     for idx, row in df.iterrows():
         week_kpi_data.extend(calculate_kpi_per_week(row))
-
-    df_week_budget['KPI прогноз'] = week_kpi_data
     
     # Создаем DataFrame для KPI
     df_week_kpi = pd.DataFrame(week_kpi_data, columns=['Неделя с', 'Неделя по', 'KPI на неделю'])

@@ -1,4 +1,4 @@
-
+import math
 import subprocess
 import streamlit as st
 import pandas as pd
@@ -125,7 +125,7 @@ if mp_file and metki_file:
             total_days = (end_date - start_date).days + 1
 
         # Пропорциональный KPI
-            week_kpi = round(row['KPI прогноз'] * (days_in_week / total_days))
+            week_kpi = math.ceil(row['KPI прогноз'] * (days_in_week / total_days))
 
         # Добавляем данные
             weeks.append((week_start, week_end, week_kpi))
@@ -263,8 +263,8 @@ if mp_file and metki_file:
     st.write(f"oh_target_calls: {oh_target_calls}, kpi_oh: {kpi_oh}")
 
     # Сравнение фактических значений с прогнозом
-    tp_status = "Совпадает" if tp_target_calls == round(kpi_tp) else f"Отклонение: {tp_target_calls - round(kpi_tp)}"
-    oh_status = "Совпадает" if oh_target_calls == round(kpi_oh) else f"Отклонение: {oh_target_calls - round(kpi_oh)}"
+    tp_status = "Совпадает" if tp_target_calls == kpi_tp else f"Отклонение: {tp_target_calls - kpi_tp}"
+    oh_status = "Совпадает" if oh_target_calls == kpi_oh else f"Отклонение: {oh_target_calls - kpi_oh}"
     
     # Рассчитываем CPL для первичных обращений
     tp_cpl = tp_budget / tp_primary_calls if tp_primary_calls > 0 else 0

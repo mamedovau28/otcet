@@ -321,6 +321,9 @@ if mp_file and metki_file:
     else:
         st.write("Найденные данные:", report_week_df)
 
-    st.write(f"oh_target_calls: {oh_target_calls}, kpi_oh: {kpi_oh}")
-
-
+    # Проверяем, что строки найдены
+    if report_week_df.empty:
+        st.error("Ошибка: не найден бюджет для указанного периода!")
+        st.write("Доступные даты:", df_weekly_category_kpi[['Неделя с', 'Неделя по']].drop_duplicates())
+    else:
+        st.write("Найденные данные:", report_week_df)

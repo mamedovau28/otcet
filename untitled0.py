@@ -121,7 +121,17 @@ if mp_file and metki_file:
     # Приводим к строковому формату
     tp_budget_str = f"{tp_budget:,.2f}".replace(',', ' ') if tp_budget > 0 else "0"
     oh_budget_str = f"{oh_budget:,.2f}".replace(',', ' ') if oh_budget > 0 else "0"
-   
+
+    # Вводим количество первичных и целевых обращений
+    tp_primary_calls = st.number_input("Введите количество первичных обращений для Тематических площадок", min_value=0, step=1)
+    tp_target_calls = st.number_input("Введите количество целевых обращений для Тематических площадок", min_value=0, step=1)
+    oh_primary_calls = st.number_input("Введите количество первичных обращений для Охватного размещения", min_value=0, step=1)
+    oh_target_calls = st.number_input("Введите количество целевых обращений для Охватного размещения", min_value=0, step=1)
+
+    # Рассчитываем CPL для первичных обращений
+    tp_cpl = tp_budget / tp_primary_calls if tp_primary_calls > 0 else 0
+    oh_cpl = oh_budget / oh_primary_calls if oh_primary_calls > 0 else 0
+
     # Генерация отчёта
     report_text = f"""
     Медийная реклама {report_start.strftime('%d.%m')}-{report_end.strftime('%d.%m')}

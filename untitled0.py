@@ -133,8 +133,11 @@ if mp_file and metki_file:
             # Форматируем даты в нужный вид (дд.мм-дд.мм)
             report_period_str = f"{report_start.strftime('%d.%m')}-{report_end.strftime('%d.%m')}"
 
-            # Подстановка в отчёт
-            report_text = f"""
+# Вычисления для отказов
+weighted_avg_otkazy_pct = (df_filtered['Отказы'] * df_filtered['Визиты']).sum() / total_visits * 100  # Процент отказов
+
+# Подстановка в отчёт
+report_text = f"""
 Медийная реклама {report_period_str}
 
 Тематические площадки:
@@ -154,7 +157,7 @@ CPL (первичных обращений) — { 'нет данных' } ₽ с
 Отказы — {weighted_avg_otkazy_pct:.2f} %
 Глубина просмотра — {weighted_avg_glubina:.2f}
 Время на сайте — {weighted_avg_time_str}
-Роботность — {weighted_avg_robotnost_pct:.2f} %
+Роботность — {weighted_avg_robotnost_pct}
 
 Проделанные работы:
 - Запуск РК

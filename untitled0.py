@@ -157,7 +157,7 @@ if mp_file and metki_file:
 
     # Генерация отчёта
     report_text = f"""
-    **Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})**
+    Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})
 
     Тематические площадки:
     Выполнение по бюджету плановое ({tp_budget_str} ₽ с НДС)
@@ -184,7 +184,7 @@ if mp_file and metki_file:
 
     # Вывод данных в Streamlit
     st.subheader("Отчёт")
-    st.text_area(report_text, height=100)
+    st.text_area(report_text, height=500)
 
     # Проверяем, что строки найдены
     if report_week_df.empty:

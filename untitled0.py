@@ -111,8 +111,8 @@ if mp_file and metki_file:
     df_filtered['Время на сайте'] = pd.to_timedelta(df_filtered['Время на сайте'])
     total_visits = df_filtered['Визиты'].sum()
     total_visitors = df_filtered['Посетители'].sum()
+    
     weighted_avg_otkazy = (df_filtered['Отказы'] * df_filtered['Визиты']).sum() / total_visits
-
     weighted_avg_glubina = (df_filtered['Глубина просмотра'] * df_filtered['Визиты']).sum() / total_visits
     weighted_avg_robotnost = (df_filtered['Роботность'] * df_filtered['Визиты']).sum() / total_visits
     weighted_avg_time_sec = (df_filtered['Время на сайте'].dt.total_seconds() * df_filtered['Визиты']).sum() / total_visits
@@ -129,7 +129,66 @@ if mp_file and metki_file:
     # Приводим даты к нужному формату
     df_week_budget['Неделя с'] = pd.to_datetime(df_week_budget['Неделя с'])
     df_week_budget['Неделя по'] = pd.to_datetime(df_week_budget['Неделя по'])
+    
+# Дополнительный код начало
+    
+    # Группировка данных по UTM Source с расчётом взвешенных средних
+    utm_summary = df_filtered.groupby("UTM Source").agg({
+        "Визиты": "sum",
+        "Посетители": "sum"
+    }).reset_index()
 
+    # Добавляем расчёт взвешенных средних для показателей
+    utm_summary["Отказы"] = utm_summary["UTM Source"].apply(
+        lambda source: (df_filtered.loc[df_filtered["UTM Source"] == source, "Отказы"] * 
+                        df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"]).sum() / 
+                       df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"].sum()
+    )
+
+    utm_summary["Глубина просмотра"] = utm_summary["UTM Source"].apply(
+        lambda source: (df_filtered.loc[df_filtered["UTM Source"] == source, "Глубина просмотра"] * 
+                        df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"]).sum() / 
+                       df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"].sum()
+    )
+
+    utm_summary["Роботность"] = utm_summary["UTM Source"].apply(
+        lambda source: (df_filtered.loc[df_filtered["UTM Source"] == source, "Роботность"] * 
+                        df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"]).sum() / 
+                       df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"].sum()
+    )
+
+    utm_summary["Время на сайте (сек)"] = utm_summary["UTM Source"].apply(
+        lambda source: (df_filtered.loc[df_filtered["UTM Source"] == source, "Время на сайте"].dt.total_seconds() * 
+                        df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"]).sum() / 
+                       df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"].sum()
+    )
+
+    # Преобразуем среднее время в ЧЧ:ММ:СС
+    utm_summary["Время на сайте"] = utm_summary["Время на сайте (сек)"].apply(format_seconds)
+    utm_summary.drop(columns=["Время на сайте (сек)"], inplace=True)
+
+    # Вывод таблицы с агрегированными данными
+    st.subheader("Анализ по UTM Source")
+    st.dataframe(utm_summary)
+
+    # Проверяем условия и формируем предупреждения
+    warnings = []
+    for _, row in utm_summary.iterrows():
+        if row["Отказы"] > 0.35:
+            warnings.append(f"⚠ Высокий процент отказов ({row['Отказы']:.2%}) для источника {row['UTM Source']}")
+        if row["Роботность"] > 0.10:
+            warnings.append(f"⚠ Высокая роботность ({row['Роботность']:.2%}) для источника {row['UTM Source']}")
+        if pd.to_timedelta(row["Время на сайте"]) < pd.Timedelta(minutes=1):
+            warnings.append(f"⚠ Низкое время на сайте ({row['Время на сайте']}) для источника {row['UTM Source']}")
+
+    # Вывод предупреждений
+    if warnings:
+        st.subheader("⚠ Предупреждения")
+        for warning in warnings:
+            st.warning(warning)
+    # Доп код конец
+
+    
     # Проверяем диапазон дат
     report_week_df = df_week_budget[
         (df_week_budget['Неделя с'] <= report_end) & (df_week_budget['Неделя по'] >= report_start)

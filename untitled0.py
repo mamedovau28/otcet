@@ -97,6 +97,15 @@ if mp_file and metki_file:
         return f"{hours}:{minutes:02d}:{seconds:02d}"
 
     weighted_avg_time_str = format_seconds(weighted_avg_time_sec)
+ 
+    # Приводим даты к нужному формату
+    df_week_budget['Неделя с'] = pd.to_datetime(df_week_budget['Неделя с'])
+    df_week_budget['Неделя по'] = pd.to_datetime(df_week_budget['Неделя по'])
+
+    # Проверяем диапазон дат
+    report_week_df = df_week_budget[
+        (df_week_budget['Неделя с'] <= report_end) & (df_week_budget['Неделя по'] >= report_start)
+    ]
 
     # Проверяем, что строки найдены
     if report_week_df.empty:

@@ -259,8 +259,9 @@ if mp_file and metki_file:
 
     st.subheader("Сводные показатели")
     st.dataframe(pd.DataFrame({
-        'визиты': [total_visits],
-        'посетители': [total_visitors],
-        'время на сайте': [weighted_avg_time_str]
+        'Время на сайте': [weighted_avg_time_str],
+        'Отказы': [weighted_avg_otkazy],
+        'Глубина просмотра': [weighted_avg_glubina],
+        'Роботность': [weighted_avg_robotnost]
     }))
 

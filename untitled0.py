@@ -11,7 +11,7 @@ def load_excel(file, sheet=0, header=0):
     return pd.read_excel(file, sheet_name=sheet, header=header)
 
 # Интерфейс загрузки файлов
-st.title("Генератор отчётов по медиаплану")
+st.title("Генератор еженедельных отчётов Sm")
 
 mp_file = st.file_uploader("Загрузите файл с медиапланом", type=["xlsx"])
 metki_file = st.file_uploader("Загрузите файл с метками UTM", type=["xlsx"])

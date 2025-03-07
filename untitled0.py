@@ -218,7 +218,7 @@ if mp_file and metki_file:
     
     # Проверяем диапазон дат
     report_week_df = df_weekly_category_budget[
-        (df_weekly_category_budget['Неделя с'] <= report_end) & (df_weekly_category_budgett['Неделя по'] >= report_start)
+        (df_weekly_category_budget['Неделя с'] <= report_end) & (df_weekly_category_budget['Неделя по'] >= report_start)
     ]
 
         # Проверяем диапазон дат

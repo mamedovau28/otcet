@@ -156,7 +156,7 @@ if mp_file and metki_file:
 
     # Вывод данных в Streamlit
     st.subheader("Отчёт")
-    st.markdown(report_text)
+    st.text(report_text)
     
     # Проверяем, что строки найдены
     if report_week_df.empty:

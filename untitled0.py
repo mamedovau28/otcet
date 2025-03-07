@@ -243,9 +243,13 @@ if mp_file and metki_file:
     # Выводим значения после их определения
     st.write(f"oh_target_calls: {oh_target_calls}, kpi_oh: {kpi_oh}")
 
-    # Вычисление отклонения по проценту от KPI прогноза
-    tp_status = f"{((tp_target_calls - kpi_tp) / kpi_tp) * 100:.1f}%" if pd.notna(kpi_tp) else "100%"
-    oh_status = f"{((oh_primary_calls - kpi_oh) / kpi_oh) * 100:.1f}%" if pd.notna(kpi_oh) else "100%"
+    # Проверка, есть ли данные по KPI для Тематических площадок и Охватного размещения
+    if pd.notna(kpi_tp) and pd.notna(kpi_oh):
+        tp_status = f"{((tp_target_calls - kpi_tp) / kpi_tp) * 100:.1f}%"
+        oh_status = f"{((oh_primary_calls - kpi_oh) / kpi_oh) * 100:.1f}%"
+    else:
+        tp_status = "100%"
+        oh_status = "100%"
 
     # Рассчитываем CPL для первичных обращений
     tp_cpl = tp_budget / tp_primary_calls if tp_primary_calls > 0 else 0

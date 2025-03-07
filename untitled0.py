@@ -92,6 +92,10 @@ if mp_file and metki_file:
 
     # Группировка по категории и неделе, суммирование бюджета
     df_weekly_category_budget = df_week_budget.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['Бюджет на неделю'].sum()
+    
+    # Очистка данных в KPI прогноз
+    df['KPI прогноз'] = df['KPI прогноз'].replace("-", np.nan)  # Заменяем "-" на NaN
+    df['KPI прогноз'] = pd.to_numeric(df['KPI прогноз'], errors='coerce').fillna(0)  # Конвертируем в числа, заменяем NaN на 0
 
     # Функция для корректного распределения KPI по неделям
     def calculate_kpi_per_week(row):

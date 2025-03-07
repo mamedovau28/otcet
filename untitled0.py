@@ -77,9 +77,7 @@ if mp_file and metki_file:
     # Добавляем информацию о сайте и периоде для каждой недели
     df_week_budget['Название сайта'] = np.repeat(df['Название сайта'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
     df_week_budget['Категория'] = np.repeat(df['Категория'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
-    df_week_budget['KPI прогноз'] = np.repeat(df['KPI прогноз'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
-    df_week_budget['Период'] = np.repeat(df['Период'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
-
+   
     # Группировка по категории и неделе, суммирование бюджета
     df_weekly_category_budget = df_week_budget.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['Бюджет на неделю'].sum()
     
@@ -223,13 +221,18 @@ if mp_file and metki_file:
         (df_week_budget['Неделя с'] <= report_end) & (df_week_budget['Неделя по'] >= report_start)
     ]
 
+        # Проверяем диапазон дат
+    report_week_df_kpi = df_weekly_category_kpi[
+        (df_weekly_category_kpi['Неделя с'] <= report_end) & (df_weekly_category_kpi['Неделя по'] >= report_start)
+    ]
+
     # Извлекаем бюджет для "Тематических площадок" и "Охватного размещения"
     tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].sum()
     oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю'].sum()
 
     # Извлекаем KPI для "Тематических площадок" и "Охватного размещения"
-    kpi_tp = df_weekly_category_kpi.loc[df_weekly_category_kpi['Категория'] == 'Тематические площадки','KPI на неделю'].sum()
-    kpi_oh = df_weekly_category_kpi.loc[df_weekly_category_kpi['Категория'] == 'Охватное размещение','KPI на неделю'].sum()
+    kpi_tp = report_week_df_kpi.loc[report_week_df_kpi['Категория'] == 'Тематические площадки','KPI на неделю'].sum()
+    kpi_oh = report_week_df_kpi.loc[report_week_df_kpi['Категория'] == 'Охватное размещение','KPI на неделю'].sum()
 
     # Вводим количество первичных и целевых обращений
     tp_primary_calls = st.number_input("Введите количество: Первичных обращений для Тематических площадок", min_value=0, step=1)

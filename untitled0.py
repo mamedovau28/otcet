@@ -231,8 +231,8 @@ if mp_file and metki_file:
     ]
 
     # Извлекаем бюджет для "Тематических площадок" и "Охватного размещения"
-    tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].sum()
-    oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю'].sum()
+    tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю']
+    oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю']
 
     # Получаем прогнозные значения
     kpi_tp = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Тематические площадки']['KPI на неделю'].sum()

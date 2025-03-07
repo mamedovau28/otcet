@@ -247,12 +247,12 @@ if mp_file and metki_file:
     if pd.notna(kpi_tp) and kpi_tp != 0:  # Проверка на NaN и 0
         tp_status = f"{((tp_target_calls - kpi_tp) / kpi_tp) * 100:.1f} %" if pd.notna(tp_target_calls) else "0 %"
     else:
-        tp_status = "Нет данных по KPI для Тематических площадок"
+        tp_status = "100 %"
 
     if pd.notna(kpi_oh) and kpi_oh != 0:  # Проверка на NaN и 0
         oh_status = f"{((oh_target_calls - kpi_oh) / kpi_oh) * 100:.1f} %" if pd.notna(oh_target_calls) else "0 %"
     else:
-        oh_status = "Нет данных по KPI для Охватного размещения"
+        oh_status = "100 %"
 
     # Рассчитываем CPL для первичных обращений
     tp_cpl = tp_budget / tp_primary_calls if tp_primary_calls > 0 else 0

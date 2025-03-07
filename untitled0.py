@@ -45,34 +45,25 @@ if mp_file and metki_file:
     # Начинаем с первой недели, которая содержит start_date
         week_start = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник недели, в которой start_date
         weeks = []
-
         while week_start <= end_date:
         # Определяем конец недели (воскресенье)
             week_end = week_start + pd.Timedelta(days=6)
-
         # Если начало недели в прошлом месяце, но есть дни в текущем, берём только текущий месяц
             if week_start.month < start_date.month:
                 week_start = start_date  # Сдвигаем начало недели на первый день периода
-
         # Если конец недели выходит за границы периода, ограничиваем его
             if week_end > end_date:
                 week_end = end_date
-
         # Количество дней, попадающих в период
             days_in_week = (week_end - week_start).days + 1
-
         # Общие дни в периоде
             total_days = (end_date - start_date).days + 1
-
         # Пропорциональный бюджет
             week_budget = row['Общая стоимость с учетом НДС и АК'] * (days_in_week / total_days)
-
         # Добавляем данные
             weeks.append((week_start, week_end, week_budget))
-
         # Следующая неделя
             week_start = week_end + pd.Timedelta(days=1)
-
         return weeks
 
     # Применение функции для всех строк
@@ -105,27 +96,21 @@ if mp_file and metki_file:
     # Начинаем с первой недели, которая содержит start_date
         week_start = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник недели, в которой start_date
         weeks = []
-
         while week_start <= end_date:
         # Определяем конец недели (воскресенье)
             week_end = week_start + pd.Timedelta(days=6)
-
         # Если начало недели в прошлом месяце, но есть дни в текущем, берём только текущий месяц
             if week_start.month < start_date.month:
                 week_start = start_date  # Сдвигаем начало недели на первый день периода
-
         # Если конец недели выходит за границы периода, ограничиваем его
             if week_end > end_date:
                 week_end = end_date
-
         # Количество дней, попадающих в период
             days_in_week = (week_end - week_start).days + 1
-
         # Общие дни в периоде
             total_days = (end_date - start_date).days + 1
-
         # Пропорциональный KPI
-            week_kpi = row['KPI прогноз'] * (days_in_week / total_days)
+            week_kpi = round(row['KPI прогноз'] * (days_in_week / total_days), 1)
 
         # Добавляем данные
             weeks.append((week_start, week_end, week_kpi))

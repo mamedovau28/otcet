@@ -75,7 +75,6 @@ if mp_file and metki_file:
     df_week_budget = pd.DataFrame(week_budget_data, columns=['Неделя с', 'Неделя по', 'Бюджет на неделю'])
 
     # Добавляем информацию о сайте и периоде для каждой недели
-    df_week_budget['№'] = np.repeat(df['№'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
     df_week_budget['Название сайта'] = np.repeat(df['Название сайта'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
     df_week_budget['Категория'] = np.repeat(df['Категория'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
     df_week_budget['KPI прогноз'] = np.repeat(df['KPI прогноз'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
@@ -136,9 +135,6 @@ if mp_file and metki_file:
 
     # Группировка KPI по категориям и неделям
     df_weekly_category_kpi = df_week_kpi.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['KPI на неделю'].sum()
-
-    # Объединяем данные о бюджете и KPI в один датафрейм
-    df_weekly_report = df_weekly_category_budget.merge(df_weekly_category_kpi, on=['Категория', 'Неделя с', 'Неделя по'], how='left')
     
     # Обрабатываем UTM-метки
     df_raw = load_excel(metki_file, header=None)

@@ -1,5 +1,4 @@
-import streamlit as st
-import pyperclip
+
 import subprocess
 import streamlit as st
 import pandas as pd
@@ -156,10 +155,6 @@ if mp_file and metki_file:
     tp_cpl_str = f"{tp_cpl:,.2f}".replace(',', ' ') if tp_cpl > 0 else "0"
     oh_cpl_str = f"{oh_cpl:,.2f}".replace(',', ' ') if oh_cpl > 0 else "0"
 
-    # Функция копирования текста
-    def copy_to_clipboard(text):
-        pyperclip.copy(text)
- 
     # Генерация отчёта
     report_text = f"""
     Медийная реклама {report_start.strftime('%d.%m')}-{report_end.strftime('%d.%m')}
@@ -186,22 +181,10 @@ if mp_file and metki_file:
     Плановые работы:
     - Следить за динамикой
     """
-    # Вставляем кнопку для копирования с помощью JavaScript
-    st.text(report_text)
-
-    st.markdown("""
-        <button onclick="navigator.clipboard.writeText(`""" + report_text.replace("\n", " ").replace("`", "\`") + """`);">Скопировать отчет</button>
-        <script>
-        document.querySelector('button').style.backgroundColor = '#4CAF50';
-        document.querySelector('button').style.color = 'white';
-        document.querySelector('button').style.padding = '10px 20px';
-        document.querySelector('button').style.fontSize = '16px';
-        </script>
-    """, unsafe_allow_html=True)
 
     # Вывод данных в Streamlit
     st.subheader("Отчёт")
-    st.text(report_text)
+    st.text_area(report_text, height=100)
 
     # Проверяем, что строки найдены
     if report_week_df.empty:

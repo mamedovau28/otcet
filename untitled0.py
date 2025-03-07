@@ -157,28 +157,28 @@ if mp_file and metki_file:
 
     # Генерация отчёта
     report_text = f"""
-    **Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})**
+    <b>Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})</b>
 
-    Тематические площадки:
+    <b>Тематические площадки:</b>
     Выполнение по бюджету плановое ({tp_budget_str} ₽ с НДС)
     Первичные обращения — {tp_primary_calls}
     Целевые обращения — {tp_target_calls}
     CPL (первичных обращений) — {tp_cpl_str} ₽ с НДС
 
-    Охват:
+    <b>Охват:</b>
     Выполнение по бюджету плановое ({oh_budget_str} ₽ с НДС)
     Первичные обращения — {oh_primary_calls}
     Целевые обращения — {oh_target_calls}
     CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
 
-    Метрики:
+    <b>Метрики:</b>
     - Выполнение плана по бюджету 100%
     - Отказы: {weighted_avg_otkazy * 100:.2f}%
     - Глубина просмотра: {weighted_avg_glubina:.2f}
     - Время на сайте: {weighted_avg_time_str}
     - Роботность: {weighted_avg_robotnost * 100:.2f}%
 
-    Плановые работы:
+    <b>Плановые работы:</b>
     - Следить за динамикой
     """
 

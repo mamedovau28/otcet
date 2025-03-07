@@ -93,6 +93,54 @@ if mp_file and metki_file:
     # Группировка по категории и неделе, суммирование бюджета
     df_weekly_category_budget = df_week_budget.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['Бюджет на неделю'].sum()
 
+    # Функция для корректного распределения KPI по неделям
+    def calculate_kpi_per_week(row):
+        start_date = row['Start Date']
+        end_date = row['End Date']
+    
+        week_start = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник первой недели
+        weeks = []
+
+        while week_start <= end_date:
+            week_end = week_start + pd.Timedelta(days=6)
+
+            # Корректируем начало недели, если оно раньше периода
+            if week_start < start_date:
+                week_start = start_date
+
+            # Корректируем конец недели, если оно выходит за границы периода
+            if week_end > end_date:
+                week_end = end_date
+
+            days_in_week = (week_end - week_start).days + 1
+            total_days = (end_date - start_date).days + 1
+
+            # Распределение KPI
+            week_kpi = row['KPI прогноз'] * (days_in_week / total_days)
+            weeks.append((week_start, week_end, week_kpi))
+
+            week_start = week_end + pd.Timedelta(days=1)
+
+        return weeks
+
+    # Применяем к каждому ряду в df
+    week_kpi_data = []
+    for idx, row in df.iterrows():
+        week_kpi_data.extend(calculate_kpi_per_week(row))
+
+    # Создаем DataFrame для KPI
+    df_week_kpi = pd.DataFrame(week_kpi_data, columns=['Неделя с', 'Неделя по', 'KPI на неделю'])
+
+    # Добавляем категорию и сайт
+    df_week_kpi['Категория'] = np.repeat(df['Категория'].values, [len(calculate_kpi_per_week(row)) for _, row in df.iterrows()])
+    df_week_kpi['Название сайта'] = np.repeat(df['Название сайта'].values, [len(calculate_kpi_per_week(row)) for _, row in df.iterrows()])
+
+    # Группировка KPI по категориям и неделям
+    df_weekly_category_kpi = df_week_kpi.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['KPI на неделю'].sum()
+
+    # Объединяем данные о бюджете и KPI в один датафрейм
+    df_weekly_report = df_weekly_category_budget.merge(df_weekly_category_kpi, on=['Категория', 'Неделя с', 'Неделя по'], how='left')
+    
     # Обрабатываем UTM-метки
     df_raw = load_excel(metki_file, header=None)
     header_str = str(df_raw.iloc[0, 0])
@@ -203,6 +251,14 @@ if mp_file and metki_file:
     tp_cpl_str = f"{tp_cpl:,.2f}".replace(',', ' ') if tp_cpl > 0 else "0"
     oh_cpl_str = f"{oh_cpl:,.2f}".replace(',', ' ') if oh_cpl > 0 else "0"
 
+    # Получаем прогнозные значения
+    kpi_tp = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Тематические площадки']['KPI на неделю'].sum()
+    kpi_oh = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Охватное размещение']['KPI на неделю'].sum()
+
+    # Сравнение фактических значений с прогнозом
+    tp_status = "Совпадает" if fact_tp == round(kpi_tp) else f"Отклонение: {fact_tp - round(kpi_tp)}"
+    oh_status = "Совпадает" if fact_oh == round(kpi_oh) else f"Отклонение: {fact_oh - round(kpi_oh)}"
+
     # Генерация отчёта
     report_text = f"""
     Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})
@@ -210,14 +266,16 @@ if mp_file and metki_file:
     Тематические площадки:
     Выполнение по бюджету плановое ({tp_budget_str} ₽ с НДС)
     Первичные обращения — {tp_primary_calls}
-    Целевые обращения — {tp_target_calls}
     CPL (первичных обращений) — {tp_cpl_str} ₽ с НДС
+    ЦО — {tp_target_calls}
+    Выполнение по ЦО плановое: {tp_status}
 
     Охват:
     Выполнение по бюджету плановое ({oh_budget_str} ₽ с НДС)
     Первичные обращения — {oh_primary_calls}
-    Целевые обращения — {oh_target_calls}
     CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
+    Целевые обращения — {oh_target_calls}
+    Выполнение по ЦО плановое: {oh_status}
 
     Метрики:
     - Выполнение плана по бюджету 100%

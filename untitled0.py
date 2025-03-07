@@ -133,9 +133,6 @@ if mp_file and metki_file:
             # Форматируем даты в нужный вид (дд.мм-дд.мм)
             report_period_str = f"{report_start.strftime('%d.%m')}-{report_end.strftime('%d.%m')}"
 
-# Вычисления для отказов
-weighted_avg_otkazy_pct = (df_filtered['Отказы'] * df_filtered['Визиты']).sum() / total_visits * 100  # Процент отказов
-
 # Подстановка в отчёт
 report_text = f"""
 Медийная реклама {report_period_str}

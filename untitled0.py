@@ -101,31 +101,26 @@ if mp_file and metki_file:
     def calculate_kpi_per_week(row):
         start_date = row['Start Date']
         end_date = row['End Date']
-    
-        week_start = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник первой недели
         weeks = []
-
+    
+        week_start = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник недели
+        total_days = (end_date - start_date).days + 1  # Общее количество дней в периоде
+    
         while week_start <= end_date:
             week_end = week_start + pd.Timedelta(days=6)
 
-            # Корректируем начало недели, если оно раньше периода
-            if week_start < start_date:
-                week_start = start_date
-
-            # Корректируем конец недели, если оно выходит за границы периода
             if week_end > end_date:
                 week_end = end_date
 
-            days_in_week = (week_end - week_start).days + 1
-            total_days = (end_date - start_date).days + 1
+            days_in_week = (week_end - week_start).days + 1  # Количество дней в текущей неделе
+            week_kpi = round(row['KPI прогноз'] * (days_in_week / total_days))  # Округление до целого числа
 
-            # Распределение KPI
-            week_kpi = row['KPI прогноз'] * (days_in_week / total_days)
             weeks.append((week_start, week_end, week_kpi))
-
-            week_start = week_end + pd.Timedelta(days=1)
-
+            week_start = week_end + pd.Timedelta(days=1)  # Переход на следующую неделю
+    
         return weeks
+    
+    # Функция для корректного распределения KPI по неделям
 
     # Применяем к каждому ряду в df
     week_kpi_data = []

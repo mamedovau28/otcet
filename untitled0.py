@@ -119,11 +119,10 @@ if mp_file and metki_file:
     oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю'].sum()
 
     # Вводим количество первичных и целевых обращений
-    tp_primary_calls = st.number_input("Введите количество первичных обращений для Тематических площадок", min_value=0, step=1)
-    tp_target_calls = st.number_input("Введите количество целевых обращений для Тематических площадок", min_value=0, step=1)
-    oh_primary_calls = st.number_input("Введите количество первичных обращений для Охватного размещения", min_value=0, step=1)
-    oh_target_calls = st.number_input("Введите количество целевых обращений для Охватного размещения", min_value=0, step=1)
-    
+    tp_primary_calls = st.number_input("Введите количество: Первичных обращений для Тематических площадок", min_value=0, step=1)
+    tp_target_calls = st.number_input("Введите количество: ЦО для Тематических площадок", min_value=0, step=1)
+    oh_primary_calls = st.number_input("Введите количество: Первичных обращений для Охватного размещения", min_value=0, step=1)
+    oh_target_calls = st.number_input("Введите количество: ЦО для Охватного размещения", min_value=0, step=1)
     
     # Рассчитываем CPL для первичных обращений
     tp_cpl = tp_budget / tp_primary_calls if tp_primary_calls > 0 else 0
@@ -162,6 +161,8 @@ if mp_file and metki_file:
     """
 
     # Вывод данных в Streamlit
+    st.subheader("Отчёт")
+    st.text_area("Сформированный отчёт", report_text, height=300)
     st.subheader("Распределение бюджета по неделям")
     st.dataframe(df_weekly_category_budget)
 
@@ -175,5 +176,3 @@ if mp_file and metki_file:
         'время на сайте': [weighted_avg_time_str]
     }))
 
-    st.subheader("Отчёт")
-    st.text_area("Сформированный отчёт", report_text, height=300)

@@ -107,13 +107,6 @@ if mp_file and metki_file:
         (df_week_budget['Неделя с'] <= report_end) & (df_week_budget['Неделя по'] >= report_start)
     ]
 
-    # Проверяем, что строки найдены
-    if report_week_df.empty:
-        st.error("Ошибка: не найден бюджет для указанного периода!")
-        st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
-    else:
-        st.write("Найденные данные:", report_week_df)
-
     # Извлекаем бюджет для "Тематических площадок" и "Охватного размещения"
     tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].sum()
     oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю'].sum()
@@ -163,6 +156,14 @@ if mp_file and metki_file:
     # Вывод данных в Streamlit
     st.subheader("Отчёт")
     st.text_area("Сформированный отчёт", report_text, height=300)
+    
+    # Проверяем, что строки найдены
+    if report_week_df.empty:
+        st.error("Ошибка: не найден бюджет для указанного периода!")
+        st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
+    else:
+        st.write("Найденные данные:", report_week_df)
+    
     st.subheader("Распределение бюджета по неделям")
     st.dataframe(df_weekly_category_budget)
 

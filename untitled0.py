@@ -236,11 +236,26 @@ if mp_file and metki_file:
     tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].sum()
     oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю'].sum()
 
+    # Инициализация переменных, если они еще не были заданы
+    fact_tp = 0
+    fact_oh = 0
+
     # Вводим количество первичных и целевых обращений
     tp_primary_calls = st.number_input("Введите количество: Первичных обращений для Тематических площадок", min_value=0, step=1)
     tp_target_calls = st.number_input("Введите количество: ЦО для Тематических площадок", min_value=0, step=1)
     oh_primary_calls = st.number_input("Введите количество: Первичных обращений для Охватного размещения", min_value=0, step=1)
     oh_target_calls = st.number_input("Введите количество: ЦО для Охватного размещения", min_value=0, step=1)
+
+    # Получаем прогнозные значения
+    kpi_tp = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Тематические площадки']['KPI на неделю'].sum()
+    kpi_oh = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Охватное размещение']['KPI на неделю'].sum()
+
+    # Выводим значения после их определения
+    st.write(f"oh_target_calls: {oh_target_calls}, kpi_oh: {kpi_oh}")
+
+    # Сравнение фактических значений с прогнозом
+    tp_status = "Совпадает" if tp_target_calls == round(kpi_tp) else f"Отклонение: {fact_tp - round(kpi_tp)}"
+    oh_status = "Совпадает" if oh_target_calls == round(kpi_oh) else f"Отклонение: {fact_oh - round(kpi_oh)}"
     
     # Рассчитываем CPL для первичных обращений
     tp_cpl = tp_budget / tp_primary_calls if tp_primary_calls > 0 else 0
@@ -251,14 +266,6 @@ if mp_file and metki_file:
     oh_budget_str = f"{oh_budget:,.2f}".replace(',', ' ') if oh_budget > 0 else "0"
     tp_cpl_str = f"{tp_cpl:,.2f}".replace(',', ' ') if tp_cpl > 0 else "0"
     oh_cpl_str = f"{oh_cpl:,.2f}".replace(',', ' ') if oh_cpl > 0 else "0"
-
-    # Получаем прогнозные значения
-    kpi_tp = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Тематические площадки']['KPI на неделю'].sum()
-    kpi_oh = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Охватное размещение']['KPI на неделю'].sum()
-
-    # Сравнение фактических значений с прогнозом
-    tp_status = "Совпадает" if tp_target_calls == round(kpi_tp) else f"Отклонение: {fact_tp - round(kpi_tp)}"
-    oh_status = "Совпадает" if oh_target_calls == round(kpi_oh) else f"Отклонение: {fact_oh - round(kpi_oh)}"
 
     # Генерация отчёта
     report_text = f"""

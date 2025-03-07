@@ -235,8 +235,8 @@ if mp_file and metki_file:
     oh_budget = report_week_df.loc[report_week_df['Категория'] == 'Охватное размещение', 'Бюджет на неделю']
 
     # Получаем прогнозные значения
-    kpi_tp = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Тематические площадки']['KPI на неделю'].sum()
-    kpi_oh = df_weekly_category_kpi[df_weekly_category_kpi['Категория'] == 'Охватное размещение']['KPI на неделю'].sum()
+    kpi_tp = df_weekly_category_kpi.loc[df_weekly_category_kpi['Категория'] == 'Тематические площадки','KPI на неделю']
+    kpi_oh = df_weekly_category_kpi.loc[df_weekly_category_kpi['Категория'] == 'Охватное размещение','KPI на неделю']
 
     # Вводим количество первичных и целевых обращений
     tp_primary_calls = st.number_input("Введите количество: Первичных обращений для Тематических площадок", min_value=0, step=1)

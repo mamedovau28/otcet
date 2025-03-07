@@ -158,19 +158,19 @@ CPL (первичных обращений) — { 'нет данных' } ₽ с
 - Следить за динамикой открута и выполнением по ЦО
 """
 
-    # Вывод данных в Streamlit
-    st.subheader("Распределение бюджета по неделям")
-    st.dataframe(df_weekly_category_budget)
+# Вывод данных в Streamlit
+st.subheader("Распределение бюджета по неделям")
+st.dataframe(df_weekly_category_budget)
 
-    st.subheader("Фильтрованные UTM-данные")
-    st.dataframe(df_filtered)
+st.subheader("Фильтрованные UTM-данные")
+st.dataframe(df_filtered)
 
-    st.subheader("Сводные показатели")
-    st.dataframe(pd.DataFrame({
-        'визиты': [total_visits],
-        'посетители': [total_visitors],
-        'время на сайте': [weighted_avg_time_str]
-    }))
+st.subheader("Сводные показатели")
+st.dataframe(pd.DataFrame({
+    'визиты': [total_visits],
+    'посетители': [total_visitors],
+    'время на сайте': [weighted_avg_time_str]
+}))
 
-    st.subheader("Отчёт")
-    st.text_area("Сформированный отчёт", report_text, height=300)
+st.subheader("Отчёт")
+st.text_area("Сформированный отчёт", report_text, height=300)

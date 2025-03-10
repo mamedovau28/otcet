@@ -99,7 +99,7 @@ if mp_file and metki_file:
     else:
         st.error("Столбец 'Период' не найден в данных.")
         
-    st.write("Столбцы в df_mp:", df.columns)
+    st.write("Столбцы в df_mp:", df_mp.columns)
     
 # Бюджет по неделям
     def calculate_budget_per_week(row):

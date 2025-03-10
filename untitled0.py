@@ -452,3 +452,67 @@ if report_week_df.empty:
     st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
 else:
     st.write("Найденные данные:", report_week_df)
+
+import pyperclip  # Для работы с буфером обмена, но основной код через JS
+
+# Преобразуем список выполненных работ в читаемый формат
+work_done_str = "\n".join([f"- {task}" for task in work_done_list])
+
+# Генерация полного отчёта
+report_text = f"""Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})
+
+ТЕМАТИЧЕСКИЕ ПЛОЩАДКИ:
+Выполнение по бюджету плановое: {tp_budget_str} ₽ с НДС
+Первичные обращения: {tp_primary_calls}
+CPL (первичных обращений): {tp_cpl_str} ₽ с НДС
+ЦО: {tp_target_calls}
+Выполнение плана ЦО: {tp_status}
+
+ОХВАТ:
+Выполнение по бюджету плановое: {oh_budget_str} ₽ с НДС
+Первичные обращения: {oh_primary_calls}
+CPL (первичных обращений): {oh_cpl_str} ₽ с НДС
+Целевые обращения: {oh_target_calls}
+Выполнение плана ЦО: {oh_status}
+
+МЕТРИКИ:
+- Выполнение плана по бюджету: 100%
+- Отказы: {weighted_avg_otkazy * 100:.2f}%
+- Глубина просмотра: {weighted_avg_glubina:.2f}
+- Время на сайте: {weighted_avg_time_str}
+- Роботность: {weighted_avg_robotnost * 100:.2f}%
+
+КОММЕНТАРИИ:
+Реализация объемов идет согласно плану. Наблюдаем ... динамики первичных обращений.
+Наблюдаем целевые обращения из ... и ....
+
+ПРОДЕЛАННЫЕ РАБОТЫ:
+{work_done_str}
+
+ПЛАНОВЫЕ РАБОТЫ:
+- Запуск РК
+- Подготовка скрин-отчета с актуальными размещениями
+- Подготовка МП-Факта предыдущего месяца
+- Замена рекламных материалов на актуальные
+- Оптимизация РК для улучшения поведенческих данных
+- Усиление РК для привлечения ЦО
+- Актуализация Карты развития
+- Подготовка медиапланирования на следующий месяц
+- Подготовка материалов на следующий месяц"""
+
+# Вывод отчёта в текстовое поле
+st.text_area("Отчёт", report_text, height=600)
+
+# Добавляем кнопку для копирования
+st.markdown("""
+    <button id="copy-btn">Скопировать отчёт</button>
+    <script>
+        const copyButton = document.getElementById("copy-btn");
+        copyButton.onclick = function() {
+            const text = document.getElementById("report-text").value;
+            navigator.clipboard.writeText(text).then(function() {
+                alert("Текст скопирован в буфер обмена!");
+            });
+        };
+    </script>
+""", unsafe_allow_html=True)

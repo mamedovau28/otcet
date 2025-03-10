@@ -333,7 +333,7 @@ if mp_file and metki_file:
         st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
     else:
         st.write("Найденные данные:", report_week_df)
-    st.dataframe("Распределение KPI по неделям")
+        st.dataframe("Распределение KPI по неделям")
 
     # Проверяем tp_budget
     tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].fillna(0).sum()

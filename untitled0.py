@@ -369,7 +369,7 @@ if mp_file and metki_file:
         return sorted(work_done)  # Сортируем для удобства чтения
 
     work_done_list = get_work_done(report_start, report_end)
-    work_done_str = "\n".join([f"- {task}" for task in work_done_list])
+    work_done_str = "\n".join([f" - {task}" for task in work_done_list])
 
     # Генерация отчёта
     report_text = f"""

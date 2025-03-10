@@ -75,14 +75,6 @@ if mp_file and metki_file:
     df_metki = load_excel_with_custom_header(metki_file, 'UTM Source')
     st.write("Метки UTM:", df_metki.head())
     
-    # Удаляем первый столбец медиаплана, если он полностью пустой
-    if df_mp.iloc[:, 0].isna().all():
-        df_mp = df_mp.iloc[:, 1:]
-    
-    # Выводим первые строки для проверки
-    st.write("Медиаплан:", df_mp.head())
-    st.write("Метки UTM:", df_metki.head())
-    
     # Вводим количество первичных и целевых обращений
     tp_primary_calls = st.number_input("Тематические площади: первичные обращения", min_value=0, step=1)
     tp_target_calls = st.number_input("Тематические площади: ЦО", min_value=0, step=1)

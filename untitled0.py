@@ -370,10 +370,6 @@ def get_work_done(report_start, report_end):
 
 work_done_list = get_work_done(report_start, report_end)
 
-# Выводим все работы в Streamlit
-for work in work_done_list:
-    st.write(f"- {work}")
-
     # Генерация отчёта
     report_text = f"""
     Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})
@@ -404,7 +400,9 @@ for work in work_done_list:
     Наблюдаем целевые обращения из ... и ....
     
     Проделанные работы:
-    {work}
+# Выводим все работы в Streamlit
+for work in work_done_list:
+    st.write(f"- {work}")
 
     Плановые работы:
     - Запуск РК

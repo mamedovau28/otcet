@@ -331,7 +331,7 @@ if mp_file and metki_file:
     oh_cpl_str = f"{oh_cpl:,.2f}".replace(',', ' ') if oh_cpl > 0 else "0"
 
     # Проделанные работы в зависимости от периода
-    def get_work_done(report_start, report_end):
+def get_work_done(report_start, report_end):
     work_done = set()
 
         if report_start.day <= 10:

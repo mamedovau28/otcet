@@ -5,24 +5,8 @@ import pandas as pd
 import numpy as np
 import re
 
-# Функция загрузки Excel-файлов
-def load_excel_without_header(file):
-    return pd.read_excel(file, header=None)
-
-def extract_report_dates(header_str):
-    """
-    Извлекает дату начала и дату конца отчётного периода из строки header_str.
-    Ожидаемый формат: "Отчет за период с YYYY-MM-DD по YYYY-MM-DD"
-    """
-    match = re.search(r'Отчет за период с (\d{4}-\d{2}-\d{2}) по (\d{4}-\d{2}-\d{2})', header_str)
-    if match:
-        start_date = pd.to_datetime(match.group(1))
-        end_date = pd.to_datetime(match.group(2))
-        return start_date, end_date
-    else:
-        st.error("Не удалось извлечь даты из заголовка меток.")
-        return pd.NaT, pd.NaT
-
+@st.cache_data
+def load_excel_with_custom_header(file, identifier_value):
     """
     Загружает Excel-файл, ищет первую строку, в которой встречается identifier_value (в любой ячейке),
     и использует эту строку как заголовок.

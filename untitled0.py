@@ -82,14 +82,24 @@ if mp_file and metki_file:
     oh_target_calls = st.number_input("Охватное размещение: ЦО", min_value=0, step=1)
 
         # Функция для извлечения начальной и конечной даты
-    def extract_dates(match):
-        start_date, end_date = match.split('-')
-        start_date = pd.to_datetime(start_date.strip(), format='%d.%m.%Y')
-        end_date = pd.to_datetime(end_date.strip(), format='%d.%m.%Y')
-        return start_date, end_date
+    def extract_dates(period):
+        try:
+            # Проверка, что период имеет формат 'DD.MM.YYYY - DD.MM.YYYY'
+            start_date, end_date = period.split('-')
+            start_date = pd.to_datetime(start_date.strip(), format='%d.%m.%Y')
+            end_date = pd.to_datetime(end_date.strip(), format='%d.%m.%Y')
+            return start_date, end_date
+        except Exception as e:
+            st.error(f"Ошибка в данных периода: {period}. Ошибка: {str(e)}")
+            return pd.NaT, pd.NaT
 
-# Применение функции и создание новых столбцов с начальной и конечной датой
-    df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
+    # Применение функции и создание новых столбцов с начальной и конечной датой
+    if 'Период' in df.columns:
+        df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
+    else:
+        st.error("Столбец 'Период' не найден в данных.")
+
+    
 # Бюджет по неделям
     def calculate_budget_per_week(row):
         start_date = row['Start Date']

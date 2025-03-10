@@ -86,16 +86,16 @@ df['Категория'] = df['Название сайта'].where(df['№'].isn
 df = df[~df['Период'].isna()]
 
         # Функция для извлечения начальной и конечной даты
-    def extract_dates(period):
-        try:
+def extract_dates(period):
+    try:
             # Проверка, что период имеет формат 'DD.MM.YYYY - DD.MM.YYYY'
-            start_date, end_date = period.split('-')
-            start_date = pd.to_datetime(start_date.strip(), format='%d.%m.%Y')
-            end_date = pd.to_datetime(end_date.strip(), format='%d.%m.%Y')
-            return start_date, end_date
-        except Exception as e:
-            st.error(f"Ошибка в данных периода: {period}. Ошибка: {str(e)}")
-            return pd.NaT, pd.NaT
+        start_date, end_date = period.split('-')
+        start_date = pd.to_datetime(start_date.strip(), format='%d.%m.%Y')
+        end_date = pd.to_datetime(end_date.strip(), format='%d.%m.%Y')
+        return start_date, end_date
+    except Exception as e:
+        st.error(f"Ошибка в данных периода: {period}. Ошибка: {str(e)}")
+        return pd.NaT, pd.NaT
 
     # Применение функции и создание новых столбцов с начальной и конечной датой
     if 'Период' in df.columns:

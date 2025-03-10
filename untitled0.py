@@ -333,3 +333,19 @@ if mp_file and metki_file:
         st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
     else:
         st.write("Найденные данные:", report_week_df)
+    st.dataframe("Распределение KPI по неделям")
+
+    # Проверяем tp_budget
+    tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].fillna(0).sum()
+    st.write(f"tp_budget: {tp_budget}, oh_budget: {oh_budget}")
+
+    # Выводим строки для проверки
+    st.write(report_week_df[report_week_df['Категория'] == 'Тематические площадки'])
+
+    # Если tp_budget = 0, проверяем NaN в столбце 'Бюджет на неделю'
+    tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].fillna(0).sum()
+
+    # Проверяем cpl
+    st.write(f"tp_cpl: {tp_cpl}, oh_cpl: {oh_cpl}")
+
+    # Далее продолжаем с расчетами

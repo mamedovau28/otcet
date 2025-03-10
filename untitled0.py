@@ -52,6 +52,7 @@ def extract_report_period(file):
     else:
         st.error("Не удалось извлечь отчетный период из первой строки файла с метками.")
         return pd.NaT, pd.NaT
+    df_raw = match
 
 # Интерфейс загрузки файлов в Streamlit
 st.title("Генератор еженедельных отчётов")
@@ -204,14 +205,14 @@ if mp_file and metki_file:
     df_weekly_category_kpi = df_week_kpi.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['KPI на неделю'].sum()
     
     # Обрабатываем UTM-метки
-    df_raw = load_excel_with_custom_header(metki_file, header=None)
-    header_str = str(df_raw.iloc[0, 0])
-    match = re.search(r'Отчет за период с (\d{4}-\d{2}-\d{2}) по (\d{4}-\d{2}-\d{2})', header_str)
-    if match:
-        report_start = pd.to_datetime(match.group(1))
-        report_end = pd.to_datetime(match.group(2))
-    else:
-        st.error("Не удалось извлечь период из заголовка!")
+    # df_raw = load_excel_with_header(metki_file)
+    # header_str = str(df_raw.iloc[0, 0])
+    # match = re.search(r'Отчет за период с (\d{4}-\d{2}-\d{2}) по (\d{4}-\d{2}-\d{2})', header_str)
+   #  if match:
+     #   report_start = pd.to_datetime(match.group(1))
+     #   report_end = pd.to_datetime(match.group(2))
+   # else:
+      #  st.error("Не удалось извлечь период из заголовка!")
 
     # Фильтрация меток
     df_filtered = df_metki[df_metki['UTM Campaign'].astype(str).str.contains('arwm', na=False, case=False)]

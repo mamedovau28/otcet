@@ -368,6 +368,11 @@ def get_work_done(report_start, report_end):
 
     return sorted(work_done)  # Сортируем для удобства чтения
 
+# Пример использования
+# Замените на реальные значения дат (пример)
+report_start = pd.to_datetime("2025-03-01")
+report_end = pd.to_datetime("2025-03-30")
+
 work_done_list = get_work_done(report_start, report_end)
 
 # Генерация отчёта
@@ -403,7 +408,7 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
 """
 for work in work_done_list:
     report_text += f"- {work}\n"
-        report_text += 
+report_text += 
 """
     
 Плановые работы:

@@ -204,7 +204,7 @@ if mp_file and metki_file:
     df_weekly_category_kpi = df_week_kpi.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['KPI на неделю'].sum()
     
     # Обрабатываем UTM-метки
-    df_raw = load_excel_with_header(metki_file, header=None)
+    df_raw = load_excel_with_custom_header(metki_file, header=None)
     header_str = str(df_raw.iloc[0, 0])
     match = re.search(r'Отчет за период с (\d{4}-\d{2}-\d{2}) по (\d{4}-\d{2}-\d{2})', header_str)
     if match:

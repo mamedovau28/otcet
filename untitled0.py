@@ -373,82 +373,82 @@ if mp_file and metki_file:
 
     # Генерация отчёта
     report_text = f"""
-    Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})
+Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})
 
-    ТЕМАТИЧЕСКИЕ ПЛОЩАДКИ:
-    Выполнение по бюджету плановое ({tp_budget_str} ₽ с НДС)
-    Первичные обращения — {tp_primary_calls}
-    CPL (первичных обращений) — {tp_cpl_str} ₽ с НДС
-    ЦО — {tp_target_calls}
-    Выполнение плана ЦО: {tp_status}
+ТЕМАТИЧЕСКИЕ ПЛОЩАДКИ:
+Выполнение по бюджету плановое ({tp_budget_str} ₽ с НДС)
+Первичные обращения — {tp_primary_calls}
+CPL (первичных обращений) — {tp_cpl_str} ₽ с НДС
+ЦО — {tp_target_calls}
+Выполнение плана ЦО: {tp_status}
 
-    ОХВАТ:
-    Выполнение по бюджету плановое ({oh_budget_str} ₽ с НДС)
-    Первичные обращения — {oh_primary_calls}
-    CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
-    Целевые обращения — {oh_target_calls}
-    Выполнение плана ЦО: {oh_status}
+ОХВАТ:
+Выполнение по бюджету плановое ({oh_budget_str} ₽ с НДС)
+Первичные обращения — {oh_primary_calls}
+CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
+Целевые обращения — {oh_target_calls}
+Выполнение плана ЦО: {oh_status}
 
-    МЕТРИКИ:
-    - Выполнение плана по бюджету 100%
-    - Отказы: {weighted_avg_otkazy * 100:.2f}%
-    - Глубина просмотра: {weighted_avg_glubina:.2f}
-    - Время на сайте: {weighted_avg_time_str}
-    - Роботность: {weighted_avg_robotnost * 100:.2f}%
+МЕТРИКИ:
+- Выполнение плана по бюджету 100%
+- Отказы: {weighted_avg_otkazy * 100:.2f}%
+- Глубина просмотра: {weighted_avg_glubina:.2f}
+- Время на сайте: {weighted_avg_time_str}
+- Роботность: {weighted_avg_robotnost * 100:.2f}%
 
-    КОММЕНТАРИИ:
-    Реализация объемов идет согласно плановым. Наблюдаем ... динамики первичных обращений.
-    Наблюдаем целевые обращения из ... и ....
+КОММЕНТАРИИ:
+Реализация объемов идет согласно плановым. Наблюдаем ... динамики первичных обращений.
+Наблюдаем целевые обращения из ... и ....
     
-    ПРОДЕЛАННЫЕ РАБОТЫ:
-    {work_done_str}
+ПРОДЕЛАННЫЕ РАБОТЫ:
+{work_done_str}
     
-    ПЛАНОВЫЕ РАБОТЫ:
-    - Запуск РК
-    - Подготовка скрин-отчет с актуальными размещениями
-    - Подготовка МП-Факта предыдущего месяца
-    - Замена рекламных материалов на актуальные
-    - Отпимизация РК для улучшение поведенческих данных
-    - Усиление РК для привлечения ЦО
-    - Актуализация Карты развития
-    - Подготовка медиапланирования на следующий месяц
-    - Подготовка материалов на следующий месяц
-    """
+ПЛАНОВЫЕ РАБОТЫ:
+- Запуск РК
+- Подготовка скрин-отчет с актуальными размещениями
+- Подготовка МП-Факта предыдущего месяца
+- Замена рекламных материалов на актуальные
+- Отпимизация РК для улучшение поведенческих данных
+- Усиление РК для привлечения ЦО
+- Актуализация Карты развития
+- Подготовка медиапланирования на следующий месяц
+- Подготовка материалов на следующий месяц
+"""
 
-    # Вывод предупреждений
-    if warnings:
-        st.subheader("⚠ Предупреждения")
-        for warning in warnings:
-            st.warning(warning)
+# Вывод предупреждений
+if warnings:
+    st.subheader("⚠ Предупреждения")
+    for warning in warnings:
+        st.warning(warning)
     
         # Вывод данных в Streamlit
-    st.subheader("Еженедельный отчет")
-    st.text_area("", report_text, height=600)
+st.subheader("Еженедельный отчет")
+st.text_area("", report_text, height=600)
     
         # Вывод таблицы с агрегированными данными
-    st.subheader("Анализ по UTM Source")
-    st.dataframe(utm_summary)
+st.subheader("Анализ по UTM Source")
+st.dataframe(utm_summary)
 
-    st.subheader("Фильтрованные UTM-данные")
-    st.dataframe(df_filtered)
+st.subheader("Фильтрованные UTM-данные")
+st.dataframe(df_filtered)
 
-    st.subheader("Поведенческие показатели Медийной РК")
-    st.dataframe(pd.DataFrame({
-        'Время на сайте': [weighted_avg_time_str],
-        'Отказы': [weighted_avg_otkazy],
-        'Глубина просмотра': [weighted_avg_glubina],
-        'Роботность': [weighted_avg_robotnost]
-    }))
+st.subheader("Поведенческие показатели Медийной РК")
+st.dataframe(pd.DataFrame({
+    'Время на сайте': [weighted_avg_time_str],
+    'Отказы': [weighted_avg_otkazy],
+    'Глубина просмотра': [weighted_avg_glubina],
+    'Роботность': [weighted_avg_robotnost]
+}))
 
-    st.subheader("Распределение бюджета по неделям")
-    st.dataframe(df_weekly_category_budget)
+st.subheader("Распределение бюджета по неделям")
+st.dataframe(df_weekly_category_budget)
 
-    st.subheader("Распределение KPI по неделям")
-    st.dataframe(df_week_kpi)
+st.subheader("Распределение KPI по неделям")
+st.dataframe(df_week_kpi)
     
         # Проверяем, что строки найдены
-    if report_week_df.empty:
-        st.error("Ошибка: не найден бюджет для указанного периода!")
-        st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
-    else:
-        st.write("Найденные данные:", report_week_df)
+if report_week_df.empty:
+    st.error("Ошибка: не найден бюджет для указанного периода!")
+    st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
+else:
+    st.write("Найденные данные:", report_week_df)

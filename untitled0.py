@@ -98,7 +98,8 @@ if mp_file and metki_file:
         mp_file[['Start Date', 'End Date']] = mp_file['Период'].apply(extract_dates).apply(pd.Series)
     else:
         st.error("Столбец 'Период' не найден в данных.")
-
+        
+    st.write("Столбцы в df:", df.columns)
     
 # Бюджет по неделям
     def calculate_budget_per_week(row):

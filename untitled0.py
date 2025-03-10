@@ -13,6 +13,13 @@ def load_excel_with_custom_header(file, identifier_value):
     и использует эту строку как заголовок.
     Если identifier_value не найден, возбуждает ошибку.
     """
+    # Функция для извлечения дат
+    def extract_dates(period):
+        start_date, end_date = period.split('-')
+        return pd.to_datetime(start_date.strip(), format='%d.%m.%Y'), pd.to_datetime(end_date.strip(), format='%d.%m.%Y')
+
+    df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
+    
     # Читаем файл без заголовка, чтобы получить числовые индексы
     df = pd.read_excel(file, header=None)
     

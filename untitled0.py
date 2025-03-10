@@ -402,12 +402,12 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
 - Подготовка материалов на следующий месяц
 """
 
-# Вывод предупреждений
-warnings = []
-if warnings:
-    st.subheader("⚠ Предупреждения")
-    for warning in warnings:
-        st.warning(warning)
+    # Вывод предупреждений
+    warnings = []
+    if warnings:
+        st.subheader("⚠ Предупреждения")
+        for warning in warnings:
+            st.warning(warning)
     
         # Вывод данных в Streamlit
     st.subheader("Еженедельный отчет")

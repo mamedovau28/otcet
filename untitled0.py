@@ -22,10 +22,11 @@ tp_target_calls = st.number_input("Тематические площади: ЦО
 oh_primary_calls = st.number_input("Охватное размещение: первичные обращения", min_value=0, step=1)
 oh_target_calls = st.number_input("Охватное размещение: ЦО", min_value=0, step=1)
 
+# Пример использования для загрузки файлов
 if mp_file and metki_file:
-    # Читаем файлы
-    df_mp = load_excel(mp_file, header=4)
-    df_metki = load_excel(metki_file, header=3)
+    # Загружаем данные с нужными заголовками на основе столбцов
+    df_mp = load_excel_with_custom_header(mp_file, '№', '№')
+    df_metki = load_excel_with_custom_header(metki_file, 'UTM Source', 'utm source')
 
     # Обрабатываем медиаплан
     df = df_mp[['№', 'Название сайта', 'Период', 'Общая стоимость с учетом НДС и АК', 'KPI прогноз']].copy()

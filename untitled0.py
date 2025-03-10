@@ -239,7 +239,7 @@ if mp_file and metki_file:
     ]
 
     # Извлекаем бюджет для категорий, содержащих слово "тема" для Тематических площадок
-    tp_budget = report_week_df.loc[report_week_df['Категория'].str.contains('тематическая', case=False, na=False), 'Бюджет на неделю'].sum()
+    tp_budget = report_week_df.loc[report_week_df['Категория'].str.contains('тематические', case=False, na=False), 'Бюджет на неделю'].sum()
 
     # Извлекаем бюджет для категорий, содержащих слово "охват" для Охватного размещения
     oh_budget = report_week_df.loc[report_week_df['Категория'].str.contains('охват', case=False, na=False), 'Бюджет на неделю'].sum()

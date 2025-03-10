@@ -400,7 +400,9 @@ work_done_list = get_work_done(report_start, report_end)
     Наблюдаем целевые обращения из ... и ....
     
     Проделанные работы:
-    {work}
+    """
+    for work in work_done_list:
+        report_text += f"- {work}\n"
 
     Плановые работы:
     - Запуск РК

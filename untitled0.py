@@ -503,15 +503,7 @@ CPL (первичных обращений): {oh_cpl_str} ₽ с НДС
 # Вывод отчёта в текстовое поле
 st.text_area("Отчёт", report_text, height=600)
 
-# Добавление кнопки копирования
-st.markdown("""
-    <button id="copy-btn" onclick="copyText()">Скопировать отчёт</button>
-    <script>
-        function copyText() {
-            var textToCopy = document.querySelector('#report-text');  // Находим элемент
-            textToCopy.select();  // Выбираем весь текст
-            document.execCommand('copy');  // Копируем текст
-            alert('Текст скопирован в буфер обмена!');
-        }
-    </script>
-""", unsafe_allow_html=True)
+# Добавляем кнопку для копирования в буфер обмена
+if st.button("Скопировать отчёт в буфер обмена"):
+    pyperclip.copy(report_text)  # Копируем текст
+    st.success("Текст скопирован в буфер обмена!")  # Уведомление

@@ -82,8 +82,8 @@ if mp_file and metki_file:
     oh_target_calls = st.number_input("Охватное размещение: ЦО", min_value=0, step=1)
 
         # Функция для извлечения начальной и конечной даты
-    def extract_dates(period):
-        start_date, end_date = period.split('-')
+    def extract_dates(match):
+        start_date, end_date = match.split('-')
         start_date = pd.to_datetime(start_date.strip(), format='%d.%m.%Y')
         end_date = pd.to_datetime(end_date.strip(), format='%d.%m.%Y')
         return start_date, end_date

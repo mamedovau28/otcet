@@ -228,94 +228,94 @@ if mp_file and metki_file:
     weighted_avg_time_str = format_seconds(weighted_avg_time_sec)
  
     # Приводим даты к нужному формату
-df_week_budget['Неделя с'] = pd.to_datetime(df_week_budget['Неделя с'])
-df_week_budget['Неделя по'] = pd.to_datetime(df_week_budget['Неделя по'])
+    df_week_budget['Неделя с'] = pd.to_datetime(df_week_budget['Неделя с'])
+    df_week_budget['Неделя по'] = pd.to_datetime(df_week_budget['Неделя по'])
     
     # Группировка данных по UTM Source с расчётом взвешенных средних
-utm_summary = df_filtered.groupby("UTM Source").agg({
-    "Визиты": "sum",
-    "Посетители": "sum"
-}).reset_index()
+    utm_summary = df_filtered.groupby("UTM Source").agg({
+        "Визиты": "sum",
+        "Посетители": "sum"
+    }).reset_index()
 
     # Добавляем расчёт взвешенных средних для показателей
-utm_summary["Отказы"] = utm_summary["UTM Source"].apply(
-    lambda source: (df_filtered.loc[df_filtered["UTM Source"] == source, "Отказы"] * 
-                    df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"]).sum() / 
-                    df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"].sum()
-)
+    utm_summary["Отказы"] = utm_summary["UTM Source"].apply(
+        lambda source: (df_filtered.loc[df_filtered["UTM Source"] == source, "Отказы"] * 
+                        df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"]).sum() / 
+                        df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"].sum()
+    )
 
-utm_summary["Глубина просмотра"] = utm_summary["UTM Source"].apply(
-    lambda source: (df_filtered.loc[df_filtered["UTM Source"] == source, "Глубина просмотра"] * 
-                    df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"]).sum() / 
-                    df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"].sum()
-)
+    utm_summary["Глубина просмотра"] = utm_summary["UTM Source"].apply(
+        lambda source: (df_filtered.loc[df_filtered["UTM Source"] == source, "Глубина просмотра"] * 
+                        df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"]).sum() / 
+                        df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"].sum()
+    )
 
-utm_summary["Роботность"] = utm_summary["UTM Source"].apply(
-    lambda source: (df_filtered.loc[df_filtered["UTM Source"] == source, "Роботность"] * 
-                    df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"]).sum() / 
-                    df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"].sum()
-)
+    utm_summary["Роботность"] = utm_summary["UTM Source"].apply(
+        lambda source: (df_filtered.loc[df_filtered["UTM Source"] == source, "Роботность"] * 
+                        df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"]).sum() / 
+                        df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"].sum()
+    )
 
-utm_summary["Время на сайте (сек)"] = utm_summary["UTM Source"].apply(
-    lambda source: (df_filtered.loc[df_filtered["UTM Source"] == source, "Время на сайте"].dt.total_seconds() * 
-                    df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"]).sum() / 
-                    df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"].sum()
-)
+    utm_summary["Время на сайте (сек)"] = utm_summary["UTM Source"].apply(
+        lambda source: (df_filtered.loc[df_filtered["UTM Source"] == source, "Время на сайте"].dt.total_seconds() * 
+                        df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"]).sum() / 
+                        df_filtered.loc[df_filtered["UTM Source"] == source, "Визиты"].sum()
+    )
 
 # Преобразуем среднее время в ЧЧ:ММ:СС
-utm_summary["Время на сайте"] = utm_summary["Время на сайте (сек)"].apply(format_seconds)
-utm_summary.drop(columns=["Время на сайте (сек)"], inplace=True)
+    utm_summary["Время на сайте"] = utm_summary["Время на сайте (сек)"].apply(format_seconds)
+    utm_summary.drop(columns=["Время на сайте (сек)"], inplace=True)
 
     # Проверяем условия и формируем предупреждения
-warnings = []
-for _, row in utm_summary.iterrows():
-    if row["Отказы"] > 0.35:
-        warnings.append(f"⚠ Высокий процент отказов ({row['Отказы']:.2%}) для источника {row['UTM Source']}")
-    if row["Роботность"] > 0.10:
-        warnings.append(f"⚠ Высокая роботность ({row['Роботность']:.2%}) для источника {row['UTM Source']}")
-    if pd.to_timedelta(row["Время на сайте"]) < pd.Timedelta(minutes=1):
-        warnings.append(f"⚠ Низкое время на сайте ({row['Время на сайте']}) для источника {row['UTM Source']}")
+    warnings = []
+    for _, row in utm_summary.iterrows():
+        if row["Отказы"] > 0.35:
+            warnings.append(f"⚠ Высокий процент отказов ({row['Отказы']:.2%}) для источника {row['UTM Source']}")
+        if row["Роботность"] > 0.10:
+            warnings.append(f"⚠ Высокая роботность ({row['Роботность']:.2%}) для источника {row['UTM Source']}")
+        if pd.to_timedelta(row["Время на сайте"]) < pd.Timedelta(minutes=1):
+            warnings.append(f"⚠ Низкое время на сайте ({row['Время на сайте']}) для источника {row['UTM Source']}")
     
     # Проверяем диапазон дат
-report_week_df = df_weekly_category_budget[
-    (df_weekly_category_budget['Неделя с'] <= report_end) & (df_weekly_category_budget['Неделя по'] >= report_start)
-]
+    report_week_df = df_weekly_category_budget[
+        (df_weekly_category_budget['Неделя с'] <= report_end) & (df_weekly_category_budget['Неделя по'] >= report_start)
+    ]
 
         # Проверяем диапазон дат
-report_week_df_kpi = df_weekly_category_kpi[
-    (df_weekly_category_kpi['Неделя с'] <= report_end) & (df_weekly_category_kpi['Неделя по'] >= report_start)
-]
+    report_week_df_kpi = df_weekly_category_kpi[
+        (df_weekly_category_kpi['Неделя с'] <= report_end) & (df_weekly_category_kpi['Неделя по'] >= report_start)
+    ]
 
     # Извлекаем бюджет для категорий, содержащих слово "тема" для Тематических площадок
-tp_budget = report_week_df.loc[report_week_df['Категория'].str.strip().str.contains('тема', case=False, na=False), 'Бюджет на неделю'].sum()
+    tp_budget = report_week_df.loc[report_week_df['Категория'].str.strip().str.contains('тема', case=False, na=False), 'Бюджет на неделю'].sum()
 
     # Извлекаем бюджет для категорий, содержащих слово "охват" для Охватного размещения
-oh_budget = report_week_df.loc[report_week_df['Категория'].str.strip().str.contains('охват', case=False, na=False), 'Бюджет на неделю'].sum()
+    oh_budget = report_week_df.loc[report_week_df['Категория'].str.strip().str.contains('охват', case=False, na=False), 'Бюджет на неделю'].sum()
 
     # Извлекаем KPI для "Тематических площадок" и "Охватного размещения"
-kpi_tp = report_week_df_kpi.loc[report_week_df_kpi['Категория'].str.strip().str.contains('тема', case=False, na=False), 'KPI на неделю'].sum()
-kpi_oh = report_week_df_kpi.loc[report_week_df_kpi['Категория'].str.strip().str.contains('охват', case=False, na=False), 'KPI на неделю'].sum()
+    kpi_tp = report_week_df_kpi.loc[report_week_df_kpi['Категория'].str.strip().str.contains('тема', case=False, na=False), 'KPI на неделю'].sum()
+    kpi_oh = report_week_df_kpi.loc[report_week_df_kpi['Категория'].str.strip().str.contains('охват', case=False, na=False), 'KPI на неделю'].sum()
 
     # Проверяем, что KPI прогноз не NaN
-if pd.notna(kpi_tp) and kpi_tp != 0:  # Проверка на NaN и 0
-    tp_status = f"{((tp_target_calls - kpi_tp) / kpi_tp) * 100 + 100:.0f} %" if pd.notna(tp_target_calls) else "0 %"
-else:
-    tp_status = "100 %"
+    if pd.notna(kpi_tp) and kpi_tp != 0:  # Проверка на NaN и 0
+        tp_status = f"{((tp_target_calls - kpi_tp) / kpi_tp) * 100 + 100:.0f} %" if pd.notna(tp_target_calls) else "0 %"
+    else:
+        tp_status = "100 %"
 
-if pd.notna(kpi_oh) and kpi_oh != 0:  # Проверка на NaN и 0
-    oh_status = f"{((oh_target_calls - kpi_oh) / kpi_oh) * 100 + 100:.0f} %" if pd.notna(oh_target_calls) else "0 %"
-else:
-    oh_status = "100 %"
+    if pd.notna(kpi_oh) and kpi_oh != 0:  # Проверка на NaN и 0
+        oh_status = f"{((oh_target_calls - kpi_oh) / kpi_oh) * 100 + 100:.0f} %" if pd.notna(oh_target_calls) else "0 %"
+    else:
+        oh_status = "100 %"
 
     # Рассчитываем CPL для первичных обращений
-tp_cpl = tp_budget / tp_primary_calls if tp_primary_calls > 0 else 0
-oh_cpl = oh_budget / oh_primary_calls if oh_primary_calls > 0 else 0
+    tp_cpl = tp_budget / tp_primary_calls if tp_primary_calls > 0 else 0
+    oh_cpl = oh_budget / oh_primary_calls if oh_primary_calls > 0 else 0
 
     # Приводим к строковому формату
-tp_budget_str = f"{tp_budget:,.2f}".replace(',', ' ') if tp_budget > 0 else "0"
-oh_budget_str = f"{oh_budget:,.2f}".replace(',', ' ') if oh_budget > 0 else "0"
-tp_cpl_str = f"{tp_cpl:,.2f}".replace(',', ' ') if tp_cpl > 0 else "0"
-oh_cpl_str = f"{oh_cpl:,.2f}".replace(',', ' ') if oh_cpl > 0 else "0"
+    tp_budget_str = f"{tp_budget:,.2f}".replace(',', ' ') if tp_budget > 0 else "0"
+    oh_budget_str = f"{oh_budget:,.2f}".replace(',', ' ') if oh_budget > 0 else "0"
+    tp_cpl_str = f"{tp_cpl:,.2f}".replace(',', ' ') if tp_cpl > 0 else "0"
+    oh_cpl_str = f"{oh_cpl:,.2f}".replace(',', ' ') if oh_cpl > 0 else "0"
 
 def get_work_done(report_start, report_end):
     work_done = set()

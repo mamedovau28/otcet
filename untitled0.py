@@ -333,14 +333,14 @@ if mp_file and metki_file:
 def get_work_done(report_start, report_end):
     work_done = set()
 
-    # Проверка для первой группы работ (до 10 числа)
+    # Проверка первой группы работ (до 10 числа)
     if report_start.day <= 10:
         work_done.update([
             "Запустили РК",
             "Подготовили скрин-отчет с актуальными размещениями"
         ])
 
-    # Проверка для второй группы работ (включая 14, 15, 16 числа)
+    # Проверка второй группы работ (с 14 по 16 число)
     if any(day in range(14, 17) for day in range(report_start.day, report_end.day + 1)):
         work_done.update([
             "Заменили рекламные материалы на актуальные",
@@ -350,7 +350,7 @@ def get_work_done(report_start, report_end):
             "Провели усиление РК для привлечения ЦО"
         ])
 
-    # Проверка для третьей группы работ (включая 17-25 числа)
+    # Проверка третьей группы работ (с 17 по 25 число)
     if any(day in range(17, 26) for day in range(report_start.day, report_end.day + 1)):
         work_done.update([
             "Провели оптимизацию РК для улучшения поведенческих данных",
@@ -359,7 +359,7 @@ def get_work_done(report_start, report_end):
             "Подготовили медиапланирование на следующий месяц"
         ])
 
-    # Проверка для четвёртой группы работ (с 26 числа)
+    # Проверка для четвертой группы работ (с 26 числа)
     if report_start.day >= 26 or report_end.day >= 26:
         work_done.update([
             "Подготовили материалы на следующий месяц",

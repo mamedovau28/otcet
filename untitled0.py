@@ -52,6 +52,7 @@ def extract_report_period(file):
     else:
         st.error("Не удалось извлечь отчетный период из первой строки файла с метками.")
         return pd.NaT, pd.NaT
+df = []
 
 # Интерфейс загрузки файлов в Streamlit
 st.title("Генератор еженедельных отчётов")

@@ -401,10 +401,10 @@ work_done_list = get_work_done(report_start, report_end)
     
     Проделанные работы:
     """
-    for work in work_done_list:
-        report_text += f"- {work}\n"
+for work in work_done_list:
+    report_text += f"- {work}\n"
     
-    report_text += """
+report_text += """
     
     Плановые работы:
     - Запуск РК

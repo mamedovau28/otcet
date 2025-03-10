@@ -359,8 +359,8 @@ def get_work_done(report_start, report_end):
     work_done_str = "\n".join([f" - {task}" for task in work_done_list])
 
 # Генерация отчёта
-report_text = f"""
-Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})
+    report_text = f"""
+    Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})
 
 ТЕМАТИЧЕСКИЕ ПЛОЩАДКИ:
 Выполнение по бюджету плановое ({tp_budget_str} ₽ с НДС)

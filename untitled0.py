@@ -456,7 +456,7 @@ if mp_file and metki_file:
     import pyperclip  # Для работы с буфером обмена, но основной код через JS
 
     # Преобразуем список выполненных работ в читаемый формат
-    work_done_str = "\n".join([f"- {task}" for task in work_done_list])
+    work_done_str = "\n".join([f" - {task}" for task in work_done_list])
 
     # Генерация полного отчёта
     report_text2 = f"""Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})

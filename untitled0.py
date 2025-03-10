@@ -416,39 +416,39 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
 """
 
     # Вывод предупреждений
-    if warnings:
-        st.subheader("⚠ Предупреждения")
-        for warning in warnings:
-            st.warning(warning)
+if warnings:
+    st.subheader("⚠ Предупреждения")
+    for warning in warnings:
+        st.warning(warning)
     
     # Вывод данных в Streamlit
-    st.subheader("Еженедельный отчет")
-    st.text_area("", report_text, height=600)
+st.subheader("Еженедельный отчет")
+st.text_area("", report_text, height=600)
     
     # Вывод таблицы с агрегированными данными
-    st.subheader("Анализ по UTM Source")
-    st.dataframe(utm_summary)
+st.subheader("Анализ по UTM Source")
+st.dataframe(utm_summary)
 
-    st.subheader("Фильтрованные UTM-данные")
-    st.dataframe(df_filtered)
+st.subheader("Фильтрованные UTM-данные")
+st.dataframe(df_filtered)
 
-    st.subheader("Поведенческие показатели Медийной РК")
-    st.dataframe(pd.DataFrame({
-        'Время на сайте': [weighted_avg_time_str],
-        'Отказы': [weighted_avg_otkazy],
-        'Глубина просмотра': [weighted_avg_glubina],
-        'Роботность': [weighted_avg_robotnost]
-    }))
+st.subheader("Поведенческие показатели Медийной РК")
+st.dataframe(pd.DataFrame({
+    'Время на сайте': [weighted_avg_time_str],
+    'Отказы': [weighted_avg_otkazy],
+    'Глубина просмотра': [weighted_avg_glubina],
+    'Роботность': [weighted_avg_robotnost]
+}))
 
-    st.subheader("Распределение бюджета по неделям")
-    st.dataframe(df_weekly_category_budget)
+st.subheader("Распределение бюджета по неделям")
+st.dataframe(df_weekly_category_budget)
 
-    st.subheader("Распределение KPI по неделям")
-    st.dataframe(df_week_kpi)
+st.subheader("Распределение KPI по неделям")
+st.dataframe(df_week_kpi)
     
     # Проверяем, что строки найдены
-    if report_week_df.empty:
-        st.error("Ошибка: не найден бюджет для указанного периода!")
-        st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
-    else:
-        st.write("Найденные данные:", report_week_df)
+if report_week_df.empty:
+    st.error("Ошибка: не найден бюджет для указанного периода!")
+    st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
+else:
+    st.write("Найденные данные:", report_week_df)

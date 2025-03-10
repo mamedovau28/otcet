@@ -25,7 +25,7 @@ oh_target_calls = st.number_input("Охватное размещение: ЦО",
 if mp_file and metki_file:
     # Читаем файлы
     df_mp = load_excel(mp_file, header=4)
-    df_metki = load_excel(metki_file, header=5)
+    df_metki = load_excel(metki_file, header=3)
 
     # Обрабатываем медиаплан
     df = df_mp[['№', 'Название сайта', 'Период', 'Общая стоимость с учетом НДС и АК', 'KPI прогноз']].copy()

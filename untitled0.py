@@ -81,6 +81,12 @@ if mp_file and metki_file:
     oh_primary_calls = st.number_input("Охватное размещение: первичные обращения", min_value=0, step=1)
     oh_target_calls = st.number_input("Охватное размещение: ЦО", min_value=0, step=1)
 
+       # Обрабатываем медиаплан
+    df = df_mp[['№', 'Название сайта', 'Период', 'Общая стоимость с учетом НДС и АК', 'KPI прогноз']].copy()
+    df = df.replace('-', '0')
+    df['Категория'] = df['Название сайта'].where(df['№'].isna()).ffill()
+    df = df[~df['Период'].isna()]
+
         # Функция для извлечения начальной и конечной даты
     def extract_dates(period):
         try:
@@ -94,12 +100,12 @@ if mp_file and metki_file:
             return pd.NaT, pd.NaT
 
     # Применение функции и создание новых столбцов с начальной и конечной датой
-    if 'Период' in df_mp.columns:
-        df_mp[['Start Date', 'End Date']] = df_mp['Период'].apply(extract_dates).apply(pd.Series)
+    if 'Период' in df.columns:
+        df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
     else:
         st.error("Столбец 'Период' не найден в данных.")
         
-    st.write("Столбцы в df_mp:", df_mp.columns)
+    st.write("Столбцы в df:", df.columns)
     
 # Бюджет по неделям
     def calculate_budget_per_week(row):

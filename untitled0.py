@@ -367,8 +367,9 @@ def get_work_done(report_start, report_end):
 
 work_done_list = get_work_done(report_start, report_end)
 
-st.markdown("### Проделанные работы:")
-st.markdown("\n".join(f"- {work}" for work in work_done_list))
+st.write("Проделанные работы:")
+for work in work_done_list:
+    st.write(f"- {work}")
 
     # Генерация отчёта
     report_text = f"""

@@ -50,11 +50,11 @@ if mp_file and metki_file:
     st.write("Медиаплан:", df_mp.head())
     st.write("Метки UTM:", df_metki.head())
 
-# Вводим количество первичных и целевых обращений
-tp_primary_calls = st.number_input("Тематические площади: первичные обращения", min_value=0, step=1)
-tp_target_calls = st.number_input("Тематические площади: ЦО", min_value=0, step=1)
-oh_primary_calls = st.number_input("Охватное размещение: первичные обращения", min_value=0, step=1)
-oh_target_calls = st.number_input("Охватное размещение: ЦО", min_value=0, step=1)
+    # Вводим количество первичных и целевых обращений
+    tp_primary_calls = st.number_input("Тематические площади: первичные обращения", min_value=0, step=1)
+    tp_target_calls = st.number_input("Тематические площади: ЦО", min_value=0, step=1)
+    oh_primary_calls = st.number_input("Охватное размещение: первичные обращения", min_value=0, step=1)
+    oh_target_calls = st.number_input("Охватное размещение: ЦО", min_value=0, step=1)
 
         # Функция для извлечения начальной и конечной даты
     def extract_dates(period):

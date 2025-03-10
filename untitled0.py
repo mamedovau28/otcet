@@ -428,12 +428,12 @@ st.dataframe(pd.DataFrame({
 st.subheader("Распределение бюджета по неделям")
 st.dataframe(df_weekly_category_budget)
 
-    st.subheader("Распределение KPI по неделям")
-    st.dataframe(df_week_kpi)
+st.subheader("Распределение KPI по неделям")
+st.dataframe(df_week_kpi)
     
         # Проверяем, что строки найдены
-    if report_week_df.empty:
-        st.error("Ошибка: не найден бюджет для указанного периода!")
-        st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
-    else:
-        st.write("Найденные данные:", report_week_df)
+if report_week_df.empty:
+    st.error("Ошибка: не найден бюджет для указанного периода!")
+    st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
+else:
+    st.write("Найденные данные:", report_week_df)

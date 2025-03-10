@@ -423,7 +423,7 @@ if mp_file and metki_file:
     
     # Вывод данных в Streamlit
     st.subheader("Еженедельный отчет")
-    st.text_area(report_text, report_text, height=100)
+    st.text_area("", report_text, height=600)
     
     # Вывод таблицы с агрегированными данными
     st.subheader("Анализ по UTM Source")

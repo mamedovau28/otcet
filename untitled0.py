@@ -43,35 +43,38 @@ if mp_file and metki_file:
 # Применение функции и создание новых столбцов с начальной и конечной датой
     df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
 
-# Функция для корректного распределения бюджета по неделям
     def calculate_budget_per_week(row):
         start_date = row['Start Date']
         end_date = row['End Date']
 
-    # Начинаем с первой недели, которая содержит start_date
-        week_start = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник недели, в которой start_date
+    # Определяем границы периода с учетом полных недель
+        first_monday = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник первой недели
+        last_sunday = end_date + pd.Timedelta(days=(6 - end_date.weekday()))  # Воскресенье последней недели
+
         weeks = []
-        while week_start <= end_date:
-        # Определяем конец недели (воскресенье)
-            week_end = week_start + pd.Timedelta(days=6)
-        # Если начало недели в прошлом месяце, но есть дни в текущем, берём только текущий месяц
-            if week_start.month < start_date.month:
-                week_start = start_date  # Сдвигаем начало недели на первый день периода
-        # Если конец недели выходит за границы периода, ограничиваем его
-            if week_end > end_date:
-                week_end = end_date
-        # Количество дней, попадающих в период
-            days_in_week = (week_end - week_start).days + 1
-        # Общие дни в периоде
-            total_days = (end_date - start_date).days + 1
-        # Пропорциональный бюджет
-            week_budget = row['Общая стоимость с учетом НДС и АК'] * (days_in_week / total_days)
+        week_start = first_monday
+
+        while week_start <= last_sunday:
+            week_end = week_start + pd.Timedelta(days=6)  # Воскресенье
+
+        # Определяем активный период в рамках недели
+            active_start = max(week_start, start_date)  # Либо понедельник, либо старт кампании
+            active_end = min(week_end, end_date)  # Либо воскресенье, либо конец кампании
+
+            active_days = (active_end - active_start).days + 1  # Количество активных дней кампании в неделе
+            total_days = (end_date - start_date).days + 1  # Все активные дни кампании
+
+        # Если в неделе нет активных дней кампании, бюджет = 0
+            week_budget = row['Общая стоимость с учетом НДС и АК'] * (active_days / total_days) if active_days > 0 else 0
+
         # Добавляем данные
             weeks.append((week_start, week_end, week_budget))
-        # Следующая неделя
-            week_start = week_end + pd.Timedelta(days=1)
-        return weeks
 
+        # Переход к следующей неделе
+            week_start += pd.Timedelta(days=7)
+
+        return weeks
+    
     # Применение функции для всех строк
     week_budget_data = []
     for idx, row in df.iterrows():

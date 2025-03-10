@@ -507,3 +507,9 @@ st.text_area("Отчёт", report_text, height=600)
 if st.button("Скопировать отчёт в буфер обмена"):
     pyperclip.copy(report_text)  # Копируем текст
     st.success("Текст скопирован в буфер обмена!")  # Уведомление
+
+# Добавляем кнопку для копирования с помощью JavaScript
+st.markdown("""
+    <button onclick="navigator.clipboard.writeText(document.getElementById('report_text').innerText)">Скопировать отчёт</button>
+    <p id="report_text" style="display:none;">""" + report_text + """</p>
+""", unsafe_allow_html=True)

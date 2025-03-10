@@ -94,8 +94,8 @@ if mp_file and metki_file:
             return pd.NaT, pd.NaT
 
     # Применение функции и создание новых столбцов с начальной и конечной датой
-    if 'Период' in df.columns:
-        df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
+    if 'Период' in mp_file.columns:
+        mp_file[['Start Date', 'End Date']] = mp_file['Период'].apply(extract_dates).apply(pd.Series)
     else:
         st.error("Столбец 'Период' не найден в данных.")
 

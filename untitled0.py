@@ -370,10 +370,6 @@ def get_work_done(report_start, report_end):
 
 work_done_list = get_work_done(report_start, report_end)
 
-for work in work_done_list:
-    report_text += f"- {work}\n"
-report_text += 
-
 # Генерация отчёта
 report_text = f"""
 Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})

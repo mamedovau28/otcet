@@ -7,14 +7,38 @@ import re
 
 # Функция загрузки Excel-файлов
 @st.cache_data
-def load_excel(file, sheet=0, header=0):
-    return pd.read_excel(file, sheet_name=sheet, header=header)
+def load_excel_with_custom_header(file, identifier_column, identifier_value):
+    """
+    Загружает Excel-файл с кастомным заголовком на основе значений в определенном столбце.
+    file: путь к файлу
+    identifier_column: название столбца, который содержит идентификатор (например, 'UTM Source' или '№')
+    identifier_value: значение, которое ищем в столбце (например, 'UTM Source' или номер)
+    """
+    # Загружаем файл в pandas DataFrame, но не задаем конкретный заголовок
+    df = pd.read_excel(file, header=None)
+    
+    # Находим строку, где начинается нужный заголовок
+    header_index = df[df[identifier_column].str.contains(identifier_value, na=False, case=False)].index[0]
+    
+    # Перезагружаем файл с правильным заголовком
+    df = pd.read_excel(file, header=header_index)
+    
+    return df
 
-# Интерфейс загрузки файлов
+# Интерфейс загрузки файлов в Streamlit
 st.title("Генератор еженедельных отчётов")
 
 mp_file = st.file_uploader("Загрузите файл с медиапланом", type=["xlsx"])
 metki_file = st.file_uploader("Загрузите файл с метками UTM", type=["xlsx"])
+
+if mp_file and metki_file:
+    # Загружаем файлы с кастомными заголовками
+    df_mp = load_excel_with_custom_header(mp_file, '№', '№')
+    df_metki = load_excel_with_custom_header(metki_file, 'UTM Source', 'utm source')
+    
+    # Выводим пример загруженных данных для проверки
+    st.write("Медиаплан:", df_mp.head())
+    st.write("Метки UTM:", df_metki.head())
 
 # Вводим количество первичных и целевых обращений
 tp_primary_calls = st.number_input("Тематические площади: первичные обращения", min_value=0, step=1)

@@ -68,7 +68,7 @@ if mp_file and metki_file:
         df_mp = df_mp.iloc[:, 1:]
     
     # Извлекаем отчетный период из файла с метками (из первой строки)
-report_start, report_end = extract_report_period(metki_file)
+    report_start, report_end = extract_report_period(metki_file)
     
     # Загружаем файл с метками с поиском заголовка, содержащего 'UTM Source'
 df_metki = load_excel_with_custom_header(metki_file, 'UTM Source')

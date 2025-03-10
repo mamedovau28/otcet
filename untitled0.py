@@ -501,15 +501,4 @@ CPL (первичных обращений): {oh_cpl_str} ₽ с НДС
 - Подготовка материалов на следующий месяц"""
 
 # Вывод отчёта в текстовое поле
-st.text_area("Отчёт", report_text, height=600)
-
-# Добавляем кнопку для копирования в буфер обмена
-if st.button("Скопировать отчёт в буфер обмена"):
-    pyperclip.copy(report_text)  # Копируем текст
-    st.success("Текст скопирован в буфер обмена!")  # Уведомление
-
-# Добавляем кнопку для копирования с помощью JavaScript
-st.markdown("""
-    <button onclick="navigator.clipboard.writeText(document.getElementById('report_text').innerText)">Скопировать отчёт</button>
-    <p id="report_text" style="display:none;">""" + report_text + """</p>
-""", unsafe_allow_html=True)
+st.text_area(report_text, report_text, height=600)

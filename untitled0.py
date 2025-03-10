@@ -248,7 +248,6 @@ if mp_file and metki_file:
     kpi_tp = report_week_df_kpi.loc[report_week_df_kpi['Категория'].str.strip().str.contains('тема', case=False, na=False), 'Бюджет на неделю'].sum()
     kpi_oh = report_week_df_kpi.loc[report_week_df_kpi['Категория'].str.strip().str.contains('охват', case=False, na=False), 'Бюджет на неделю'].sum()
 
-
     # Проверяем, что KPI прогноз не NaN
     if pd.notna(kpi_tp) and kpi_tp != 0:  # Проверка на NaN и 0
         tp_status = f"{((tp_target_calls - kpi_tp) / kpi_tp) * 100 + 100:.0f} %" if pd.notna(tp_target_calls) else "0 %"

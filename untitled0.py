@@ -368,7 +368,7 @@ def get_work_done(report_start, report_end):
 
     return sorted(work_done)  # Сортируем для удобства чтения
 
-    work_done_list = get_work_done(report_start, report_end)
+work_done_list = get_work_done(report_start, report_end)
 
     # Генерация отчёта
     report_text = f"""

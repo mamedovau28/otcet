@@ -7,22 +7,27 @@ import re
 
 # Функция загрузки Excel-файлов
 @st.cache_data
-def load_excel_with_custom_header(file, identifier_column, identifier_value):
+def load_excel_with_custom_header(file, identifier_value):
     """
-    Загружает Excel-файл с кастомным заголовком на основе значений в определенном столбце.
-    file: путь к файлу
-    identifier_column: название столбца, который содержит идентификатор (например, 'UTM Source' или '№')
-    identifier_value: значение, которое ищем в столбце (например, 'UTM Source' или номер)
+    Загружает Excel-файл, ищет первую строку, где встречается identifier_value (в любой ячейке),
+    и использует эту строку как заголовок.
+    Если identifier_value не найден, возбуждает ошибку.
     """
-    # Загружаем файл в pandas DataFrame, но не задаем конкретный заголовок
+    # Читаем файл без заголовка, чтобы получить числовые индексы
     df = pd.read_excel(file, header=None)
     
-    # Находим строку, где начинается нужный заголовок
-    header_index = df[df[identifier_column].str.contains(identifier_value, na=False, case=False)].index[0]
+    header_index = None
+    # Проходим по строкам и ищем нужное значение во всех ячейках
+    for i, row in df.iterrows():
+        # Преобразуем каждую ячейку в строку и проверяем, содержит ли она идентификатор
+        if row.astype(str).str.contains(identifier_value, case=False, na=False).any():
+            header_index = i
+            break
+    if header_index is None:
+        raise ValueError(f"Идентификатор '{identifier_value}' не найден в файле.")
     
-    # Перезагружаем файл с правильным заголовком
+    # Загружаем файл заново, используя найденный индекс в качестве заголовка
     df = pd.read_excel(file, header=header_index)
-    
     return df
 
 # Интерфейс загрузки файлов в Streamlit

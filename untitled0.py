@@ -96,57 +96,57 @@ if mp_file and metki_file:
             st.error(f"Ошибка в данных периода: {period}. Ошибка: {str(e)}")
             return pd.NaT, pd.NaT
             
-    # Применение функции и создание новых столбцов с начальной и конечной датой
-    if 'Период' in df.columns:
-        df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
-    else:
-        st.error("Столбец 'Период' не найден в данных.")
-    
-    # Бюджет по неделям
-    def calculate_budget_per_week(row):
-        start_date = row['Start Date']
-        end_date = row['End Date']
+# Применение функции и создание новых столбцов с начальной и конечной датой
+if 'Период' in df.columns:
+    df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
+else:
+    st.error("Столбец 'Период' не найден в данных.")
+
+# Бюджет по неделям
+def calculate_budget_per_week(row):
+    start_date = row['Start Date']
+    end_date = row['End Date']
 
     # Определяем границы периода с учетом полных недель
-        first_monday = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник первой недели
-        last_sunday = end_date + pd.Timedelta(days=(6 - end_date.weekday()))  # Воскресенье последней недели
+    first_monday = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник первой недели
+    last_sunday = end_date + pd.Timedelta(days=(6 - end_date.weekday()))  # Воскресенье последней недели
 
-        weeks = []
-        week_start = first_monday
+    weeks = []
+    week_start = first_monday
 
-        while week_start <= last_sunday:
-            week_end = week_start + pd.Timedelta(days=6)  # Воскресенье
+    while week_start <= last_sunday:
+        week_end = week_start + pd.Timedelta(days=6)  # Воскресенье
 
         # Определяем активный период в рамках недели
-            active_start = max(week_start, start_date)  # Либо понедельник, либо старт кампании
-            active_end = min(week_end, end_date)  # Либо воскресенье, либо конец кампании
+        active_start = max(week_start, start_date)  # Либо понедельник, либо старт кампании
+        active_end = min(week_end, end_date)  # Либо воскресенье, либо конец кампании
 
-            active_days = (active_end - active_start).days + 1  # Количество активных дней кампании в неделе
-            total_days = (end_date - start_date).days + 1  # Все активные дни кампании
+        active_days = (active_end - active_start).days + 1  # Количество активных дней кампании в неделе
+        total_days = (end_date - start_date).days + 1  # Все активные дни кампании
 
         # Если в неделе нет активных дней кампании, бюджет = 0
-            week_budget = row['Общая стоимость с учетом НДС и АК'] * (active_days / total_days) if active_days > 0 else 0
+        week_budget = row['Общая стоимость с учетом НДС и АК'] * (active_days / total_days) if active_days > 0 else 0
 
         # Добавляем данные
-            weeks.append((week_start, week_end, week_budget))
+        weeks.append((week_start, week_end, week_budget))
 
         # Переход к следующей неделе
-            week_start += pd.Timedelta(days=7)
+        week_start += pd.Timedelta(days=7)
 
-        return weeks
-    
-    # Применение функции для всех строк
-    week_budget_data = []
-    for idx, row in df.iterrows():
-        week_budget_data.extend(calculate_budget_per_week(row))
+    return weeks
 
-    # Создаём DataFrame для распределённых бюджетов по неделям
-    df_week_budget = pd.DataFrame(week_budget_data, columns=['Неделя с', 'Неделя по', 'Бюджет на неделю'])
+# Применение функции для всех строк
+week_budget_data = []
+for idx, row in df.iterrows():
+    week_budget_data.extend(calculate_budget_per_week(row))
 
-    # Добавляем информацию о сайте и периоде для каждой недели
-    df_week_budget['Название сайта'] = np.repeat(df['Название сайта'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
-    df_week_budget['Категория'] = np.repeat(df['Категория'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
-   
+# Создаём DataFrame для распределённых бюджетов по неделям
+df_week_budget = pd.DataFrame(week_budget_data, columns=['Неделя с', 'Неделя по', 'Бюджет на неделю'])
+
+# Добавляем информацию о сайте и периоде для каждой недели
+df_week_budget['Название сайта'] = np.repeat(df['Название сайта'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
+df_week_budget['Категория'] = np.repeat(df['Категория'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
+
     # Группировка по категории и неделе, суммирование бюджета
     df_weekly_category_budget = df_week_budget.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['Бюджет на неделю'].sum()
     

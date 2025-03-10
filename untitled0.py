@@ -94,12 +94,12 @@ if mp_file and metki_file:
             return pd.NaT, pd.NaT
 
     # Применение функции и создание новых столбцов с начальной и конечной датой
-    if 'Период' in mp_file.columns:
-        mp_file[['Start Date', 'End Date']] = mp_file['Период'].apply(extract_dates).apply(pd.Series)
+    if 'Период' in df_mp.columns:
+        df_mp[['Start Date', 'End Date']] = df_mp['Период'].apply(extract_dates).apply(pd.Series)
     else:
         st.error("Столбец 'Период' не найден в данных.")
         
-    st.write("Столбцы в df:", df.columns)
+    st.write("Столбцы в df_mp:", df.columns)
     
 # Бюджет по неделям
     def calculate_budget_per_week(row):

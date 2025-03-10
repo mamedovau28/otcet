@@ -80,10 +80,10 @@ if mp_file and metki_file:
     oh_target_calls = st.number_input("Охватное размещение: ЦО", min_value=0, step=1)
 
        # Обрабатываем медиаплан
-df = df_mp[['№', 'Название сайта', 'Период', 'Общая стоимость с учетом НДС и АК', 'KPI прогноз']].copy()
-df = df.replace('-', '0')
-df['Категория'] = df['Название сайта'].where(df['№'].isna()).ffill()
-df = df[~df['Период'].isna()]
+    df = df_mp[['№', 'Название сайта', 'Период', 'Общая стоимость с учетом НДС и АК', 'KPI прогноз']].copy()
+    df = df.replace('-', '0')
+    df['Категория'] = df['Название сайта'].where(df['№'].isna()).ffill()
+    df = df[~df['Период'].isna()]
 
         # Функция для извлечения начальной и конечной даты
 def extract_dates(period):

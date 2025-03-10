@@ -98,134 +98,134 @@ if mp_file and metki_file:
             return pd.NaT, pd.NaT
 
     # Применение функции и создание новых столбцов с начальной и конечной датой
-if 'Период' in df.columns:
-    df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
-else:
-    st.error("Столбец 'Период' не найден в данных.")
+    if 'Период' in df.columns:
+        df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
+    else:
+        st.error("Столбец 'Период' не найден в данных.")
     
-# Бюджет по неделям
-def calculate_budget_per_week(row):
-    start_date = row['Start Date']
-    end_date = row['End Date']
+    # Бюджет по неделям
+    def calculate_budget_per_week(row):
+        start_date = row['Start Date']
+        end_date = row['End Date']
 
     # Определяем границы периода с учетом полных недель
-    first_monday = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник первой недели
-    last_sunday = end_date + pd.Timedelta(days=(6 - end_date.weekday()))  # Воскресенье последней недели
+        first_monday = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник первой недели
+        last_sunday = end_date + pd.Timedelta(days=(6 - end_date.weekday()))  # Воскресенье последней недели
 
-    weeks = []
-    week_start = first_monday
+        weeks = []
+        week_start = first_monday
 
-    while week_start <= last_sunday:
-        week_end = week_start + pd.Timedelta(days=6)  # Воскресенье
+        while week_start <= last_sunday:
+            week_end = week_start + pd.Timedelta(days=6)  # Воскресенье
 
         # Определяем активный период в рамках недели
-        active_start = max(week_start, start_date)  # Либо понедельник, либо старт кампании
-        active_end = min(week_end, end_date)  # Либо воскресенье, либо конец кампании
+            active_start = max(week_start, start_date)  # Либо понедельник, либо старт кампании
+            active_end = min(week_end, end_date)  # Либо воскресенье, либо конец кампании
 
-        active_days = (active_end - active_start).days + 1  # Количество активных дней кампании в неделе
-        total_days = (end_date - start_date).days + 1  # Все активные дни кампании
+            active_days = (active_end - active_start).days + 1  # Количество активных дней кампании в неделе
+            total_days = (end_date - start_date).days + 1  # Все активные дни кампании
 
         # Если в неделе нет активных дней кампании, бюджет = 0
-        week_budget = row['Общая стоимость с учетом НДС и АК'] * (active_days / total_days) if active_days > 0 else 0
+            week_budget = row['Общая стоимость с учетом НДС и АК'] * (active_days / total_days) if active_days > 0 else 0
 
         # Добавляем данные
-        weeks.append((week_start, week_end, week_budget))
+            weeks.append((week_start, week_end, week_budget))
 
         # Переход к следующей неделе
-        week_start += pd.Timedelta(days=7)
+            week_start += pd.Timedelta(days=7)
 
-    return weeks
+        return weeks
     
     # Применение функции для всех строк
-week_budget_data = []
-for idx, row in df.iterrows():
-    week_budget_data.extend(calculate_budget_per_week(row))
+    week_budget_data = []
+    for idx, row in df.iterrows():
+        week_budget_data.extend(calculate_budget_per_week(row))
 
     # Создаём DataFrame для распределённых бюджетов по неделям
-df_week_budget = pd.DataFrame(week_budget_data, columns=['Неделя с', 'Неделя по', 'Бюджет на неделю'])
+    df_week_budget = pd.DataFrame(week_budget_data, columns=['Неделя с', 'Неделя по', 'Бюджет на неделю'])
 
     # Добавляем информацию о сайте и периоде для каждой недели
-df_week_budget['Название сайта'] = np.repeat(df['Название сайта'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
-df_week_budget['Категория'] = np.repeat(df['Категория'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
+    df_week_budget['Название сайта'] = np.repeat(df['Название сайта'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
+    df_week_budget['Категория'] = np.repeat(df['Категория'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
    
     # Группировка по категории и неделе, суммирование бюджета
-df_weekly_category_budget = df_week_budget.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['Бюджет на неделю'].sum()
+    df_weekly_category_budget = df_week_budget.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['Бюджет на неделю'].sum()
     
     # Очистка данных в KPI прогноз
-df['KPI прогноз'] = df['KPI прогноз'].replace("-", np.nan)  # Заменяем "-" на NaN
-df['KPI прогноз'] = pd.to_numeric(df['KPI прогноз'], errors='coerce').fillna(0)  # Конвертируем в числа, заменяем NaN на 0
+    df['KPI прогноз'] = df['KPI прогноз'].replace("-", np.nan)  # Заменяем "-" на NaN
+    df['KPI прогноз'] = pd.to_numeric(df['KPI прогноз'], errors='coerce').fillna(0)  # Конвертируем в числа, заменяем NaN на 0
 
-def calculate_kpi_per_week(row):
-    start_date = row['Start Date']
-    end_date = row['End Date']
+    def calculate_kpi_per_week(row):
+        start_date = row['Start Date']
+        end_date = row['End Date']
 
         # Определяем понедельник перед стартом и воскресенье после окончания
-    first_monday = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник недели старта
-    last_sunday = end_date + pd.Timedelta(days=(6 - end_date.weekday()))  # Воскресенье недели окончания
+        first_monday = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник недели старта
+        last_sunday = end_date + pd.Timedelta(days=(6 - end_date.weekday()))  # Воскресенье недели окончания
 
-    weeks = []
-    week_start = first_monday
+        weeks = []
+        week_start = first_monday
 
-    while week_start <= last_sunday:
-        week_end = week_start + pd.Timedelta(days=6)  # Воскресенье
+        while week_start <= last_sunday:
+            week_end = week_start + pd.Timedelta(days=6)  # Воскресенье
 
             # Определяем, какие дни из недели входят в период кампании
-        active_start = max(week_start, start_date)  # Либо понедельник, либо старт кампании
-        active_end = min(week_end, end_date)  # Либо воскресенье, либо конец кампании
+            active_start = max(week_start, start_date)  # Либо понедельник, либо старт кампании
+            active_end = min(week_end, end_date)  # Либо воскресенье, либо конец кампании
 
-        active_days = (active_end - active_start).days + 1  # Дни кампании в этой неделе
-        total_days = (end_date - start_date).days + 1  # Все активные дни кампании
+            active_days = (active_end - active_start).days + 1  # Дни кампании в этой неделе
+            total_days = (end_date - start_date).days + 1  # Все активные дни кампании
 
             # Если в неделе нет активных дней кампании, KPI = 0
-        week_kpi = round(row['KPI прогноз'] * (active_days / total_days)) if active_days > 0 else 0
+            week_kpi = round(row['KPI прогноз'] * (active_days / total_days)) if active_days > 0 else 0
 
             # Добавляем неделю в список
-        weeks.append((week_start, week_end, week_kpi))
+            weeks.append((week_start, week_end, week_kpi))
 
             # Переход к следующей неделе
-        week_start += pd.Timedelta(days=7)
+            week_start += pd.Timedelta(days=7)
 
-    return weeks
+        return weeks
     
     # Функция для корректного распределения KPI по неделям
 
     # Применяем к каждому ряду в df
-week_kpi_data = []
-for idx, row in df.iterrows():
-    week_kpi_data.extend(calculate_kpi_per_week(row))
+    week_kpi_data = []
+    for idx, row in df.iterrows():
+        week_kpi_data.extend(calculate_kpi_per_week(row))
     
     # Создаем DataFrame для KPI
-df_week_kpi = pd.DataFrame(week_kpi_data, columns=['Неделя с', 'Неделя по', 'KPI на неделю'])
+    df_week_kpi = pd.DataFrame(week_kpi_data, columns=['Неделя с', 'Неделя по', 'KPI на неделю'])
     
     # Добавляем категорию и сайт
-df_week_kpi['Категория'] = np.repeat(df['Категория'].values, [len(calculate_kpi_per_week(row)) for _, row in df.iterrows()])
-df_week_kpi['Название сайта'] = np.repeat(df['Название сайта'].values, [len(calculate_kpi_per_week(row)) for _, row in df.iterrows()])
+    df_week_kpi['Категория'] = np.repeat(df['Категория'].values, [len(calculate_kpi_per_week(row)) for _, row in df.iterrows()])
+    df_week_kpi['Название сайта'] = np.repeat(df['Название сайта'].values, [len(calculate_kpi_per_week(row)) for _, row in df.iterrows()])
 
     # Группировка KPI по категориям и неделям
-df_weekly_category_kpi = df_week_kpi.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['KPI на неделю'].sum()
+    df_weekly_category_kpi = df_week_kpi.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['KPI на неделю'].sum()
 
     # Фильтрация меток
-df_filtered = df_metki[df_metki['UTM Campaign'].astype(str).str.contains('arwm', na=False, case=False)]
-df_filtered = df_filtered[~df_filtered['UTM Source'].astype(str).isin(['yandex_maps', 'navigator'])]
+    df_filtered = df_metki[df_metki['UTM Campaign'].astype(str).str.contains('arwm', na=False, case=False)]
+    df_filtered = df_filtered[~df_filtered['UTM Source'].astype(str).isin(['yandex_maps', 'navigator'])]
 
     # Вычисления
-df_filtered['Время на сайте'] = pd.to_timedelta(df_filtered['Время на сайте'])
-total_visits = df_filtered['Визиты'].sum()
-total_visitors = df_filtered['Посетители'].sum()
+    df_filtered['Время на сайте'] = pd.to_timedelta(df_filtered['Время на сайте'])
+    total_visits = df_filtered['Визиты'].sum()
+    total_visitors = df_filtered['Посетители'].sum()
     
-weighted_avg_otkazy = (df_filtered['Отказы'] * df_filtered['Визиты']).sum() / total_visits
-weighted_avg_glubina = (df_filtered['Глубина просмотра'] * df_filtered['Визиты']).sum() / total_visits
-weighted_avg_robotnost = (df_filtered['Роботность'] * df_filtered['Визиты']).sum() / total_visits
-weighted_avg_time_sec = (df_filtered['Время на сайте'].dt.total_seconds() * df_filtered['Визиты']).sum() / total_visits
+    weighted_avg_otkazy = (df_filtered['Отказы'] * df_filtered['Визиты']).sum() / total_visits
+    weighted_avg_glubina = (df_filtered['Глубина просмотра'] * df_filtered['Визиты']).sum() / total_visits
+    weighted_avg_robotnost = (df_filtered['Роботность'] * df_filtered['Визиты']).sum() / total_visits
+    weighted_avg_time_sec = (df_filtered['Время на сайте'].dt.total_seconds() * df_filtered['Визиты']).sum() / total_visits
 
-def format_seconds(total_seconds):
-    total_seconds = int(total_seconds)
-    hours = total_seconds // 3600
-    minutes = (total_seconds % 3600) // 60
-    seconds = total_seconds % 60
-    return f"{hours}:{minutes:02d}:{seconds:02d}"
+    def format_seconds(total_seconds):
+        total_seconds = int(total_seconds)
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+        return f"{hours}:{minutes:02d}:{seconds:02d}"
 
-weighted_avg_time_str = format_seconds(weighted_avg_time_sec)
+    weighted_avg_time_str = format_seconds(weighted_avg_time_sec)
  
     # Приводим даты к нужному формату
 df_week_budget['Неделя с'] = pd.to_datetime(df_week_budget['Неделя с'])

@@ -7,6 +7,16 @@ import re
 
 @st.cache_data
 def load_excel_with_custom_header(file, identifier_value):
+
+    # Для меток сначала загрузим без заголовка, чтобы извлечь дату
+    df_metki_raw = load_excel_without_header(metki_file)
+    st.write("Отладка меток (первые 5 строк):", df_metki_raw.head())
+    
+    # Предположим, что дата содержится в ячейке A1 (первой строке, первом столбце)
+    header_str = str(df_metki_raw.iloc[0, 0])
+    report_start, report_end = extract_report_dates(header_str)
+    st.write("Извлеченные даты отчета:", report_start, report_end)
+
     """
     Загружает Excel-файл, ищет первую строку, в которой встречается identifier_value (в любой ячейке),
     и использует эту строку как заголовок.
@@ -49,19 +59,6 @@ if mp_file and metki_file:
     st.write("Медиаплан:", df_mp.head())
     st.write("Метки UTM:", df_metki.head())
     
-    # Для меток сначала загрузим без заголовка, чтобы извлечь дату
-    df_metki_raw = load_excel_without_header(metki_file)
-    st.write("Отладка меток (первые 5 строк):", df_metki_raw.head())
-    
-    # Предположим, что дата содержится в ячейке A1 (первой строке, первом столбце)
-    header_str = str(df_metki_raw.iloc[0, 0])
-    report_start, report_end = extract_report_dates(header_str)
-    st.write("Извлеченные даты отчета:", report_start, report_end)
-    
-    # Теперь можно загрузить метки с корректным заголовком, если требуется
-    df_metki = load_excel_with_custom_header(metki_file, 'UTM Source')
-    st.write("Метки UTM:", df_metki.head())
-
     # Вводим количество первичных и целевых обращений
     tp_primary_calls = st.number_input("Тематические площади: первичные обращения", min_value=0, step=1)
     tp_target_calls = st.number_input("Тематические площади: ЦО", min_value=0, step=1)

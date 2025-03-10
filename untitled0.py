@@ -371,7 +371,6 @@ def get_work_done(report_start, report_end):
 work_done_list = get_work_done(report_start, report_end)
 
 # Выводим все работы в Streamlit
-st.write("Проделанные работы:")
 for work in work_done_list:
     st.write(f"- {work}")
 
@@ -405,7 +404,7 @@ for work in work_done_list:
     Наблюдаем целевые обращения из ... и ....
     
     Проделанные работы:
-    {work_done_list}
+    f"- {work}"
 
     Плановые работы:
     - Запуск РК

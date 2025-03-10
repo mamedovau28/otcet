@@ -337,14 +337,13 @@ if mp_file and metki_file:
         st.write("Найденные данные:", report_week_df)
 
     # Проверяем tp_budget
-    tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].fillna(0).sum()
     st.write(f"tp_budget: {tp_budget}, oh_budget: {oh_budget}")
 
     # Выводим строки для проверки
-    st.write(report_week_df[report_week_df['Категория'] == 'Тематические площадки'])
+    st.write(report_week_df)
 
     # Если tp_budget = 0, проверяем NaN в столбце 'Бюджет на неделю'
-    tp_budget = report_week_df.loc[report_week_df['Категория'] == 'Тематические площадки', 'Бюджет на неделю'].fillna(0).sum()
+    tp_budget = report_week_df.loc[[report_week_df['Категория'].str.contains('тема', case=False, na=False)], 'Бюджет на неделю'].fillna(0).sum()
 
     # Проверяем cpl
     st.write(f"tp_cpl: {tp_cpl}, oh_cpl: {oh_cpl}")

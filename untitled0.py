@@ -74,10 +74,10 @@ report_start, report_end = extract_report_period(metki_file)
 df_metki = load_excel_with_custom_header(metki_file, 'UTM Source')
     
     # Вводим количество первичных и целевых обращений
-    tp_primary_calls = st.number_input("Тематические площади: первичные обращения", min_value=0, step=1)
-    tp_target_calls = st.number_input("Тематические площади: ЦО", min_value=0, step=1)
-    oh_primary_calls = st.number_input("Охватное размещение: первичные обращения", min_value=0, step=1)
-    oh_target_calls = st.number_input("Охватное размещение: ЦО", min_value=0, step=1)
+tp_primary_calls = st.number_input("Тематические площади: первичные обращения", min_value=0, step=1)
+tp_target_calls = st.number_input("Тематические площади: ЦО", min_value=0, step=1)
+oh_primary_calls = st.number_input("Охватное размещение: первичные обращения", min_value=0, step=1)
+oh_target_calls = st.number_input("Охватное размещение: ЦО", min_value=0, step=1)
 
        # Обрабатываем медиаплан
     df = df_mp[['№', 'Название сайта', 'Период', 'Общая стоимость с учетом НДС и АК', 'KPI прогноз']].copy()

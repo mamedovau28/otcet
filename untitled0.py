@@ -342,9 +342,6 @@ if mp_file and metki_file:
     # Выводим строки для проверки
     st.write(report_week_df)
 
-    # Если tp_budget = 0, проверяем NaN в столбце 'Бюджет на неделю'
-    tp_budget = report_week_df.loc[[report_week_df['Категория'].str.contains('тема', case=False, na=False)], 'Бюджет на неделю'].fillna(0).sum()
-
     # Проверяем cpl
     st.write(f"tp_cpl: {tp_cpl}, oh_cpl: {oh_cpl}")
 

@@ -416,6 +416,7 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
 """
 
 # Вывод предупреждений
+warnings = []
 if warnings:
     st.subheader("⚠ Предупреждения")
     for warning in warnings:

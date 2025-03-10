@@ -330,6 +330,50 @@ if mp_file and metki_file:
     tp_cpl_str = f"{tp_cpl:,.2f}".replace(',', ' ') if tp_cpl > 0 else "0"
     oh_cpl_str = f"{oh_cpl:,.2f}".replace(',', ' ') if oh_cpl > 0 else "0"
 
+    # Проделанные работы в зависимости от периода
+    def get_work_done(report_start, report_end):
+    work_done = set()
+
+    if report_start.day <= 10:
+        work_done.update([
+            "Запустили РК",
+            "Подготовили скрин-отчет с актуальными размещениями"
+        ])
+
+    if any(day in range(14, 17) for day in range(report_start.day, report_end.day + 1)):
+        work_done.update([
+            "Заменили рекламные материалы на актуальные",
+            "Подготовили скрин-отчет с актуальными размещениями",
+            "Подготовили МП-Факт предыдущего месяца",
+            "Провели оптимизацию РК для улучшения поведенческих данных",
+            "Провели усиление РК для привлечения ЦО"
+        ])
+
+    if any(day in range(17, 26) for day in range(report_start.day, report_end.day + 1)):
+        work_done.update([
+            "Провели оптимизацию РК для улучшения поведенческих данных",
+            "Провели усиление РК для привлечения ЦО",
+            "Актуализировали Карту развития",
+            "Подготовили медиапланирование на следующий месяц"
+        ])
+
+    if report_start.day >= 26 or report_end.day >= 26:
+        work_done.update([
+            "Подготовили материалы на следующий месяц",
+            "Подготовились к запуску РК"
+        ])
+
+    return sorted(work_done)  # Сортируем для удобства чтения
+
+# Пример использования:
+report_start = pd.Timestamp("2025-03-14")
+report_end = pd.Timestamp("2025-03-22")
+
+work_done_list = get_work_done(report_start, report_end)
+
+for work in work_done_list:
+    print("-", work)
+
     # Генерация отчёта
     report_text = f"""
     Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})

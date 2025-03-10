@@ -33,7 +33,7 @@ metki_file = st.file_uploader("Загрузите файл с метками UTM
 
 if mp_file and metki_file:
     # Загружаем файлы с кастомными заголовками
-    df_mp = load_excel_with_custom_header(mp_file, '№', '№')
+    df_mp = load_excel_with_custom_header(mp_file, '№')
     df_metki = load_excel_with_custom_header(metki_file, 'UTM Source', 'utm source')
     
     # Выводим пример загруженных данных для проверки

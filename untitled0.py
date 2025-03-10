@@ -52,7 +52,6 @@ def extract_report_period(file):
     else:
         st.error("Не удалось извлечь отчетный период из первой строки файла с метками.")
         return pd.NaT, pd.NaT
-    df_raw = match
 
 # Интерфейс загрузки файлов в Streamlit
 st.title("Генератор еженедельных отчётов")
@@ -79,13 +78,13 @@ if mp_file and metki_file:
     oh_primary_calls = st.number_input("Охватное размещение: первичные обращения", min_value=0, step=1)
     oh_target_calls = st.number_input("Охватное размещение: ЦО", min_value=0, step=1)
 
-       # Обрабатываем медиаплан
+    # Обрабатываем медиаплан
     df = df_mp[['№', 'Название сайта', 'Период', 'Общая стоимость с учетом НДС и АК', 'KPI прогноз']].copy()
     df = df.replace('-', '0')
     df['Категория'] = df['Название сайта'].where(df['№'].isna()).ffill()
     df = df[~df['Период'].isna()]
 
-        # Функция для извлечения начальной и конечной даты
+    # Функция для извлечения начальной и конечной даты
     def extract_dates(period):
         try:
             # Проверка, что период имеет формат 'DD.MM.YYYY - DD.MM.YYYY'
@@ -96,7 +95,7 @@ if mp_file and metki_file:
         except Exception as e:
             st.error(f"Ошибка в данных периода: {period}. Ошибка: {str(e)}")
             return pd.NaT, pd.NaT
-
+            
     # Применение функции и создание новых столбцов с начальной и конечной датой
     if 'Период' in df.columns:
         df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)

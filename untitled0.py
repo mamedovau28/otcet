@@ -149,7 +149,7 @@ df_week_budget['Категория'] = np.repeat(df['Категория'].values
 
 # Группировка по категории и неделе, суммирование бюджета
 df_weekly_category_budget = df_week_budget.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['Бюджет на неделю'].sum()
-    
+
 # Очистка данных в KPI прогноз
 df['KPI прогноз'] = df['KPI прогноз'].replace("-", np.nan)  # Заменяем "-" на NaN
 df['KPI прогноз'] = pd.to_numeric(df['KPI прогноз'], errors='coerce').fillna(0)  # Конвертируем в числа, заменяем NaN на 0
@@ -168,33 +168,31 @@ def calculate_kpi_per_week(row):
     while week_start <= last_sunday:
         week_end = week_start + pd.Timedelta(days=6)  # Воскресенье
 
-            # Определяем, какие дни из недели входят в период кампании
+        # Определяем, какие дни из недели входят в период кампании
         active_start = max(week_start, start_date)  # Либо понедельник, либо старт кампании
         active_end = min(week_end, end_date)  # Либо воскресенье, либо конец кампании
 
         active_days = (active_end - active_start).days + 1  # Дни кампании в этой неделе
         total_days = (end_date - start_date).days + 1  # Все активные дни кампании
 
-            # Если в неделе нет активных дней кампании, KPI = 0
+        # Если в неделе нет активных дней кампании, KPI = 0
         week_kpi = round(row['KPI прогноз'] * (active_days / total_days)) if active_days > 0 else 0
 
-            # Добавляем неделю в список
+        # Добавляем неделю в список
         weeks.append((week_start, week_end, week_kpi))
 
-            # Переход к следующей неделе
+        # Переход к следующей неделе
         week_start += pd.Timedelta(days=7)
 
     return weeks
-    
-    # Функция для корректного распределения KPI по неделям
 
-    # Применяем к каждому ряду в df
-    week_kpi_data = []
-    for idx, row in df.iterrows():
-        week_kpi_data.extend(calculate_kpi_per_week(row))
-    
-    # Создаем DataFrame для KPI
-    df_week_kpi = pd.DataFrame(week_kpi_data, columns=['Неделя с', 'Неделя по', 'KPI на неделю'])
+# Применяем к каждому ряду в df
+week_kpi_data = []
+for idx, row in df.iterrows():
+    week_kpi_data.extend(calculate_kpi_per_week(row))
+
+# Создаем DataFrame для KPI
+df_week_kpi = pd.DataFrame(week_kpi_data, columns=['Неделя с', 'Неделя по', 'KPI на неделю'])
     
     # Добавляем категорию и сайт
     df_week_kpi['Категория'] = np.repeat(df['Категория'].values, [len(calculate_kpi_per_week(row)) for _, row in df.iterrows()])

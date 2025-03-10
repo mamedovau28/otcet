@@ -30,11 +30,15 @@ st.title("Генератор еженедельных отчётов")
 
 mp_file = st.file_uploader("Загрузите файл с медиапланом", type=["xlsx"])
 metki_file = st.file_uploader("Загрузите файл с метками UTM", type=["xlsx"])
-
+    
 if mp_file and metki_file:
     # Загружаем файлы с кастомными заголовками
-    df_mp = load_excel_with_custom_header(mp_file, '№')
+    df_mp = load_excel_with_custom_header(mp_file, '№', '№')
     df_metki = load_excel_with_custom_header(metki_file, 'UTM Source', 'utm source')
+    
+    # Удаляем первый столбец медиаплана, если он полностью пустой
+    if df_mp.iloc[:, 0].isna().all():
+        df_mp = df_mp.iloc[:, 1:]
     
     # Выводим пример загруженных данных для проверки
     st.write("Медиаплан:", df_mp.head())

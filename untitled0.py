@@ -154,37 +154,37 @@ df_weekly_category_budget = df_week_budget.groupby(['Категория', 'Не�
 df['KPI прогноз'] = df['KPI прогноз'].replace("-", np.nan)  # Заменяем "-" на NaN
 df['KPI прогноз'] = pd.to_numeric(df['KPI прогноз'], errors='coerce').fillna(0)  # Конвертируем в числа, заменяем NaN на 0
 
-    def calculate_kpi_per_week(row):
-        start_date = row['Start Date']
-        end_date = row['End Date']
+def calculate_kpi_per_week(row):
+    start_date = row['Start Date']
+    end_date = row['End Date']
 
-        # Определяем понедельник перед стартом и воскресенье после окончания
-        first_monday = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник недели старта
-        last_sunday = end_date + pd.Timedelta(days=(6 - end_date.weekday()))  # Воскресенье недели окончания
+    # Определяем понедельник перед стартом и воскресенье после окончания
+    first_monday = start_date - pd.Timedelta(days=start_date.weekday())  # Понедельник недели старта
+    last_sunday = end_date + pd.Timedelta(days=(6 - end_date.weekday()))  # Воскресенье недели окончания
 
-        weeks = []
-        week_start = first_monday
+    weeks = []
+    week_start = first_monday
 
-        while week_start <= last_sunday:
-            week_end = week_start + pd.Timedelta(days=6)  # Воскресенье
+    while week_start <= last_sunday:
+        week_end = week_start + pd.Timedelta(days=6)  # Воскресенье
 
             # Определяем, какие дни из недели входят в период кампании
-            active_start = max(week_start, start_date)  # Либо понедельник, либо старт кампании
-            active_end = min(week_end, end_date)  # Либо воскресенье, либо конец кампании
+        active_start = max(week_start, start_date)  # Либо понедельник, либо старт кампании
+        active_end = min(week_end, end_date)  # Либо воскресенье, либо конец кампании
 
-            active_days = (active_end - active_start).days + 1  # Дни кампании в этой неделе
-            total_days = (end_date - start_date).days + 1  # Все активные дни кампании
+        active_days = (active_end - active_start).days + 1  # Дни кампании в этой неделе
+        total_days = (end_date - start_date).days + 1  # Все активные дни кампании
 
             # Если в неделе нет активных дней кампании, KPI = 0
-            week_kpi = round(row['KPI прогноз'] * (active_days / total_days)) if active_days > 0 else 0
+        week_kpi = round(row['KPI прогноз'] * (active_days / total_days)) if active_days > 0 else 0
 
             # Добавляем неделю в список
-            weeks.append((week_start, week_end, week_kpi))
+        weeks.append((week_start, week_end, week_kpi))
 
             # Переход к следующей неделе
-            week_start += pd.Timedelta(days=7)
+        week_start += pd.Timedelta(days=7)
 
-        return weeks
+    return weeks
     
     # Функция для корректного распределения KPI по неделям
 

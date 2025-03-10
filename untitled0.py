@@ -330,16 +330,17 @@ if mp_file and metki_file:
     tp_cpl_str = f"{tp_cpl:,.2f}".replace(',', ' ') if tp_cpl > 0 else "0"
     oh_cpl_str = f"{oh_cpl:,.2f}".replace(',', ' ') if oh_cpl > 0 else "0"
 
-    # Проделанные работы в зависимости от периода
 def get_work_done(report_start, report_end):
     work_done = set()
 
+    # Проверка для первой группы работ (до 10 числа)
     if report_start.day <= 10:
         work_done.update([
             "Запустили РК",
             "Подготовили скрин-отчет с актуальными размещениями"
         ])
 
+    # Проверка для второй группы работ (включая 14, 15, 16 числа)
     if any(day in range(14, 17) for day in range(report_start.day, report_end.day + 1)):
         work_done.update([
             "Заменили рекламные материалы на актуальные",
@@ -349,6 +350,7 @@ def get_work_done(report_start, report_end):
             "Провели усиление РК для привлечения ЦО"
         ])
 
+    # Проверка для третьей группы работ (включая 17-25 числа)
     if any(day in range(17, 26) for day in range(report_start.day, report_end.day + 1)):
         work_done.update([
             "Провели оптимизацию РК для улучшения поведенческих данных",
@@ -357,6 +359,7 @@ def get_work_done(report_start, report_end):
             "Подготовили медиапланирование на следующий месяц"
         ])
 
+    # Проверка для четвёртой группы работ (с 26 числа)
     if report_start.day >= 26 or report_end.day >= 26:
         work_done.update([
             "Подготовили материалы на следующий месяц",
@@ -367,6 +370,7 @@ def get_work_done(report_start, report_end):
 
 work_done_list = get_work_done(report_start, report_end)
 
+# Выводим все работы в Streamlit
 st.write("Проделанные работы:")
 for work in work_done_list:
     st.write(f"- {work}")

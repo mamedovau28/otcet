@@ -68,7 +68,7 @@ if mp_file and metki_file:
         df_mp = df_mp.iloc[:, 1:]
     
     # Извлекаем отчетный период из файла с метками (из первой строки)
-    report_start, report_end = extract_report_period(metki_file)
+report_start, report_end = extract_report_period(metki_file)
     
     # Загружаем файл с метками с поиском заголовка, содержащего 'UTM Source'
     df_metki = load_excel_with_custom_header(metki_file, 'UTM Source')
@@ -360,7 +360,7 @@ def get_work_done(report_start, report_end):
 
 # Генерация отчёта
 report_text = f"""
-    Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})
+Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})
 
 ТЕМАТИЧЕСКИЕ ПЛОЩАДКИ:
 Выполнение по бюджету плановое ({tp_budget_str} ₽ с НДС)

@@ -245,8 +245,8 @@ if mp_file and metki_file:
     oh_budget = report_week_df.loc[report_week_df['Категория'].str.strip().str.contains('охват', case=False, na=False), 'Бюджет на неделю'].sum()
 
     # Извлекаем KPI для "Тематических площадок" и "Охватного размещения"
-    kpi_tp = report_week_df_kpi.loc[report_week_df_kpi['Категория'].str.strip().str.contains('тема', case=False, na=False), 'Бюджет на неделю'].sum()
-    kpi_oh = report_week_df_kpi.loc[report_week_df_kpi['Категория'].str.strip().str.contains('охват', case=False, na=False), 'Бюджет на неделю'].sum()
+    kpi_tp = report_week_df_kpi.loc[report_week_df_kpi['Категория'].str.strip().str.contains('тема', case=False, na=False), 'KPI на неделю'].sum()
+    kpi_oh = report_week_df_kpi.loc[report_week_df_kpi['Категория'].str.strip().str.contains('охват', case=False, na=False), 'KPI на неделю'].sum()
 
     # Проверяем, что KPI прогноз не NaN
     if pd.notna(kpi_tp) and kpi_tp != 0:  # Проверка на NaN и 0

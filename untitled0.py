@@ -23,6 +23,26 @@ def extract_report_dates(header_str):
         st.error("Не удалось извлечь даты из заголовка меток.")
         return pd.NaT, pd.NaT
 
+ """ Загружает Excel-файл, ищет первую строку, в которой встречается identifier_value (в любой ячейке),
+    и использует эту строку как заголовок.
+    Если identifier_value не найден, возбуждает ошибку.
+    """
+    # Читаем файл без заголовка, чтобы получить числовые индексы
+    df = pd.read_excel(file, header=None)
+    
+    header_index = None
+    # Перебираем строки и ищем, встречается ли нужное значение в какой-либо ячейке
+    for i, row in df.iterrows():
+        if row.astype(str).str.contains(identifier_value, case=False, na=False).any():
+            header_index = i
+            break
+    if header_index is None:
+        raise ValueError(f"Идентификатор '{identifier_value}' не найден в файле.")
+    
+    # Загружаем файл заново, используя найденный индекс как заголовок
+    df = pd.read_excel(file, header=header_index)
+    return df
+
 # Интерфейс загрузки файлов в Streamlit
 st.title("Генератор еженедельных отчётов")
 

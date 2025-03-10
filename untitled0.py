@@ -65,15 +65,12 @@ if mp_file and metki_file:
     # Если первый столбец медиаплана полностью пустой, удаляем его
     if df_mp.iloc[:, 0].isna().all():
         df_mp = df_mp.iloc[:, 1:]
-    st.write("Медиаплан:", df_mp.head())
     
     # Извлекаем отчетный период из файла с метками (из первой строки)
     report_start, report_end = extract_report_period(metki_file)
-    st.write("Отчетный период:", report_start, report_end)
     
     # Загружаем файл с метками с поиском заголовка, содержащего 'UTM Source'
     df_metki = load_excel_with_custom_header(metki_file, 'UTM Source')
-    st.write("Метки UTM:", df_metki.head())
     
     # Вводим количество первичных и целевых обращений
     tp_primary_calls = st.number_input("Тематические площади: первичные обращения", min_value=0, step=1)
@@ -104,8 +101,6 @@ if mp_file and metki_file:
         df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
     else:
         st.error("Столбец 'Период' не найден в данных.")
-        
-    st.write("Столбцы в df:", df.columns)
     
 # Бюджет по неделям
     def calculate_budget_per_week(row):

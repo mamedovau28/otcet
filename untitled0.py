@@ -6,35 +6,22 @@ import numpy as np
 import re
 
 # Функция загрузки Excel-файлов
-@st.cache_data
-def load_excel_with_custom_header(file, identifier_value):
-    """
-    Загружает Excel-файл, ищет первую строку, в которой встречается identifier_value (в любой ячейке),
-    и использует эту строку как заголовок.
-    Если identifier_value не найден, возбуждает ошибку.
-    """
-    # Функция для извлечения дат
-    def extract_dates(period):
-        start_date, end_date = period.split('-')
-        return pd.to_datetime(start_date.strip(), format='%d.%m.%Y'), pd.to_datetime(end_date.strip(), format='%d.%m.%Y')
+def load_excel_without_header(file):
+    return pd.read_excel(file, header=None)
 
-    df[['Start Date', 'End Date']] = df['Период'].apply(extract_dates).apply(pd.Series)
-    
-    # Читаем файл без заголовка, чтобы получить числовые индексы
-    df = pd.read_excel(file, header=None)
-    
-    header_index = None
-    # Перебираем строки и ищем, встречается ли нужное значение в какой-либо ячейке
-    for i, row in df.iterrows():
-        if row.astype(str).str.contains(identifier_value, case=False, na=False).any():
-            header_index = i
-            break
-    if header_index is None:
-        raise ValueError(f"Идентификатор '{identifier_value}' не найден в файле.")
-    
-    # Загружаем файл заново, используя найденный индекс как заголовок
-    df = pd.read_excel(file, header=header_index)
-    return df
+def extract_report_dates(header_str):
+    """
+    Извлекает дату начала и дату конца отчётного периода из строки header_str.
+    Ожидаемый формат: "Отчет за период с YYYY-MM-DD по YYYY-MM-DD"
+    """
+    match = re.search(r'Отчет за период с (\d{4}-\d{2}-\d{2}) по (\d{4}-\d{2}-\d{2})', header_str)
+    if match:
+        start_date = pd.to_datetime(match.group(1))
+        end_date = pd.to_datetime(match.group(2))
+        return start_date, end_date
+    else:
+        st.error("Не удалось извлечь даты из заголовка меток.")
+        return pd.NaT, pd.NaT
 
 # Интерфейс загрузки файлов в Streamlit
 st.title("Генератор еженедельных отчётов")
@@ -43,18 +30,27 @@ mp_file = st.file_uploader("Загрузите файл с медиаплано�
 metki_file = st.file_uploader("Загрузите файл с метками UTM", type=["xlsx"])
 
 if mp_file and metki_file:
-    # Загружаем файлы с кастомными заголовками:
-    # Для медиаплана ищем строку, содержащую '№'
+    # Загружаем файлы с кастомными заголовками (для медиаплана и меток)
+    # Функция load_excel_with_custom_header, приведенная ранее, используется для медиаплана
     df_mp = load_excel_with_custom_header(mp_file, '№')
-    # Для меток ищем строку, содержащую 'UTM Source'
-    df_metki = load_excel_with_custom_header(metki_file, 'UTM Source')
     
-    # Удаляем первый столбец медиаплана, если он полностью пустой
+    # Если первый столбец медиаплана пустой, удаляем его
     if df_mp.iloc[:, 0].isna().all():
         df_mp = df_mp.iloc[:, 1:]
     
-    # Выводим первые строки для проверки
     st.write("Медиаплан:", df_mp.head())
+    
+    # Для меток сначала загрузим без заголовка, чтобы извлечь дату
+    df_metki_raw = load_excel_without_header(metki_file)
+    st.write("Отладка меток (первые 5 строк):", df_metki_raw.head())
+    
+    # Предположим, что дата содержится в ячейке A1 (первой строке, первом столбце)
+    header_str = str(df_metki_raw.iloc[0, 0])
+    report_start, report_end = extract_report_dates(header_str)
+    st.write("Извлеченные даты отчета:", report_start, report_end)
+    
+    # Теперь можно загрузить метки с корректным заголовком, если требуется
+    df_metki = load_excel_with_custom_header(metki_file, 'UTM Source')
     st.write("Метки UTM:", df_metki.head())
 
     # Вводим количество первичных и целевых обращений

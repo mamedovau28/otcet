@@ -401,7 +401,7 @@ if mp_file and metki_file:
     Наблюдаем целевые обращения из ... и ....
     
     Проделанные работы:
-    {work_done_str}
+    
     
     Плановые работы:
     - Запуск РК
@@ -416,8 +416,8 @@ if mp_file and metki_file:
     """
     
     # Генерация отчёта 2
-    report_text = f"""
-    ### Медийная реклама 2 ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})
+    report_text_2 = f"""
+    ### Медийная реклама ({report_start.strftime('%d.%m.%y')}-{report_end.strftime('%d.%m.%y')})
 
     #### Тематические площадки:
     Выполнение по бюджету: {tp_budget_str} ₽ с НДС  
@@ -461,7 +461,7 @@ if mp_file and metki_file:
     """
 
     # Выводим отчет в Streamlit в формате Markdown
-    st.markdown(report_text)
+    st.markdown(report_text_2)
 
     # Вывод предупреждений
     if warnings:

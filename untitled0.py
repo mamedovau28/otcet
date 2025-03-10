@@ -91,7 +91,7 @@ if mp_file and metki_file:
     df['KPI прогноз'] = df['KPI прогноз'].replace("-", np.nan)  # Заменяем "-" на NaN
     df['KPI прогноз'] = pd.to_numeric(df['KPI прогноз'], errors='coerce').fillna(0)  # Конвертируем в числа, заменяем NaN на 0
 
-    def calculate_kpi_per_week(row):
+def calculate_kpi_per_week(row):
     start_date = row['Start Date']
     end_date = row['End Date']
 

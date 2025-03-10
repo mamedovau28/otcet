@@ -137,8 +137,8 @@ def calculate_budget_per_week(row):
 
 # Применение функции для всех строк
 week_budget_data = []
-for idx, row in df.iterrows():
-    week_budget_data.extend(calculate_budget_per_week(row))
+    for idx, row in df.iterrows():
+        week_budget_data.extend(calculate_budget_per_week(row))
 
 # Создаём DataFrame для распределённых бюджетов по неделям
 df_week_budget = pd.DataFrame(week_budget_data, columns=['Неделя с', 'Неделя по', 'Бюджет на неделю'])

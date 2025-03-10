@@ -400,9 +400,7 @@ work_done_list = get_work_done(report_start, report_end)
     Наблюдаем целевые обращения из ... и ....
     
     Проделанные работы:
-# Выводим все работы в Streamlit
-for work in work_done_list:
-    st.write(f"- {work}")
+    {work}
 
     Плановые работы:
     - Запуск РК

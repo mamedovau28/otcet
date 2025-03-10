@@ -403,7 +403,6 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
 """
 for work in work_done_list:
     report_text += f"- {work}\n"
-    
     report_text += 
 """
     

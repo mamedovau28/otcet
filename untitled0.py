@@ -279,11 +279,11 @@ if mp_file and metki_file:
     warnings = []
     for _, row in utm_summary.iterrows():
         if row["Отказы"] > 0.35:
-                warnings.append(f"⚠ Высокий процент отказов ({row['Отказы']:.2%}) для источника {row['UTM Source']}")
+            warnings.append(f"⚠ Высокий процент отказов ({row['Отказы']*100:.2f}%) для источника {row['UTM Source']}")
         if row["Роботность"] > 0.10:
-                warnings.append(f"⚠ Высокая роботность ({row['Роботность']:%}) для источника {row['UTM Source']}")
+            warnings.append(f"⚠ Высокая роботность ({row['Роботность']*100:.2f}%) для источника {row['UTM Source']}")
         if pd.to_timedelta(row["Время на сайте"]) < pd.Timedelta(minutes=1):
-                warnings.append(f"⚠ Низкое время на сайте ({row['Время на сайте']}) для источника {row['UTM Source']}")
+            warnings.append(f"⚠ Низкое время на сайте ({row['Время на сайте']}) для источника {row['UTM Source']}")
     
     # Проверяем диапазон дат
     report_week_df = df_weekly_category_budget[

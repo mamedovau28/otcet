@@ -493,6 +493,6 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
         # Проверяем, что строки найдены
     if report_week_df.empty:
         st.error("Ошибка: не найден бюджет для указанного периода!")
-        st.subheader("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
+        st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
     else:
-        st.subheader("Найденные данные:", report_week_df)
+        st.write("Найденные данные:", report_week_df)

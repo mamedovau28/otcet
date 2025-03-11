@@ -356,12 +356,12 @@ if mp_file and metki_file:
     work_done_str = "\n".join([f" - {task}" for task in work_done_list])
 
 # Плановые работы
-    def get_work_done(report_start, report_end):
+    def get_work_done_future(report_start, report_end):
         work_done_future = set()
 
         # Проверка первой группы работ (до 10 числа)
         if report_start.day <= 10:
-            work_done.update([
+            work_done_future.update([
                 "Следить за динамикой открута и выполнением по ЦО",
                 "Отпимизация РК для улучшение поведенческих данных",
                 "Усиление РК для привлечения ЦО",
@@ -371,7 +371,7 @@ if mp_file and metki_file:
 
         # Проверка второй группы работ (с 14 по 16 число)
         if any(day in range(14, 17) for day in range(report_start.day, report_end.day + 1)):
-            work_done.update([
+            work_done_future.update([
                 "Следить за динамикой открута и выполнением по ЦО",
                 "Отпимизация РК для улучшение поведенческих данных",
                 "Усиление РК для привлечения ЦО",
@@ -381,7 +381,7 @@ if mp_file and metki_file:
 
         # Проверка третьей группы работ (с 17 по 25 число)
         if any(day in range(17, 26) for day in range(report_start.day, report_end.day + 1)):
-            work_done.update([
+            work_done_future.update([
                 "Следить за динамикой открута и выполнением по ЦО",
                 "Отпимизация РК для улучшение поведенческих данных",
                 "Усиление РК для привлечения ЦО",
@@ -390,7 +390,7 @@ if mp_file and metki_file:
 
         # Проверка для четвертой группы работ (с 26 числа)
         if report_start.day >= 26 or report_end.day >= 26:
-            work_done.update([
+            work_done_future.update([
                 "Следить за динамикой открута и выполнением по ЦО",
                 "Отпимизация РК для улучшение поведенческих данных",
                 "Усиление РК для привлечения ЦО",
@@ -400,9 +400,9 @@ if mp_file and metki_file:
                 "Подготовка итогового отчета"
             ])
 
-        return sorted(work_done)  # Сортируем для удобства чтения
+        return sorted(work_done_future)  # Сортируем для удобства чтения
 
-    work_done_future_list = get_work_done(report_start, report_end)
+    work_done_future_list = get_work_done_future(report_start, report_end)
     work_done_future_str = "\n".join([f" - {task}" for task in work_done_list])
 
     # Генерация отчёта

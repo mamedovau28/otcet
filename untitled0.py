@@ -59,6 +59,17 @@ st.title("Генератор еженедельных отчётов")
 mp_file = st.file_uploader("Загрузите файл с медиапланом", type=["xlsx"])
 metki_file = st.file_uploader("Загрузите файл с метками UTM", type=["xlsx"])
 
+# Создаём две колонки, чтобы сделать поля ввода компактнее
+col1, col2 = st.columns([1, 1])  # Две равные колонки
+
+with col1:
+    tp_primary_calls = st.number_input("Тематика: первичные звонки", min_value=0, step=1)
+    oh_primary_calls = st.number_input("Охват: первичные звонки", min_value=0, step=1)
+
+with col2:
+    tp_target_calls = st.number_input("Тематика: ЦО", min_value=0, step=1)
+    oh_target_calls = st.number_input("Охват: ЦО", min_value=0, step=1)
+
 if mp_file and metki_file:
     # Загружаем медиаплан с поиском заголовка, содержащего '№'
     df_mp = load_excel_with_custom_header(mp_file, '№')
@@ -71,21 +82,6 @@ if mp_file and metki_file:
     
     # Загружаем файл с метками с поиском заголовка, содержащего 'UTM Source'
     df_metki = load_excel_with_custom_header(metki_file, 'UTM Source')
-
-    # Создаём две колонки, чтобы сделать поля ввода компактнее
-    col1, col2 = st.columns([1, 1])  # Две равные колонки
-
-    with col1:
-        tp_primary_calls = st.number_input("Тематика: первичные", min_value=0, step=1)
-        oh_primary_calls = st.number_input("Охват: первичные", min_value=0, step=1)
-
-    with col2:
-        tp_target_calls = st.number_input("Тематика: ЦО", min_value=0, step=1)
-        oh_target_calls = st.number_input("Охват: ЦО", min_value=0, step=1)
-
-# Выводим введенные данные (для проверки)
-    st.write(f"ТП: первичные – {tp_primary_calls}, ЦО – {tp_target_calls}")
-    st.write(f"ОР: первичные – {oh_primary_calls}, ЦО – {oh_target_calls}")
 
     # Обрабатываем медиаплан
     df = df_mp[['№', 'Название сайта', 'Период', 'Общая стоимость с учетом НДС и АК', 'KPI прогноз']].copy()

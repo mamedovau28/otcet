@@ -207,7 +207,7 @@ if mp_file and metki_file:
 
 # Определяем комментарий
     comments = []
-    def get_comment(fact, plan)
+    def get_comment(fact, plan):
         if fact == plan:
             return f"Реализация объемов идет согласно плановым"
         if fact < plan:

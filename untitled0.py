@@ -82,7 +82,7 @@ if mp_file and metki_file:
     df = df_mp[['№', 'Название сайта', 'Период', 'Общая стоимость с учетом НДС и АК', 'KPI прогноз']].copy()
     df = df.replace('-', '0')
     # Определяем категорию: если в "№" пусто, то используем значение из "Название сайта", иначе оставляем значение из "№"
-        def determine_category(row):
+    def determine_category(row):
         num_value = row['№']
     # Если значение отсутствует или пустое – основная категория из "Название сайта"
         if pd.isna(num_value) or str(num_value).strip() == "":

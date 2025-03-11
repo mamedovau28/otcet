@@ -159,6 +159,8 @@ if mp_file and metki_file:
 
 # Создаём DataFrame для распределённых бюджетов по неделям
     df_week_budget = pd.DataFrame(week_budget_data, columns=['Неделя с', 'Неделя по', 'Бюджет на неделю'])
+    # Убираем время, оставляем только дату
+    df_week_budget[['Неделя с', 'Неделя по']] = df_week_budget[['Неделя с', 'Неделя по']].apply(lambda x: x.dt.date)
 
 # Добавляем информацию о сайте и периоде для каждой недели
     df_week_budget['Название сайта'] = np.repeat(df['Название сайта'].values, [len(calculate_budget_per_week(row)) for _, row in df.iterrows()])
@@ -494,7 +496,7 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
         # Вывод таблицы с агрегированными данными
     st.subheader("Анализ по UTM Source")
     st.dataframe(utm_summary)
-    
+
         # Проверяем, что строки найдены
     st.subheader("Данные МП за неделю")
     if report_week_df.empty:

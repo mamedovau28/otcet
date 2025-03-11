@@ -489,7 +489,7 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
     
         # Вывод данных в Streamlit
     st.subheader("Еженедельный отчет")
-    st.text_area("", report_text, height=600)
+    st.text_area("", report_text, height=900)
     
         # Вывод таблицы с агрегированными данными
     st.subheader("Анализ по UTM Source")

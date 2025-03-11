@@ -201,10 +201,22 @@ if mp_file and metki_file:
 # Группировка KPI по категориям и неделям
     df_weekly_category_kpi = df_week_kpi.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['KPI на неделю'].sum()
 
+# Вычисляем общие суммы
+total_plan_kpi = df_weekly_category_kpi["KPI на неделю"].sum()
+total_fact_calls = tp_target_calls + oh_target_calls
+
+# Определяем комментарий
+if total_fact_calls == total_plan_kpi:
+    comment = "Реализация объемов идет согласно плановым"
+elif total_fact_calls < total_plan_kpi:
+    comment = "Реализация объемов меньше плановых. Выполняем усиления РК"
+else:
+    comment = "Реализация объемов превышает плановые"
+    
 # Фильтрация меток
     df_filtered = df_metki[df_metki['UTM Campaign'].astype(str).str.contains('arwm', na=False, case=False)]
     df_filtered = df_filtered[~df_filtered['UTM Source'].astype(str).isin(['yandex_maps', 'navigator'])]
-
+    
 # Вычисления
     df_filtered['Время на сайте'] = pd.to_timedelta(df_filtered['Время на сайте'])
     total_visits = df_filtered['Визиты'].sum()
@@ -431,8 +443,7 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
 - Роботность: {weighted_avg_robotnost * 100:.2f}%
 
 КОММЕНТАРИИ:
-Реализация объемов идет согласно плановым. Наблюдаем ... динамики первичных обращений.
-Наблюдаем целевые обращения из ... и ....
+{comment}
     
 ПРОДЕЛАННЫЕ РАБОТЫ:
 {work_done_str}

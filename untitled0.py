@@ -453,7 +453,7 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
 - Роботность: {weighted_avg_robotnost * 100:.2f}%
 
 КОММЕНТАРИИ:
-{comments}
+{chr(10).join(comments)}
     
 ПРОДЕЛАННЫЕ РАБОТЫ:
 {work_done_str}

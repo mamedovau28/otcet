@@ -78,6 +78,21 @@ if mp_file and metki_file:
     oh_primary_calls = st.number_input("Охватное размещение: первичные обращения", min_value=0, step=1)
     oh_target_calls = st.number_input("Охватное размещение: ЦО", min_value=0, step=1)
 
+    # Создаём две колонки, чтобы сделать поля ввода компактнее
+    col1, col2 = st.columns([1, 1])  # Две равные колонки
+
+    with col1:
+        tp_primary_calls = st.number_input("ТП: первичные", min_value=0, step=1)
+        oh_primary_calls = st.number_input("ОР: первичные", min_value=0, step=1)
+
+    with col2:
+        tp_target_calls = st.number_input("ТП: ЦО", min_value=0, step=1)
+        oh_target_calls = st.number_input("ОР: ЦО", min_value=0, step=1)
+
+# Выводим введенные данные (для проверки)
+    st.write(f"ТП: первичные – {tp_primary_calls}, ЦО – {tp_target_calls}")
+    st.write(f"ОР: первичные – {oh_primary_calls}, ЦО – {oh_target_calls}")
+
     # Обрабатываем медиаплан
     df = df_mp[['№', 'Название сайта', 'Период', 'Общая стоимость с учетом НДС и АК', 'KPI прогноз']].copy()
     df = df.replace('-', '0')

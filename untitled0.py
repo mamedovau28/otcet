@@ -206,12 +206,22 @@ if mp_file and metki_file:
     total_fact_calls = tp_target_calls + oh_target_calls
 
 # Определяем комментарий
-    if total_fact_calls == total_plan_kpi:
-        comment = "Реализация объемов идет согласно плановым"
-    elif total_fact_calls < total_plan_kpi:
-        comment = "Реализация объемов меньше плановых. Выполняем усиления РК"
-    else:
-        comment = "Реализация объемов превышает плановые"
+    comments = []
+    def get_comment(fact, plan)
+        if fact == plan:
+            return f"Реализация объемов идет согласно плановым"
+        if fact < plan:
+            return f"Реализация объемов меньше плановых. Выполняем усиления РК"
+        else:
+             return f"Реализация объемов превышает плановые"
+
+    if total_plan_kpi > 0:
+        if total_fact_calls == total_plan_kpi:
+            comments.append ("Реализация объемов идет согласно плановым")
+        elif total_fact_calls < total_plan_kpi:
+            comments.append ("Реализация объемов меньше плановых. Выполняем усиления РК")
+        else:
+             comments.append ("Реализация объемов превышает плановые")
     
 # Фильтрация меток
     df_filtered = df_metki[df_metki['UTM Campaign'].astype(str).str.contains('arwm', na=False, case=False)]
@@ -443,7 +453,7 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
 - Роботность: {weighted_avg_robotnost * 100:.2f}%
 
 КОММЕНТАРИИ:
-{comment}
+{comments}
     
 ПРОДЕЛАННЫЕ РАБОТЫ:
 {work_done_str}

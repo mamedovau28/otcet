@@ -356,7 +356,7 @@ if mp_file and metki_file:
     work_done_str = "\n".join([f" - {task}" for task in work_done_list])
 
 # Плановые работы
-    def get_work_future_done(report_start, report_end):
+    def get_work_done(report_start, report_end):
         work_done_future = set()
 
         # Проверка первой группы работ (до 10 числа)
@@ -402,7 +402,7 @@ if mp_file and metki_file:
 
         return sorted(work_done)  # Сортируем для удобства чтения
 
-    work_done_future_list = get_work_future_done(report_start, report_end)
+    work_done_future_list = get_work_done(report_start, report_end)
     work_done_future_str = "\n".join([f" - {task}" for task in work_done_list])
 
     # Генерация отчёта

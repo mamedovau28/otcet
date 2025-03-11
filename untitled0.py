@@ -202,16 +202,16 @@ if mp_file and metki_file:
     df_weekly_category_kpi = df_week_kpi.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['KPI на неделю'].sum()
 
 # Вычисляем общие суммы
-total_plan_kpi = df_weekly_category_kpi["KPI на неделю"].sum()
-total_fact_calls = tp_target_calls + oh_target_calls
+    total_plan_kpi = df_weekly_category_kpi["KPI на неделю"].sum()
+    total_fact_calls = tp_target_calls + oh_target_calls
 
 # Определяем комментарий
-if total_fact_calls == total_plan_kpi:
-    comment = "Реализация объемов идет согласно плановым"
-elif total_fact_calls < total_plan_kpi:
-    comment = "Реализация объемов меньше плановых. Выполняем усиления РК"
-else:
-    comment = "Реализация объемов превышает плановые"
+    if total_fact_calls == total_plan_kpi:
+        comment = "Реализация объемов идет согласно плановым"
+    elif total_fact_calls < total_plan_kpi:
+        comment = "Реализация объемов меньше плановых. Выполняем усиления РК"
+    else:
+        comment = "Реализация объемов превышает плановые"
     
 # Фильтрация меток
     df_filtered = df_metki[df_metki['UTM Campaign'].astype(str).str.contains('arwm', na=False, case=False)]

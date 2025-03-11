@@ -71,23 +71,17 @@ if mp_file and metki_file:
     
     # Загружаем файл с метками с поиском заголовка, содержащего 'UTM Source'
     df_metki = load_excel_with_custom_header(metki_file, 'UTM Source')
-    
-    # Вводим количество первичных и целевых обращений
-    tp_primary_calls = st.number_input("Тематические площади: первичные обращения", min_value=0, step=1)
-    tp_target_calls = st.number_input("Тематические площади: ЦО", min_value=0, step=1)
-    oh_primary_calls = st.number_input("Охватное размещение: первичные обращения", min_value=0, step=1)
-    oh_target_calls = st.number_input("Охватное размещение: ЦО", min_value=0, step=1)
 
     # Создаём две колонки, чтобы сделать поля ввода компактнее
     col1, col2 = st.columns([1, 1])  # Две равные колонки
 
     with col1:
-        tp_primary_calls = st.number_input("ТП: первичные", min_value=0, step=1)
-        oh_primary_calls = st.number_input("ОР: первичные", min_value=0, step=1)
+        tp_primary_calls = st.number_input("Тематика: первичные", min_value=0, step=1)
+        oh_primary_calls = st.number_input("Охват: первичные", min_value=0, step=1)
 
     with col2:
-        tp_target_calls = st.number_input("ТП: ЦО", min_value=0, step=1)
-        oh_target_calls = st.number_input("ОР: ЦО", min_value=0, step=1)
+        tp_target_calls = st.number_input("Тематика: ЦО", min_value=0, step=1)
+        oh_target_calls = st.number_input("Охват: ЦО", min_value=0, step=1)
 
 # Выводим введенные данные (для проверки)
     st.write(f"ТП: первичные – {tp_primary_calls}, ЦО – {tp_target_calls}")

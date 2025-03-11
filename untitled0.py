@@ -82,7 +82,7 @@ if mp_file and metki_file:
     df = df_mp[['№', 'Название сайта', 'Период', 'Общая стоимость с учетом НДС и АК', 'KPI прогноз']].copy()
     df = df.replace('-', '0')
     # Определяем категорию: если в "№" пусто, то используем значение из "Название сайта", иначе оставляем значение из "№"
-    report_week_df['Категория'] = report_week_df.apply(
+    df['Категория'] = df.apply(
         lambda row: row['Название сайта'] if pd.isna(row['№']) or str(row['№']).strip() == "" else row['№'],
         axis=1
     )

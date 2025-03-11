@@ -457,20 +457,6 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
 
     st.subheader("Фильтрованные UTM-данные")
     st.dataframe(df_filtered)
-
-    st.subheader("Поведенческие показатели Медийной РК")
-    st.dataframe(pd.DataFrame({
-        'Время на сайте': [weighted_avg_time_str],
-        'Отказы': [weighted_avg_otkazy],
-        'Глубина просмотра': [weighted_avg_glubina],
-        'Роботность': [weighted_avg_robotnost]
-    }))
-
-    st.subheader("Распределение бюджета по неделям")
-    st.dataframe(df_weekly_category_budget)
-
-    st.subheader("Распределение KPI по неделям")
-    st.dataframe(df_week_kpi)
     
         # Проверяем, что строки найдены
     if report_week_df.empty:

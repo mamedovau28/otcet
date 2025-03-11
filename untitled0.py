@@ -340,7 +340,7 @@ if mp_file and metki_file:
         work_done = set()
 
         # Проверка первой группы работ (до 10 числа)
-        if report_start.day <= 10:
+        if report_start.day < 10:
             work_done.update([
                 "Запустили РК",
                 "Подготовили скрин-отчет с актуальными размещениями"
@@ -384,7 +384,7 @@ if mp_file and metki_file:
         work_done_future = set()
 
         # Проверка первой группы работ (до 10 числа)
-        if report_start.day <= 10:
+        if report_start.day < 10:
             work_done_future.update([
                 "Следить за динамикой открута и выполнением по ЦО",
                 "Оптимизация РК для улучшение поведенческих данных",

@@ -200,28 +200,6 @@ if mp_file and metki_file:
 
 # Группировка KPI по категориям и неделям
     df_weekly_category_kpi = df_week_kpi.groupby(['Категория', 'Неделя с', 'Неделя по'], as_index=False)['KPI на неделю'].sum()
-
-# Вычисляем общие суммы
-    total_plan_kpi = df_weekly_category_kpi["KPI на неделю"].sum()
-    total_fact_calls = tp_target_calls + oh_target_calls
-
-# Определяем комментарий
-    comments = []
-    def get_comment(fact, plan):
-        if fact == plan:
-            return f"Реализация объемов идет согласно плановым"
-        if fact < plan:
-            return f"Реализация объемов меньше плановых. Выполняем усиления РК"
-        else:
-             return f"Реализация объемов превышает плановые"
-
-    if total_plan_kpi > 0:
-        if total_fact_calls == total_plan_kpi:
-            comments.append ("Реализация объемов идет согласно плановым")
-        elif total_fact_calls < total_plan_kpi:
-            comments.append ("Реализация объемов меньше плановых. Выполняем усиления РК")
-        else:
-             comments.append ("Реализация объемов превышает плановые")
     
 # Фильтрация меток
     df_filtered = df_metki[df_metki['UTM Campaign'].astype(str).str.contains('arwm', na=False, case=False)]
@@ -305,6 +283,28 @@ if mp_file and metki_file:
         (df_weekly_category_kpi['Неделя с'] <= report_end) & (df_weekly_category_kpi['Неделя по'] >= report_start)
     ]
 
+# Вычисляем общие суммы
+    total_plan_kpi = report_week_df_kpi["KPI на неделю"].sum()
+    total_fact_calls = tp_target_calls + oh_target_calls
+    
+# Определяем комментарий
+    comments = []
+    def get_comment(fact, plan):
+        if fact == plan:
+            return f"Реализация объемов идет согласно плановым"
+        if fact < plan:
+            return f"Реализация объемов меньше плановых. Выполняем усиления РК"
+        else:
+             return f"Реализация объемов превышает плановые"
+
+    if total_plan_kpi > 0:
+        if total_fact_calls == total_plan_kpi:
+            comments.append ("Реализация объемов идет согласно плановым")
+        elif total_fact_calls < total_plan_kpi:
+            comments.append ("Реализация объемов меньше плановых. Выполняем усиления РК")
+        else:
+             comments.append ("Реализация объемов превышает плановые")
+    
     # Извлекаем бюджет для категорий, содержащих слово "тема" для Тематических площадок
     tp_budget = report_week_df.loc[report_week_df['Категория'].str.strip().str.contains('тема', case=False, na=False), 'Бюджет на неделю'].sum()
 

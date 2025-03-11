@@ -489,13 +489,10 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
         # Вывод таблицы с агрегированными данными
     st.subheader("Анализ по UTM Source")
     st.dataframe(utm_summary)
-
-    st.subheader("Фильтрованные UTM-данные")
-    st.dataframe(df_filtered)
     
         # Проверяем, что строки найдены
     if report_week_df.empty:
         st.error("Ошибка: не найден бюджет для указанного периода!")
-        st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
+        st.subheader("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
     else:
         st.write("Найденные данные:", report_week_df)

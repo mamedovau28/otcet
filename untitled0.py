@@ -103,7 +103,8 @@ if mp_file and metki_file:
 
 # Заполняем подкатегории: если строка пустая (подкатегория), то берем значение из предыдущей основной категории
     report_week_df['Категория'] = report_week_df['Категория'].replace("", pd.NA).ffill().fillna("")
-        df = df[~df['Период'].isna()]
+    
+    df = df[~df['Период'].isna()]
 
     # Функция для извлечения начальной и конечной даты
     def extract_dates(period):

@@ -104,4 +104,4 @@ if uploaded_file:
     else:
         st.success(f"Название проекта: {project_name}")
     
-    if isinstance(period, str) and (period.startswith("Период не найден") or period.
+    if isinstance(period, str) and period.startswith("Период не найден") or period.

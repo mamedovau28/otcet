@@ -308,11 +308,11 @@ if mp_file and metki_file:
     comments = []
     def get_comment(fact, plan):
         if fact == plan:
-            return f"Реализация объемов идет согласно плановым"
+            return f"Реализация объемов ЦО идет согласно плановым"
         if fact < plan:
-            return f"Реализация объемов меньше плановых. Выполняем усиления РК"
+            return f"Реализация объемов ЦО меньше плановых. Выполняем усиления РК"
         else:
-             return f"Реализация объемов превышает плановые"
+             return f"Реализация объемов ЦО превышает плановые"
 
     if total_plan_kpi > 0:
         if total_fact_calls == total_plan_kpi:

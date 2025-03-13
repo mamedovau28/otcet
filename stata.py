@@ -30,7 +30,7 @@ def extract_campaigns_table(df):
         table_data = df.iloc[row_idx:, col_idx:]
         
         # Удаляем строки, где в 2 из первых 3 столбцов отсутствуют данные
-        table_data = table_data.dropna(subset=table_data.columns[:3], thresh=3)
+        table_data = table_data.dropna(subset=table_data.columns[:5], thresh=3)
         
         return table_data
     return None  

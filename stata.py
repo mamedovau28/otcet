@@ -43,9 +43,6 @@ def parse_period(period_str):
     if not isinstance(period_str, str):
         return period_str
     period_str = period_str.strip().lower().replace(" ", "")
-    
-    # Убираем возможные лишние слова, например "сезонный коэффициент"
-    period_str = period_str.split()[0]  
 
     if "-" in period_str:
         return period_str
@@ -99,11 +96,10 @@ if uploaded_file:
     # Поиск периода
     period_raw = find_value_by_keyword(df, "период", "Период не найден", "Период отсутствует")
     period = parse_period(period_raw)
-
-# Поиск таблицы с рекламными кампаниями
-    campaigns_table = extract_campaigns_table(df)
     
-    # Вывод информации о проекте
+    # Поиск таблицы с рекламными кампаниями
+    campaigns_table = extract_campaigns_table(df)
+# Вывод информации о проекте
     st.subheader("Информация о проекте")
     if project_name.startswith("Проект не найден") or project_name.startswith("Название проекта отсутствует"):
         st.warning(project_name)

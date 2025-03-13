@@ -23,17 +23,10 @@ def find_table_start(df):
     return None, None  
 
 def extract_platforms_table(df):
-    """Извлекает таблицу с площадками, начиная с найденной строки и колонки, и устанавливает правильные заголовки"""
+    """Извлекает таблицу с площадками, начиная с найденной строки и колонки"""
     row_idx, col_idx = find_table_start(df)
     if row_idx is not None and col_idx is not None:
-        # Используем первую строку после "№" как заголовки столбцов
-        table_data = df.iloc[row_idx + 1:, col_idx:]  # Данные, начиная с первой строки после "№"
-        new_columns = df.iloc[row_idx + 1, col_idx:].values  # Названия столбцов
-        table_data.columns = new_columns  # Устанавливаем новые заголовки
-        
-        # Преобразуем все значения в строковые, чтобы избежать ошибок преобразования типов
-        table_data = table_data.applymap(str)
-        return table_data
+        return df.iloc[row_idx:, col_idx:]  
     return None  
 
 st.title("Обработка данных маркетплейса")

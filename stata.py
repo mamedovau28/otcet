@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 import calendar
+import re
 
 def find_period(df):
     """Находит период в таблице. Проверяет строку ниже, если есть, или следующий столбец."""
@@ -19,36 +20,51 @@ def find_period(df):
                         return next_value.strip()
     return "Период не найден"
 
+# Функция для преобразования периода
 def parse_period(period_str):
     """
-    Преобразует период, заданный в сокращенном формате.
-    Если период содержит "-", считаем, что это уже диапазон дат и возвращаем его как есть.
-    Если период вида "фев.25" или "фев.2025", то он преобразуется в формат:
-    "01.MM.YYYY-last_day.MM.YYYY", где last_day – последний день месяца.
+    Преобразует период в формат "01.MM.YYYY-last_day.MM.YYYY".
+    Если строка уже в таком формате (например, "01.01.2025"), то она просто возвращается.
+    Если период задан как сокращение месяца (например, "фев.25"), то преобразуется в формат "01.02.2025-28.02.2025".
     """
     if not isinstance(period_str, str):
         return period_str
+
     period_str = period_str.strip().lower().replace(" ", "")
+    
+    # Проверка на диапазон дат (например, "01.01.2025-31.01.2025")
     if "-" in period_str:
-        # Если это диапазон дат, возвращаем без изменений.
         return period_str
 
-    # Русские аббревиатуры месяцев
+    # Проверка, является ли строка датой в формате "01.01.2025"
+    date_pattern = r"^\d{2}\.\d{2}\.\d{4}$"
+    if re.match(date_pattern, period_str):
+        # Если строка в формате даты, возвращаем её как период
+        return period_str
+    
+    # Словарь с месяцами на русском языке
     months = {
         "янв": 1, "фев": 2, "мар": 3, "апр": 4, "май": 5, "июн": 6, "июл": 7, "авг": 8, "сен": 9, "окт": 10, "ноя": 11, "дек": 12
     }
+
     # Ищем, с каким месяцем начинается строка
     for abbr, month in months.items():
         if period_str.startswith(abbr):
-            year_part = period_str[len(abbr):]  # остаток строки – год
-            if len(year_part) == 2:
+            # Остаток строки — это год
+            year_part = period_str[len(abbr):]  # остаток строки
+            if len(year_part) == 2:  # если это 2 цифры, то это 20xx
                 year = int("20" + year_part)
-            elif len(year_part) == 4:
+            elif len(year_part) == 4:  # если 4 цифры, это полный год
                 year = int(year_part)
             else:
-                return period_str  # если год задан некорректно, возвращаем исходное значение
+                return period_str  # если год не корректный, возвращаем строку как есть
+            
+            # Получаем последний день месяца
             last_day = calendar.monthrange(year, month)[1]
+            # Формируем период с первым и последним днем месяца
             return f"01.{month:02}.{year}-{last_day}.{month:02}.{year}"
+
+    # Если это не период в нужном формате, возвращаем строку как есть
     return period_str
     
 def find_project_name(df):
@@ -115,7 +131,10 @@ if uploaded_file:
     # Вывод информации о проекте
     st.subheader("Информация о проекте")
     st.success(f"Название проекта: {project_name}" if "не найден" not in project_name.lower() else project_name)
-    st.success(f"Период: {period}")
+    if isinstance(period, str) and (period.startswith("Период не найден") or period.startswith("Период отсутствует")):
+        st.warning(period)
+    else:
+        st.success(f"Период: {period}")
     
     # Вывод таблицы рекламных кампаний
     st.subheader("Таблица рекламных кампаний")

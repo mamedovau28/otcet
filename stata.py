@@ -50,18 +50,23 @@ def parse_period(period_str):
     }
 
     for month_abbr, month_num in months.items():
-        # Обрабатываем формат с точкой, например "фев.25"
+        # Проверяем если период строка типа "фев.25"
         if period_str.startswith(month_abbr):
-            year_part = period_str[len(month_abbr):].replace('.', '').strip()  # Убираем точку и пробелы
+            year_part = period_str[len(month_abbr):]  # Получаем оставшуюся часть строки
+            year_part = year_part.replace('.', '')  # Убираем точку
+
+            # Проверяем, если год состоит из двух цифр
             if len(year_part) == 2 and year_part.isdigit():
-                year = int("20" + year_part)  # Двухзначный год
-            elif len(year_part) == 4 and year_part.isdigit():
-                year = int(year_part)  # Четырехзначный год
+                year = 2000 + int(year_part)  # Преобразуем в 4-значный год (например, "25" -> 2025)
+            elif len(year_part) == 4 and year_part.isdigit():  # Если год уже 4 цифры
+                year = int(year_part)
             else:
-                return "Ошибка в формате периода"  # Если год невалиден
+                return "Ошибка в формате периода"  # Если год некорректный
+
+            # Получаем последний день месяца
             last_day = calendar.monthrange(year, month_num)[1]
             return f"01.{month_num:02}.{year}-{last_day}.{month_num:02}.{year}"
-    
+
     return "Ошибка в формате периода"  # Если формат не распознан
     
 def find_table_start(df):

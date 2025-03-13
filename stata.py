@@ -44,12 +44,8 @@ def parse_period(period_str):
     """
     if not isinstance(period_str, str):
         return period_str
-    
-    # Если встречаем слово "сезонный коэффициент", это не период, и возвращаем специальное сообщение
-    if "сезонный коэффициент" in period_str.lower():
-        return "Сезонный коэффициент, не период"
-
     period_str = period_str.strip().lower().replace(" ", "")
+    
     if "-" in period_str:
         # Если это диапазон дат, возвращаем без изменений.
         return period_str
@@ -64,15 +60,16 @@ def parse_period(period_str):
         if period_str.startswith(abbr):
             year_part = period_str[len(abbr):]  # остаток строки – год
             if len(year_part) == 2:
-                year = int("20" + year_part)
+                year = int("20" + year_part)  # если год в формате 2 цифр (например, 25 -> 2025)
             elif len(year_part) == 4:
-                year = int(year_part)
+                year = int(year_part)  # если год в формате 4 цифр
             else:
                 return period_str  # если год задан некорректно, возвращаем исходное значение
-            last_day = calendar.monthrange(year, month)[1]
-            return f"01.{month:02}.{year}-{last_day}.{month:02}.{year}"
+
+            last_day = calendar.monthrange(year, month)[1]  # получаем последний день месяца
+            return f"01.{month:02}.{year}-{last_day}.{month:02}.{year}"  # возвращаем период в формате "01.MM.YYYY-last_day.MM.YYYY"
     
-    return period_str
+    return period_str  # если ничего не найдено, возвращаем исходное значение
     
 def find_table_start(df):
     """Находит координаты ячейки с '№' или 'месяц' и возвращает индекс строки и колонки"""

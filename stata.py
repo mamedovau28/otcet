@@ -29,7 +29,6 @@ def parse_period(period_str):
     if not isinstance(period_str, str):
         return period_str
     period_str = period_str.strip().lower().replace(" ", "")
-    
     if "-" in period_str:
         # Если это диапазон дат, возвращаем без изменений.
         return period_str
@@ -38,23 +37,19 @@ def parse_period(period_str):
     months = {
         "янв": 1, "фев": 2, "мар": 3, "апр": 4, "май": 5, "июн": 6, "июл": 7, "авг": 8, "сен": 9, "окт": 10, "ноя": 11, "дек": 12
     }
-    
     # Ищем, с каким месяцем начинается строка
     for abbr, month in months.items():
         if period_str.startswith(abbr):
             year_part = period_str[len(abbr):]  # остаток строки – год
             if len(year_part) == 2:
-                year = int("20" + year_part)  # если год в формате 2 цифр (например, 25 -> 2025)
+                year = int("20" + year_part)
             elif len(year_part) == 4:
-                year = int(year_part)  # если год в формате 4 цифр
+                year = int(year_part)
             else:
                 return period_str  # если год задан некорректно, возвращаем исходное значение
-
-            # Проверяем, какой последний день месяца
             last_day = calendar.monthrange(year, month)[1]
-            return f"01.{month:02}.{year}-{last_day}.{month:02}.{year}"  # возвращаем период в формате "01.MM.YYYY-last_day.MM.YYYY"
-    
-    return period_str  # если ничего не найдено, возвращаем исходное значение
+            return f"01.{month:02}.{year}-{last_day}.{month:02}.{year}"
+    return period_str
     
 def find_project_name(df):
     """Ищет название проекта, проверяя сначала строку под 'проект', затем следующий столбец"""

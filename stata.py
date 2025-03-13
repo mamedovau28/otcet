@@ -10,7 +10,7 @@ def find_value_by_keyword(df, keyword, not_found_msg, empty_msg):
                 # Проверяем строку ниже по текущему столбцу
                 if idx + 1 < len(df):
                     next_row_value = df[col][idx + 1]
-                    if "Период" in next_row_value.lower():  # Если в строке ниже есть слово "период"
+                    if "период" in next_row_value.lower():  # Если в строке ниже есть слово "период"
                         # Ищем название проекта в следующем столбце
                         next_col_idx = col_idx + 1  
                         if next_col_idx < len(df.columns):

@@ -53,18 +53,7 @@ def extract_campaigns_table(df):
     """Извлекает таблицу с рекламными кампаниями, начиная с найденной строки и колонки"""
     row_idx, col_idx = find_table_start(df)
     if row_idx is not None and col_idx is not None:
-        table_data = df.iloc[row_idx:, col_idx:].copy()
-
-        # Преобразуем первую строку в заголовки
-        table_data.columns = table_data.iloc[0]
-        table_data = table_data[1:].reset_index(drop=True)
-
-        # Если есть столбец 'месяц', удаляем строки, где он пустой
-        month_col = next((col for col in table_data.columns if isinstance(col, str) and "месяц" in col.lower()), None)
-        if month_col:
-            table_data = table_data.dropna(subset=[month_col])
-
-        return table_data
+        return df.iloc[row_idx:, col_idx:]
     return None  
 
 st.title("Обработка данных рекламных кампаний")

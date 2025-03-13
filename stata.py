@@ -62,6 +62,11 @@ if uploaded_file:
     # Поиск таблицы с рекламными кампаниями
     campaigns_table = extract_campaigns_table(df)
 
+    if resource_name and (resource_name.startswith("Ресурс не найден") or resource_name.startswith("Название ресурса отсутствует")):
+        st.warning(resource_name)
+    else:
+        st.success(f"Название ресурса: {resource_name}")
+
     # Вывод проекта, ресурса и периода
     st.subheader("Информация о проекте")
     if project_name.startswith("Проект не найден") or project_name.startswith("Название проекта отсутствует"):

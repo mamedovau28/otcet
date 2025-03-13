@@ -1,24 +1,8 @@
+
 import pandas as pd
 import streamlit as st
 import calendar
 import re
-
-def find_period(df):
-    """Находит период в таблице. Проверяет строку ниже, если есть, или следующий столбец."""
-    for col_idx, col in enumerate(df.columns):
-        for idx, value in df[col].items():
-            if isinstance(value, str) and "период" in value.lower():
-                # Проверяем строку ниже
-                if idx + 1 < len(df) and isinstance(df[col][idx + 1], str):
-                    return df[col][idx + 1].strip()
-                # Если в той же строке, но в следующем столбце есть значение – берем его
-                next_col_idx = col_idx + 1
-                if next_col_idx < len(df.columns):
-                    next_col = df.columns[next_col_idx]
-                    next_value = df[next_col][idx]
-                    if isinstance(next_value, str):
-                        return next_value.strip()
-    return "Период не найден"
 
 # Функция для преобразования периода
 def parse_period(period_str):
@@ -66,49 +50,37 @@ def parse_period(period_str):
 
     # Если это не период в нужном формате, возвращаем строку как есть
     return period_str
-    
-def find_project_name(df):
-    """Ищет название проекта, проверяя сначала строку под 'проект', затем следующий столбец"""
+
+# Функция для поиска значений по ключевому слову в таблице
+def find_value_by_keyword(df, keyword, not_found_msg, empty_msg):
+    """Ищет строку с нужным словом и берет значение из следующего столбца"""
     for col_idx, col in enumerate(df.columns):
         for idx, value in df[col].items():
-            if isinstance(value, str) and "проект" in value.lower():
-                # Проверяем строку ниже
-                if idx + 1 < len(df) and isinstance(df[col][idx + 1], str):
-                    if "период" not in df[col][idx + 1].lower():
-                        return df[col][idx + 1].strip()
-                # Проверяем следующий столбец
+            if isinstance(value, str) and keyword in value.lower():
                 next_col_idx = col_idx + 1
                 if next_col_idx < len(df.columns):
                     next_col = df.columns[next_col_idx]
-                    return df[next_col][idx] if isinstance(df[next_col][idx], str) else "Название проекта отсутствует"
-    return "Проект не найден"
-    
-def find_table_start(df):
-    """Находит координаты ячейки с '№' или 'месяц' и возвращает индекс строки и колонки"""
-    for col_idx, col in enumerate(df.columns):
-        for row_idx, value in df[col].items():
-            if isinstance(value, str):
-                if "№" in value or "месяц" in value.lower():
-                    return row_idx, col_idx  # Возвращаем строку и колонку, где нашли "№" или "месяц"
-    return None, None 
-    
-def find_table_start(df):
-    """Находит координаты ячейки с '№' или 'месяц' и возвращает индекс строки и колонки"""
-    for col_idx, col in enumerate(df.columns):
-        for row_idx, value in df[col].items():
-            if isinstance(value, str) and ("№" in value or "месяц" in value.lower()):
-                return row_idx, col_idx
-    return None, None
+                    return df[next_col][idx]
+                else:
+                    return empty_msg
+    return not_found_msg
 
-def extract_campaigns_table(df):
-    """Извлекает таблицу с рекламными кампаниями, начиная с найденной строки и колонки"""
-    row_idx, col_idx = find_table_start(df)
-    if row_idx is not None and col_idx is not None:
-        return df.iloc[row_idx:, col_idx:].reset_index(drop=True)
+# Функция для поиска месяца в таблице
+def find_month_in_table(df, month_abbrs):
+    """Ищет месяц в таблице и возвращает строку с рекламным месяцем"""
+    for col_idx, col in enumerate(df.columns):
+        for idx, value in df[col].items():
+            if isinstance(value, str):
+                for abbr in month_abbrs:
+                    if abbr in value.lower():
+                        # Пытаемся найти значение периода, которое будет на строке ниже
+                        return df.iloc[idx+1:]  # Возвращаем строки после найденного месяца
     return None
 
+# Основной код для загрузки файла и обработки данных
 st.title("Обработка данных рекламных кампаний")
 
+# Загрузка файла
 uploaded_file = st.file_uploader("Загрузите файл Excel", type=["xlsx", "xls"])
 
 if uploaded_file:
@@ -117,30 +89,34 @@ if uploaded_file:
     df = df[sheet_name]
     
     # Поиск проекта и периода
-    project_name = find_project_name(df)
-    period_raw = find_period(df)
+    project_name = find_value_by_keyword(df, "проект", "Проект не найден", "Название проекта отсутствует")
+    period_raw = find_value_by_keyword(df, "период", "Период не найден", "Период отсутствует")
     
-     # Проверка на наличие фразы "не найден" и последующее преобразование периода
+    # Преобразование периода
     period = period_raw
-    if isinstance(period_raw, str) and "не найден" not in period_raw.lower() and "сезонныйкоэффициент" not in period_raw.lower():
+    if isinstance(period_raw, str) and "не найден" not in period_raw.lower():
+        # Преобразуем период, если это строка, а не ошибка
         period = parse_period(period_raw)
-    
-    # Поиск таблицы с рекламными кампаниями
-    campaigns_table = extract_campaigns_table(df)
+
+# Если период не найден, ищем месяц в таблице
+    if period == "Период не найден":
+        months = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"]
+        campaigns_table = find_month_in_table(df, months)
+        if campaigns_table is not None:
+            # Находим строку с рекламным месяцем
+            st.success("Рекламный месяц найден!")
+        else:
+            st.warning("Месяц не найден!")
     
     # Вывод информации о проекте
     st.subheader("Информация о проекте")
-    st.success(f"Название проекта: {project_name}" if "не найден" not in project_name.lower() else project_name)
+    if project_name.startswith("Проект не найден") or project_name.startswith("Название проекта отсутствует"):
+        st.warning(project_name)
+    else:
+        st.success(f"Название проекта: {project_name}")
+    
     if isinstance(period, str) and (period.startswith("Период не найден") or period.startswith("Период отсутствует")):
         st.warning(period)
     else:
         st.success(f"Период: {period}")
-    
-    # Вывод таблицы рекламных кампаний
-    st.subheader("Таблица рекламных кампаний")
-    if campaigns_table is not None:
-        st.success("Таблица рекламных кампаний найдена:")
-        st.dataframe(campaigns_table)
-    else:
-        st.warning("Таблица рекламных кампаний не найдена")
 

@@ -25,16 +25,21 @@ def find_value_by_keyword(df, keyword, not_found_msg, empty_msg):
     return not_found_msg  # Если не нашли "проект"
 
 def find_period(df):
-    """Находит период, проверяя строку под 'период' и возвращает значение"""
+    """Находит период в таблице. Проверяет строку ниже, если есть, или следующий столбец."""
     for col_idx, col in enumerate(df.columns):
         for idx, value in df[col].items():
             if isinstance(value, str) and "период" in value.lower():
-                # Ищем период в строке ниже, если он есть
-                if idx + 1 < len(df):
-                    next_row_value = df[col][idx + 1]
-                    if isinstance(next_row_value, str):  # Если строка не пустая
-                        return next_row_value.strip()
-    return "Период не найден"  # Если не нашли период
+                # Проверяем строку ниже
+                if idx + 1 < len(df) and isinstance(df[col][idx + 1], str):
+                    return df[col][idx + 1].strip()
+                # Если в той же строке, но в следующем столбце есть значение – берем его
+                next_col_idx = col_idx + 1
+                if next_col_idx < len(df.columns):
+                    next_col = df.columns[next_col_idx]
+                    next_value = df[next_col][idx]
+                    if isinstance(next_value, str):
+                        return next_value.strip()
+    return "Период не найден"
 
 def parse_period(period_str):
     """

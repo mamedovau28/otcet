@@ -36,38 +36,45 @@ def find_period(df):
     return "Период не найден"
 
 def parse_period(period_str):
-    """Обрабатывает период: если это диапазон дат — оставляет, если сокращенный месяц — преобразует"""
+    """
+    Преобразует период, заданный в сокращенном формате.
+    Если период содержит "-", считаем, что это уже диапазон дат и возвращаем его как есть.
+    Если период вида "фев.25" или "фев.2025", то он преобразуется в формат:
+    "01.MM.YYYY-last_day.MM.YYYY", где last_day – последний день месяца.
+    """
     if not isinstance(period_str, str):
         return period_str
-    period_str = period_str.strip().lower().replace(" ", "").replace("\xa0", "")  # Убираем лишние пробелы и неразрывные пробелы
-    
+    period_str = period_str.strip().lower().replace(" ", "")
     if "-" in period_str:
-        return period_str  # Уже диапазон дат
+        # Если это диапазон дат, возвращаем без изменений.
+        return period_str
 
+    # Русские аббревиатуры месяцев
     months = {
-        "янв": 1, "фев": 2, "мар": 3, "апр": 4, "май": 5, "июн": 6,
-        "июл": 7, "авг": 8, "сен": 9, "окт": 10, "ноя": 11, "дек": 12
+        "янв": 1, "фев": 2, "мар": 3, "апр": 4, "май": 5, "июн": 6, "июл": 7, "авг": 8, "сен": 9, "окт": 10, "ноя": 11, "дек": 12
     }
-
-    for month_abbr, month_num in months.items():
-        # Проверяем если период строка типа "фев.25"
-        if period_str.startswith(month_abbr):
-            year_part = period_str[len(month_abbr):]  # Получаем оставшуюся часть строки
-            year_part = year_part.replace('.', '')  # Убираем точку
-
-            # Проверяем, если год состоит из двух цифр
-            if len(year_part) == 2 and year_part.isdigit():
-                year = 2000 + int(year_part)  # Преобразуем в 4-значный год (например, "25" -> 2025)
-            elif len(year_part) == 4 and year_part.isdigit():  # Если год уже 4 цифры
+    # Ищем, с каким месяцем начинается строка
+    for abbr, month in months.items():
+        if period_str.startswith(abbr):
+            year_part = period_str[len(abbr):]  # остаток строки – год
+            if len(year_part) == 2:
+                year = int("20" + year_part)
+            elif len(year_part) == 4:
                 year = int(year_part)
             else:
-                return "Ошибка в формате периода"  # Если год некорректный
+                return period_str  # если год задан некорректно, возвращаем исходное значение
+            last_day = calendar.monthrange(year, month)[1]
+            return f"01.{month:02}.{year}-{last_day}.{month:02}.{year}"
+    return period_str
 
-            # Получаем последний день месяца
-            last_day = calendar.monthrange(year, month_num)[1]
-            return f"01.{month_num:02}.{year}-{last_day}.{month_num:02}.{year}"
-
-    return "Ошибка в формате периода"  # Если формат не распознан
+def find_table_start(df):
+    """Находит координаты ячейки с '№' или 'месяц' и возвращает индекс строки и колонки"""
+    for col_idx, col in enumerate(df.columns):
+        for row_idx, value in df[col].items():
+            if isinstance(value, str):
+                if "№" in value or "месяц" in value.lower():
+                    return row_idx, col_idx  # Возвращаем строку и колонку, где нашли "№" или "месяц"
+    return None, None 
     
 def find_table_start(df):
     """Находит координаты ячейки с '№' или 'месяц' и возвращает индекс строки и колонки"""

@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd  
 
-st.title("Отчет по статистики")  
+st.title("Отчет по статистике")  
 
 # Выбор способа загрузки данных  
 option = st.radio("Выберите источник данных:", ["Загрузить Excel", "Ссылка на Google Таблицу"])  

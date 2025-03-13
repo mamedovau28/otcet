@@ -44,6 +44,11 @@ def parse_period(period_str):
     """
     if not isinstance(period_str, str):
         return period_str
+    
+    # Если встречаем слово "сезонный коэффициент", это не период, и возвращаем специальное сообщение
+    if "сезонный коэффициент" in period_str.lower():
+        return "Сезонный коэффициент, не период"
+
     period_str = period_str.strip().lower().replace(" ", "")
     if "-" in period_str:
         # Если это диапазон дат, возвращаем без изменений.
@@ -53,6 +58,7 @@ def parse_period(period_str):
     months = {
         "янв": 1, "фев": 2, "мар": 3, "апр": 4, "май": 5, "июн": 6, "июл": 7, "авг": 8, "сен": 9, "окт": 10, "ноя": 11, "дек": 12
     }
+    
     # Ищем, с каким месяцем начинается строка
     for abbr, month in months.items():
         if period_str.startswith(abbr):
@@ -65,8 +71,9 @@ def parse_period(period_str):
                 return period_str  # если год задан некорректно, возвращаем исходное значение
             last_day = calendar.monthrange(year, month)[1]
             return f"01.{month:02}.{year}-{last_day}.{month:02}.{year}"
+    
     return period_str
-
+    
 def find_table_start(df):
     """Находит координаты ячейки с '№' или 'месяц' и возвращает индекс строки и колонки"""
     for col_idx, col in enumerate(df.columns):

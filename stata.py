@@ -40,18 +40,19 @@ if uploaded_file:
         st.success(f"Период найден: {period}")
 
     st.dataframe(df)  # Показываем загруженную таблицу
+    
     def extract_platforms_table(df):
-    """Ищет колонку '№' и возвращает все данные справа от нее"""
-    for col_idx, col in enumerate(df.columns):
-        if isinstance(col, str) and "№" in col:
-            return df.iloc[:, col_idx:]  # Берем все столбцы начиная с найденного
-    return None  # Если колонка "№" не найдена
+        """Ищет колонку '№' и возвращает все данные справа от нее"""
+        for col_idx, col in enumerate(df.columns):
+            if isinstance(col, str) and "№" in col:
+                return df.iloc[:, col_idx:]  # Берем все столбцы начиная с найденного
+        return None  # Если колонка "№" не найдена
 
-# Извлекаем таблицу с площадками
-platforms_table = extract_platforms_table(df)
+    # Извлекаем таблицу с площадками
+    platforms_table = extract_platforms_table(df)
 
-if platforms_table is not None:
-    st.success("Таблица площадок найдена:")
-    st.dataframe(platforms_table)
-else:
-    st.warning("Таблица площадок не найдена")
+    if platforms_table is not None:
+        st.success("Таблица площадок найдена:")
+        st.dataframe(platforms_table)
+    else:
+        st.warning("Таблица площадок не найдена")

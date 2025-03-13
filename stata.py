@@ -95,7 +95,7 @@ if uploaded_file:
         period = parse_period(period_raw)
     
     # Поиск таблицы с рекламными кампаниями
-campaigns_table = extract_campaigns_table(df)
+    campaigns_table = extract_campaigns_table(df)
     
     # Вывод информации о проекте
     st.subheader("Информация о проекте")

@@ -29,7 +29,7 @@ def extract_campaigns_table(df):
         # Извлекаем таблицу
         table_data = df.iloc[row_idx:, col_idx:]
         
-        # Удаляем строки, где в 2 из первых 3 столбцов отсутствуют данные
+        # Удаляем строки, где в 3 из первых 5 столбцов отсутствуют данные
         table_data = table_data.dropna(subset=table_data.columns[:5], thresh=3)
         
         return table_data
@@ -40,10 +40,14 @@ st.title("Обработка данных рекламных кампаний")
 uploaded_file = st.file_uploader("Загрузите файл Excel", type=["xlsx", "xls"])
 
 if uploaded_file:
+    # Чтение файла
     df = pd.read_excel(uploaded_file, sheet_name=None)  
     sheet_name = st.selectbox("Выберите лист", list(df.keys()))  
     df = df[sheet_name]  
-    
+
+    # Удаляем пустые строки из первого столбца
+    df = df[df.iloc[:, 0].notna()]
+
     # Поиск проекта и периода
     project_name = find_value_by_keyword(df, "проект", "Проект не найден", "Название проекта отсутствует")
     period = find_value_by_keyword(df, "период", "Период не найден", "Период отсутствует")

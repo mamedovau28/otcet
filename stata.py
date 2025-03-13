@@ -1,4 +1,3 @@
-> Юлия Мамедова:
 import pandas as pd
 import streamlit as st
 import calendar

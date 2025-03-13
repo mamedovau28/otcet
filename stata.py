@@ -31,18 +31,7 @@ def parse_period(period_str):
 
     # Русские аббревиатуры месяцев
     months = {
-        "янв": 1,
-        "фев": 2,
-        "мар": 3,
-        "апр": 4,
-        "май": 5,
-        "июн": 6,
-        "июл": 7,
-        "авг": 8,
-        "сен": 9,
-        "окт": 10,
-        "ноя": 11,
-        "дек": 12
+        "янв": 1, "фев": 2, "мар": 3, "апр": 4, "май": 5, "июн": 6, "июл": 7, "авг": 8, "сен": 9, "окт": 10, "ноя": 11, "дек": 12
     }
     # Ищем, с каким месяцем начинается строка
     for abbr, month in months.items():
@@ -59,21 +48,19 @@ def parse_period(period_str):
     return period_str
 
 def find_table_start(df):
-    """Находит координаты ячейки с '№' и возвращает индекс строки и колонки"""
+    """Находит координаты ячейки с '№' или 'месяц' и возвращает индекс строки и колонки"""
     for col_idx, col in enumerate(df.columns):
         for row_idx, value in df[col].items():
-            if isinstance(value, str) and "№" in value:
-                return row_idx, col_idx
-    return None, None
+            if isinstance(value, str):
+                if "№" in value or "месяц" in value.lower():
+                    return row_idx, col_idx  # Возвращаем строку и колонку, где нашли "№" или "месяц"
+    return None, None  
 
 def extract_campaigns_table(df):
     """Извлекает таблицу с рекламными кампаниями, начиная с найденной строки и колонки"""
     row_idx, col_idx = find_table_start(df)
     if row_idx is not None and col_idx is not None:
-        table_data = df.iloc[row_idx:, col_idx:]
-        # Удаляем строки, где в 2 из первых 3 столбцов отсутствуют данные
-        table_data = table_data.dropna(subset=table_data.columns[:3], thresh=2)
-        return table_data
+        return df.iloc[row_idx:, col_idx:]
     return None
 
 st.title("Обработка данных рекламных кампаний")

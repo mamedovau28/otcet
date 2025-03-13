@@ -56,13 +56,13 @@ if uploaded_file:
     
     # Поиск проекта, ресурса и периода
     project_name = find_value_by_keyword(df, "проект", "Проект не найден", "Название проекта отсутствует")
-    resource_name = find_value_by_keyword(df, "ресурс", "Ресурс не найден", "Название ресурса отсутствует")
+    resource_name = find_value_by_keyword(df, "ресурс")
     period = find_value_by_keyword(df, "период", "Период не найден", "Период отсутствует")
 
     # Поиск таблицы с рекламными кампаниями
     campaigns_table = extract_campaigns_table(df)
 
-    if resource_name and (resource_name.startswith("Ресурс не найден") or resource_name.startswith("Название ресурса отсутствует")):
+    if resource_name:
         st.warning(resource_name)
     else:
         st.success(f"Название ресурса: {resource_name}")

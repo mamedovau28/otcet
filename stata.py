@@ -1,4 +1,3 @@
-
 import pandas as pd
 import streamlit as st
 import calendar
@@ -77,6 +76,24 @@ def find_month_in_table(df, month_abbrs):
                         return df.iloc[idx+1:]  # Возвращаем строки после найденного месяца
     return None
 
+# Функция для поиска координат таблицы по ключевым словам
+def find_table_start(df):
+    """Находит координаты ячейки с '№' или 'месяц' и возвращает индекс строки и колонки"""
+    for col_idx, col in enumerate(df.columns):
+        for row_idx, value in enumerate(df[col].items()):
+            if isinstance(value, str):
+                if "№" in value or "месяц" in value.lower():
+                    return row_idx, col_idx  # Возвращаем строку и колонку, где нашли "№" или "месяц"
+    return None, None  
+
+# Функция для извлечения таблицы с рекламными кампаниями
+def extract_campaigns_table(df):
+    """Извлекает таблицу с рекламными кампаниями, начиная с найденной строки и колонки"""
+    row_idx, col_idx = find_table_start(df)
+    if row_idx is not None and col_idx is not None:
+        return df.iloc[row_idx:, col_idx:]
+    return None
+
 # Основной код для загрузки файла и обработки данных
 st.title("Обработка данных рекламных кампаний")
 
@@ -97,8 +114,8 @@ if uploaded_file:
     if isinstance(period_raw, str) and "не найден" not in period_raw.lower():
         # Преобразуем период, если это строка, а не ошибка
         period = parse_period(period_raw)
-
-# Если период не найден, ищем месяц в таблице
+    
+    # Если период не найден, ищем месяц в таблице
     if period == "Период не найден":
         months = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"]
         campaigns_table = find_month_in_table(df, months)
@@ -120,3 +137,8 @@ if uploaded_file:
     else:
         st.success(f"Период: {period}")
 
+    # Вывод таблицы рекламных кампаний
+    campaigns_table = extract_campaigns_table(df)
+    if campaigns_table is not None:
+        st.subheader("Таблица рекламных кампаний")
+        st.dataframe(campaigns_table)

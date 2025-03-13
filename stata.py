@@ -109,11 +109,10 @@ if uploaded_file:
     project_name = find_project_name(df)
     period_raw = find_period(df)
     
+     # Проверка на наличие фразы "не найден" и последующее преобразование периода
     period = period_raw
-    if isinstance(period_raw, str) and "не найден" not in period_raw.lower():
+    if isinstance(period_raw, str) and "не найден" not in period_raw.lower() and "сезонныйкоэффициент" not in period_raw.lower():
         period = parse_period(period_raw)
-
-    st.success(f"Период: {period}")
     
     # Поиск таблицы с рекламными кампаниями
     campaigns_table = extract_campaigns_table(df)

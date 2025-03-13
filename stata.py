@@ -39,7 +39,7 @@ def parse_period(period_str):
     """Обрабатывает период: если это диапазон дат — оставляет, если сокращенный месяц — преобразует"""
     if not isinstance(period_str, str):
         return period_str
-    period_str = period_str.strip().lower().replace(" ", "")
+    period_str = period_str.strip().lower().replace(" ", "").replace("\xa0", "")  # Убираем лишние пробелы и неразрывные пробелы
     
     if "-" in period_str:
         return period_str  # Уже диапазон дат
@@ -51,16 +51,17 @@ def parse_period(period_str):
     
     for month_abbr, month_num in months.items():
         if period_str.startswith(month_abbr):
-            year_part = period_str[len(month_abbr):]
-            if len(year_part) == 2:
+            year_part = period_str[len(month_abbr):].strip()
+            if len(year_part) == 2 and year_part.isdigit():
                 year = int("20" + year_part)
-            elif len(year_part) == 4:
+            elif len(year_part) == 4 and year_part.isdigit():
                 year = int(year_part)
             else:
-                return period_str
+                return "Ошибка в формате периода"  # Добавляем защиту от неправильных данных
             last_day = calendar.monthrange(year, month_num)[1]
             return f"01.{month_num:02}.{year}-{last_day}.{month_num:02}.{year}"
-    return period_str
+    
+    return "Ошибка в формате периода"  # Возвращаем осмысленный текст, если не смогли обработать
 
 def find_table_start(df):
     """Находит координаты ячейки с '№' или 'месяц' и возвращает индекс строки и колонки"""

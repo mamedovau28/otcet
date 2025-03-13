@@ -53,14 +53,7 @@ def extract_campaigns_table(df):
     """Извлекает таблицу с рекламными кампаниями, начиная с найденной строки и колонки"""
     row_idx, col_idx = find_table_start(df)
     if row_idx is not None and col_idx is not None:
-        # Извлекаем таблицу
-        table_data = df.iloc[row_idx:, col_idx:]
-
-        # Проверяем на случай, если таблица начинается с "№" или "месяц" и делаем первую строку заголовками
-        table_data.columns = table_data.iloc[0].astype(str)  # Преобразуем первую строку в строковые значения
-        table_data = table_data.drop(index=0)  # Удаляем первую строку, так как она стала заголовками
-        
-        return table_data
+        return df.iloc[row_idx:, col_idx:]
     return None  
 
 st.title("Обработка данных рекламных кампаний")

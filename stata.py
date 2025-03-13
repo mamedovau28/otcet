@@ -26,7 +26,12 @@ def extract_campaigns_table(df):
     """Извлекает таблицу с рекламными кампаниями, начиная с найденной строки и колонки"""
     row_idx, col_idx = find_table_start(df)
     if row_idx is not None and col_idx is not None:
-        return df.iloc[row_idx:, col_idx:]  
+        # Извлекаем все данные, начиная с первой строки после №
+        table_data = df.iloc[row_idx + 1:, col_idx:]
+        # Переводим первую строку данных в заголовки столбцов
+        new_columns = df.iloc[row_idx + 1, col_idx:].values
+        table_data.columns = new_columns  # Устанавливаем заголовки
+        return table_data
     return None  
 
 st.title("Обработка данных рекламных кампаний")

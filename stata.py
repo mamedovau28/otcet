@@ -48,7 +48,7 @@ def parse_period(period_str):
         "янв": 1, "фев": 2, "мар": 3, "апр": 4, "май": 5, "июн": 6,
         "июл": 7, "авг": 8, "сен": 9, "окт": 10, "ноя": 11, "дек": 12
     }
-    
+
     for month_abbr, month_num in months.items():
         # Обрабатываем формат с точкой, например "фев.25"
         if period_str.startswith(month_abbr):

@@ -22,15 +22,16 @@ def parse_period(period_str):
         "июл": 7, "авг": 8, "сен": 9, "окт": 10, "ноя": 11, "дек": 12
     }
     
-    if "-" in period_str and len(period_str.split("-")) == 2:
-        return period_str  # Уже диапазон дат, возвращаем как есть
+    if isinstance(period_str, str):
+        if "-" in period_str and len(period_str.split("-")) == 2:
+            return period_str  # Уже диапазон дат, возвращаем как есть
 
-    parts = period_str.split(".")  # Разделяем по точке
-    if len(parts) == 2 and parts[0] in months:
-        month_num = months[parts[0]]
-        year = int("20" + parts[1])  # Приводим к полному формату года
-        last_day = calendar.monthrange(year, month_num)[1]  # Определяем последний день месяца
-        return f"01.{month_num:02}.{year} - {last_day}.{month_num:02}.{year}"
+        parts = period_str.split(".")  # Разделяем по точке
+        if len(parts) == 2 and parts[0] in months:
+            month_num = months[parts[0]]
+            year = int("20" + parts[1])  # Приводим к полному формату года
+            last_day = calendar.monthrange(year, month_num)[1]  # Определяем последний день месяца
+            return f"01.{month_num:02}.{year} - {last_day}.{month_num:02}.{year}"
 
     return "Некорректный формат периода"
 
@@ -64,8 +65,8 @@ if uploaded_file:
     project_name = find_value_by_keyword(df, "проект", "Проект не найден", "Название проекта отсутствует")
     period_raw = find_value_by_keyword(df, "период", "Период не найден", "Период отсутствует")
     
-    # Обработка периода
-    if "не найден" not in period_raw.lower():
+    # Проверка типа данных перед обработкой
+    if isinstance(period_raw, str) and "не найден" not in period_raw.lower():
         period = parse_period(period_raw)
     else:
         period = period_raw
@@ -80,7 +81,7 @@ if uploaded_file:
     else:
         st.success(f"Название проекта: {project_name}")
 
-    if period.startswith("Период не найден") or period.startswith("Период отсутствует"):
+    if isinstance(period, str) and (period.startswith("Период не найден") or period.startswith("Период отсутствует")):
         st.warning(period)
     else:
         st.success(f"Период: {period}")

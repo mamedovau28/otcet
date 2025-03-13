@@ -29,9 +29,11 @@ def find_period(df):
     for col_idx, col in enumerate(df.columns):
         for idx, value in df[col].items():
             if isinstance(value, str) and "период" in value.lower():
+                # Ищем период в строке ниже, если он есть
                 if idx + 1 < len(df):
                     next_row_value = df[col][idx + 1]
-                    return next_row_value  # Возвращаем значение из следующей строки
+                    if isinstance(next_row_value, str):  # Если строка не пустая
+                        return next_row_value.strip()
     return "Период не найден"  # Если не нашли период
 
 def parse_period(period_str):
@@ -83,7 +85,6 @@ def extract_campaigns_table(df):
     return None
 
 st.title("Обработка данных рекламных кампаний")
-
 uploaded_file = st.file_uploader("Загрузите файл Excel", type=["xlsx", "xls"])
 
 if uploaded_file:
@@ -97,6 +98,7 @@ if uploaded_file:
     # Поиск периода
     period_raw = find_period(df)
     
+    # Если период найден, парсим его в нужный формат
     period = period_raw
     if isinstance(period_raw, str) and "не найден" not in period_raw.lower() and "отсутствует" not in period_raw.lower():
         period = parse_period(period_raw)

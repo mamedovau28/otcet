@@ -71,6 +71,8 @@ def parse_period(period_str):
             return f"01.{month:02}.{year}-{last_day}.{month:02}.{year}"  # возвращаем период в формате "01.MM.YYYY-last_day.MM.YYYY"
     
     return period_str  # если ничего не найдено, возвращаем исходное значение
+
+st.success(f"Период: {period}")
     
 def find_table_start(df):
     """Находит координаты ячейки с '№' или 'месяц' и возвращает индекс строки и колонки"""

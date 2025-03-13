@@ -24,6 +24,16 @@ def find_value_by_keyword(df, keyword, not_found_msg, empty_msg):
                     return empty_msg  # Если ниже нет строки
     return not_found_msg  # Если не нашли "проект"
 
+def find_period(df):
+    """Находит период, проверяя строку под 'период' и возвращает значение"""
+    for col_idx, col in enumerate(df.columns):
+        for idx, value in df[col].items():
+            if isinstance(value, str) and "период" in value.lower():
+                if idx + 1 < len(df):
+                    next_row_value = df[col][idx + 1]
+                    return next_row_value  # Возвращаем значение из следующей строки
+    return "Период не найден"  # Если не нашли период
+
 def parse_period(period_str):
     """
     Преобразует период, заданный в сокращенном формате.
@@ -77,13 +87,16 @@ st.title("Обработка данных рекламных кампаний")
 uploaded_file = st.file_uploader("Загрузите файл Excel", type=["xlsx", "xls"])
 
 if uploaded_file:
-    df = pd.read_excel(uploaded_file, sheet_name=None)
+    df = pd.
+read_excel(uploaded_file, sheet_name=None)
     sheet_name = st.selectbox("Выберите лист", list(df.keys()))
     df = df[sheet_name]
     
-    # Поиск проекта и периода
+    # Поиск проекта
     project_name = find_value_by_keyword(df, "проект", "Проект не найден", "Название проекта отсутствует")
-    period_raw = find_value_by_keyword(df, "период", "Период не найден", "Период отсутствует")
+    
+    # Поиск периода
+    period_raw = find_period(df)
     
     period = period_raw
     if isinstance(period_raw, str) and "не найден" not in period_raw.lower() and "отсутствует" not in period_raw.lower():

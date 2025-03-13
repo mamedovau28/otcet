@@ -114,8 +114,7 @@ if uploaded_file:
     # Вывод информации о проекте
     st.subheader("Информация о проекте")
     st.success(f"Название проекта: {project_name}" if "не найден" not in project_name.lower() else project_name)
-    # Добавлена дополнительная проверка для обработки значений, подобных "сезонный коэффициент"
-    st.success(f"Период: {period}" if isinstance(period, str) and "не найден" not in period.lower() and "сезонныйкоэффициент" not in period.lower() else "Некорректный период")
+    st.success(f"Период: {period}")
     
     # Вывод таблицы рекламных кампаний
     st.subheader("Таблица рекламных кампаний")

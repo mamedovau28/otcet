@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import gspread
 
 # Функция для загрузки Excel-файла
 def load_excel(file):

@@ -502,3 +502,7 @@ CPL (первичных обращений) — {oh_cpl_str} ₽ с НДС
         st.write("Доступные даты:", df_week_budget[['Неделя с', 'Неделя по']].drop_duplicates())
     else:
         st.write("Найденные данные:", report_week_df)
+       
+    # Вывод таблицы с недельным бюджетом полная
+    st.subheader("Недельный бюджет по всем площадкам")
+    st.dataframe(df_week_budget)

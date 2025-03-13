@@ -86,8 +86,7 @@ if uploaded_file:
     period_raw = find_value_by_keyword(df, "период", "Период не найден", "Период отсутствует")
     
     period = period_raw
-    if isinstance(period_raw, str) and "не найден" not in period_raw.
-lower() and "отсутствует" not in period_raw.lower():
+    if isinstance(period_raw, str) and "не найден" not in period_raw.lower() and "отсутствует" not in period_raw.lower():
         period = parse_period(period_raw)
     
     # Поиск таблицы с рекламными кампаниями

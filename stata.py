@@ -23,20 +23,15 @@ def parse_period(period_str):
     }
     
     if isinstance(period_str, str):
-        period_str = period_str.replace(" ", "").lower()  # Убираем пробелы и приводим к нижнему регистру
-        
-        # Проверяем, является ли это диапазоном дат (например, 01.01.2025-01.02.2025)
         if "-" in period_str and len(period_str.split("-")) == 2:
             return period_str  # Уже диапазон дат, возвращаем как есть
 
-        # Проверяем, является ли это сокращенным месяцем (например, фев.25 или фев.2025)
-        for month_abbr, month_num in months.items():
-            if period_str.startswith(month_abbr):
-                year_part = period_str[len(month_abbr):]  # Берем часть строки после месяца
-                if year_part.isdigit():
-                    year = int("20" + year_part) if len(year_part) == 2 else int(year_part)  # Приводим год к 2025 формату
-                    last_day = calendar.monthrange(year, month_num)[1]  # Определяем последний день месяца
-                    return f"01.{month_num:02}.{year} - {last_day}.{month_num:02}.{year}"
+        parts = period_str.split(".")  # Разделяем по точке
+        if len(parts) == 2 and parts[0] in months:
+            month_num = months[parts[0]]
+            year = int("20" + parts[1])  # Приводим к полному формату года
+            last_day = calendar.monthrange(year, month_num)[1]  # Определяем последний день месяца
+            return f"01.{month_num:02}.{year} - {last_day}.{month_num:02}.{year}"
 
     return "Некорректный формат периода"
 
@@ -90,3 +85,11 @@ if uploaded_file:
         st.warning(period)
     else:
         st.success(f"Период: {period}")
+
+    # Вывод таблицы с рекламными кампаниями
+    st.subheader("Таблица рекламных кампаний")
+    if campaigns_table is not None:
+        st.success("Таблица рекламных кампаний найдена:")
+        st.dataframe(campaigns_table)
+    else:
+        st.warning("Таблица рекламных кампаний не найдена")

@@ -30,6 +30,9 @@ def extract_platforms_table(df):
         table_data = df.iloc[row_idx + 1:, col_idx:]  # Данные, начиная с первой строки после "№"
         new_columns = df.iloc[row_idx + 1, col_idx:].values  # Названия столбцов
         table_data.columns = new_columns  # Устанавливаем новые заголовки
+        
+        # Преобразуем все значения в строковые, чтобы избежать ошибок преобразования типов
+        table_data = table_data.applymap(str)
         return table_data
     return None  
 

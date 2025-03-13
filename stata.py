@@ -66,7 +66,8 @@ def parse_period(period_str):
             else:
                 return period_str  # если год задан некорректно, возвращаем исходное значение
 
-            last_day = calendar.monthrange(year, month)[1]  # получаем последний день месяца
+            # Проверяем, какой последний день месяца
+            last_day = calendar.monthrange(year, month)[1]
             return f"01.{month:02}.{year}-{last_day}.{month:02}.{year}"  # возвращаем период в формате "01.MM.YYYY-last_day.MM.YYYY"
     
     return period_str  # если ничего не найдено, возвращаем исходное значение

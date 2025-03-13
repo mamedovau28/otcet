@@ -22,14 +22,14 @@ def find_table_start(df):
                 return row_idx, col_idx  # Возвращаем строку и колонку, где нашли "№"
     return None, None  
 
-def extract_platforms_table(df):
-    """Извлекает таблицу с площадками, начиная с найденной строки и колонки"""
+def extract_campaigns_table(df):
+    """Извлекает таблицу с рекламными кампаниями, начиная с найденной строки и колонки"""
     row_idx, col_idx = find_table_start(df)
     if row_idx is not None and col_idx is not None:
         return df.iloc[row_idx:, col_idx:]  
     return None  
 
-st.title("Обработка данных маркетплейса")
+st.title("Обработка данных рекламных кампаний")
 
 uploaded_file = st.file_uploader("Загрузите файл Excel", type=["xlsx", "xls"])
 
@@ -42,8 +42,8 @@ if uploaded_file:
     project_name = find_value_by_keyword(df, "проект", "Проект не найден", "Название проекта отсутствует")
     period = find_value_by_keyword(df, "период", "Период не найден", "Период отсутствует")
 
-    # Поиск таблицы площадок
-    platforms_table = extract_platforms_table(df)
+    # Поиск таблицы с рекламными кампаниями
+    campaigns_table = extract_campaigns_table(df)
 
     # Вывод проекта и периода
     st.subheader("Информация о проекте")
@@ -57,10 +57,10 @@ if uploaded_file:
     else:
         st.success(f"Период: {period}")
 
-    # Вывод таблицы площадок
-    st.subheader("Таблица площадок")
-    if platforms_table is not None:
-        st.success("Таблица площадок найдена:")
-        st.dataframe(platforms_table)
+    # Вывод таблицы с рекламными кампаниями
+    st.subheader("Таблица рекламных кампаний")
+    if campaigns_table is not None:
+        st.success("Таблица рекламных кампаний найдена:")
+        st.dataframe(campaigns_table)
     else:
-        st.warning("Таблица площадок не найдена")
+        st.warning("Таблица рекламных кампаний не найдена")

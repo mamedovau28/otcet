@@ -14,6 +14,21 @@ def find_value_by_keyword(df, keyword, not_found_msg, empty_msg):
                     return empty_msg  # Если следующего столбца нет
     return not_found_msg  # Если строка с нужным словом не найдена
 
+def find_table_start(df):
+    """Находит координаты ячейки с '№' и возвращает индекс строки и колонки"""
+    for col_idx, col in enumerate(df.columns):
+        for row_idx, value in df[col].items():
+            if isinstance(value, str) and "№" in value:
+                return row_idx, col_idx  # Возвращаем строку и колонку, где нашли "№"
+    return None, None  # Если не найдено
+
+def extract_platforms_table(df):
+    """Извлекает таблицу с площадками, начиная с найденной строки и колонки"""
+    row_idx, col_idx = find_table_start(df)
+    if row_idx is not None and col_idx is not None:
+        return df.iloc[row_idx:, col_idx:]  # Берем данные, начиная с найденной ячейки
+    return None
+
 st.title("Загрузка и обработка данных")
 
 uploaded_file = st.file_uploader("Загрузите файл Excel", type=["xlsx", "xls"])
@@ -41,14 +56,12 @@ if uploaded_file:
 
     st.dataframe(df)  # Показываем загруженную таблицу
     
-    def extract_platforms_table(df):
-        """Ищет колонку '№' и возвращает все данные справа от нее"""
-        for col_idx, col in enumerate(df.columns):
-            if isinstance(col, str) and "№" in col:
-                return df.iloc[:, col_idx:]  # Берем все столбцы начиная с найденного
-        return None  # Если колонка "№" не найдена
-
-    # Извлекаем таблицу с площадками
+# Таблица из МП
+if uploaded_file:
+    df = pd.read_excel(uploaded_file, sheet_name=None)  # Загружаем все листы
+    sheet_name = st.selectbox("Выберите лист", list(df.keys()))  # Выбираем лист
+    df = df[sheet_name]  # Берем данные выбранного листа
+    
     platforms_table = extract_platforms_table(df)
 
     if platforms_table is not None:

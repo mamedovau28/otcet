@@ -7,13 +7,23 @@ def find_value_by_keyword(df, keyword, not_found_msg, empty_msg):
     for col_idx, col in enumerate(df.columns):
         for idx, value in df[col].items():
             if isinstance(value, str) and keyword in value.lower():
-                next_col_idx = col_idx + 1
-                if next_col_idx < len(df.columns):
-                    next_col = df.columns[next_col_idx]
-                    return df[next_col][idx]
+                # Проверяем строку ниже по текущему столбцу
+                if idx + 1 < len(df):
+                    next_row_value = df[col][idx + 1]
+                    if "период" in next_row_value.lower():  # Если в строке ниже есть слово "период"
+                        # Ищем название проекта в следующем столбце
+                        next_col_idx = col_idx + 1  
+                        if next_col_idx < len(df.columns):
+                            next_col = df.columns[next_col_idx]
+                            return df[next_col][idx]
+                        else:
+                            return empty_msg
+                    else:
+                        # Если в строке ниже нет "периода", то считаем это название проекта
+                        return next_row_value
                 else:
-                    return empty_msg
-    return not_found_msg
+                    return empty_msg  # Если ниже нет строки
+    return not_found_msg  # Если не нашли "проект"
 
 def parse_period(period_str):
     """

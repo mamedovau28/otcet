@@ -26,7 +26,13 @@ def extract_campaigns_table(df):
     """Извлекает таблицу с рекламными кампаниями, начиная с найденной строки и колонки"""
     row_idx, col_idx = find_table_start(df)
     if row_idx is not None and col_idx is not None:
-        return df.iloc[row_idx:, col_idx:]  
+        # Извлекаем таблицу
+        table_data = df.iloc[row_idx:, col_idx:]
+        
+        # Удаляем строки, где в 2 из первых 3 столбцов отсутствуют данные
+        table_data = table_data.dropna(subset=table_data.columns[:3], thresh=2)
+        
+        return table_data
     return None  
 
 st.title("Обработка данных рекламных кампаний")

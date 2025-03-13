@@ -50,19 +50,20 @@ def parse_period(period_str):
     }
     
     for month_abbr, month_num in months.items():
+        # Обрабатываем формат с точкой, например "фев.25"
         if period_str.startswith(month_abbr):
-            year_part = period_str[len(month_abbr):].strip()
+            year_part = period_str[len(month_abbr):].replace('.', '').strip()  # Убираем точку и пробелы
             if len(year_part) == 2 and year_part.isdigit():
-                year = int("20" + year_part)
+                year = int("20" + year_part)  # Двухзначный год
             elif len(year_part) == 4 and year_part.isdigit():
-                year = int(year_part)
+                year = int(year_part)  # Четырехзначный год
             else:
-                return "Ошибка в формате периода"  # Добавляем защиту от неправильных данных
+                return "Ошибка в формате периода"  # Если год невалиден
             last_day = calendar.monthrange(year, month_num)[1]
             return f"01.{month_num:02}.{year}-{last_day}.{month_num:02}.{year}"
     
-    return "Ошибка в формате периода"  # Возвращаем осмысленный текст, если не смогли обработать
-
+    return "Ошибка в формате периода"  # Если формат не распознан
+    
 def find_table_start(df):
     """Находит координаты ячейки с '№' или 'месяц' и возвращает индекс строки и колонки"""
     for col_idx, col in enumerate(df.columns):

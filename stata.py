@@ -10,7 +10,7 @@ def find_value_by_keyword(df, keyword, not_found_msg, empty_msg):
                 # Проверяем строку ниже по текущему столбцу
                 if idx + 1 < len(df):
                     next_row_value = df[col][idx + 1]
-                    if "период" in next_row_value.lower():  # Если в строке ниже есть слово "период"
+                    if isinstance(next_row_value, str) and "период" in next_row_value.lower():  # Проверка типа и наличия слова "период"
                         # Ищем название проекта в следующем столбце
                         next_col_idx = col_idx + 1  
                         if next_col_idx < len(df.columns):
@@ -18,8 +18,7 @@ def find_value_by_keyword(df, keyword, not_found_msg, empty_msg):
                             return df[next_col][idx]
                         else:
                             return empty_msg
-                    else:
-                        # Если в строке ниже нет "периода", то считаем это название проекта
+                    elif isinstance(next_row_value, str):  # Если в строке ниже нет "периода", но это строка, считаем это название проекта
                         return next_row_value
                 else:
                     return empty_msg  # Если ниже нет строки
@@ -87,7 +86,8 @@ if uploaded_file:
     period_raw = find_value_by_keyword(df, "период", "Период не найден", "Период отсутствует")
     
     period = period_raw
-    if isinstance(period_raw, str) and "не найден" not in period_raw.lower() and "отсутствует" not in period_raw.lower():
+    if isinstance(period_raw, str) and "не найден" not in period_raw.
+lower() and "отсутствует" not in period_raw.lower():
         period = parse_period(period_raw)
     
     # Поиск таблицы с рекламными кампаниями
@@ -112,4 +112,3 @@ if uploaded_file:
         st.dataframe(campaigns_table)
     else:
         st.warning("Таблица рекламных кампаний не найдена")
-

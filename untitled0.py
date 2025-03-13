@@ -316,11 +316,11 @@ if mp_file and metki_file:
 
     if total_plan_kpi > 0:
         if total_fact_calls == total_plan_kpi:
-            comments.append ("Реализация объемов идет согласно плановым")
+            comments.append ("Реализация объемов ЦО идет согласно плановым")
         elif total_fact_calls < total_plan_kpi:
-            comments.append ("Реализация объемов меньше плановых. Выполняем усиления РК")
+            comments.append ("Реализация объемов ЦО меньше плановых. Выполняем усиления РК")
         else:
-             comments.append ("Реализация объемов превышает плановые")
+             comments.append ("Реализация объемов ЦО превышает плановые")
     
     # Извлекаем бюджет для категорий, содержащих слово "тема" для Тематических площадок
     tp_budget = report_week_df.loc[report_week_df['Категория'].str.strip().str.contains('тема', case=False, na=False), 'Бюджет на неделю'].sum()

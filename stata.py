@@ -87,8 +87,7 @@ st.title("Обработка данных рекламных кампаний")
 uploaded_file = st.file_uploader("Загрузите файл Excel", type=["xlsx", "xls"])
 
 if uploaded_file:
-    df = pd.
-read_excel(uploaded_file, sheet_name=None)
+    df = pd.read_excel(uploaded_file, sheet_name=None)
     sheet_name = st.selectbox("Выберите лист", list(df.keys()))
     df = df[sheet_name]
     

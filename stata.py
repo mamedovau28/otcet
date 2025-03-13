@@ -2,22 +2,6 @@ import pandas as pd
 import streamlit as st
 import calendar
 
-def find_project_name(df):
-    """Ищет название проекта, проверяя сначала строку под 'проект', затем следующий столбец"""
-    for col_idx, col in enumerate(df.columns):
-        for idx, value in df[col].items():
-            if isinstance(value, str) and "проект" in value.lower():
-                # Проверяем строку ниже
-                if idx + 1 < len(df) and isinstance(df[col][idx + 1], str):
-                    if "период" not in df[col][idx + 1].lower():
-                        return df[col][idx + 1].strip()
-                # Проверяем следующий столбец
-                next_col_idx = col_idx + 1
-                if next_col_idx < len(df.columns):
-                    next_col = df.columns[next_col_idx]
-                    return df[next_col][idx] if isinstance(df[next_col][idx], str) else "Название проекта отсутствует"
-    return "Проект не найден"
-
 def find_period(df):
     """Находит период в таблице. Проверяет строку ниже, если есть, или следующий столбец."""
     for col_idx, col in enumerate(df.columns):
@@ -34,6 +18,22 @@ def find_period(df):
                     if isinstance(next_value, str):
                         return next_value.strip()
     return "Период не найден"
+    
+def find_project_name(df):
+    """Ищет название проекта, проверяя сначала строку под 'проект', затем следующий столбец"""
+    for col_idx, col in enumerate(df.columns):
+        for idx, value in df[col].items():
+            if isinstance(value, str) and "проект" in value.lower():
+                # Проверяем строку ниже
+                if idx + 1 < len(df) and isinstance(df[col][idx + 1], str):
+                    if "период" not in df[col][idx + 1].lower():
+                        return df[col][idx + 1].strip()
+                # Проверяем следующий столбец
+                next_col_idx = col_idx + 1
+                if next_col_idx < len(df.columns):
+                    next_col = df.columns[next_col_idx]
+                    return df[next_col][idx] if isinstance(df[next_col][idx], str) else "Название проекта отсутствует"
+    return "Проект не найден"
 
 def parse_period(period_str):
     """

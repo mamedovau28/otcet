@@ -55,8 +55,8 @@ def extract_campaigns_table(df):
     if row_idx is not None and col_idx is not None:
         # Извлекаем таблицу
         table_data = df.iloc[row_idx:, col_idx:]
-        
-        # Переводим строку с месяцем или "№" в строковые значения и используем ее как заголовки столбцов
+
+        # Проверяем на случай, если таблица начинается с "№" или "месяц" и делаем первую строку заголовками
         table_data.columns = table_data.iloc[0].astype(str)  # Преобразуем первую строку в строковые значения
         table_data = table_data.drop(index=0)  # Удаляем первую строку, так как она стала заголовками
         
@@ -98,3 +98,4 @@ if uploaded_file:
         st.dataframe(campaigns_table)
     else:
         st.warning("Таблица рекламных кампаний не найдена")
+

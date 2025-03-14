@@ -166,25 +166,42 @@ def process_mp(mp_df):
     
 st.title("Анализ рекламных кампаний")
 
-st.header("Загрузите медиаплан (МП) (только Excel)")
+st.header("Загрузите медиаплан (МП)")
 mp_file = st.file_uploader("Выберите файл с медиапланом", type=["xlsx"], key="mp_uploader")
 
 mp_df = None
 if mp_file:
+    # Чтение Excel файла
     xls = pd.ExcelFile(mp_file)
     sheet_names = xls.sheet_names
     if len(sheet_names) > 1:
         sheet_name = st.selectbox("Выберите лист с медиапланом", sheet_names, key="mp_sheet_select")
     else:
         sheet_name = sheet_names[0]
+    
+    # Загрузка данных с выбранного листа
     mp_df = pd.read_excel(mp_file, sheet_name=sheet_name)
     st.write("Медиаплан загружен:", sheet_name)
+
+    # Обработка медиаплана, включая фильтрацию столбцов
     mp_df, mp_col_map = process_mp(mp_df)  # Фильтрация теперь будет применяться здесь
+
     if mp_df is not None:
         st.subheader("Обработанный медиаплан")
+
         # Убираем дубликаты столбцов
         mp_df = mp_df.loc[:, ~mp_df.columns.duplicated()].copy()
+
+        # Фильтрация столбцов с нужным порядком и удаление строк с нулевыми показами
+        mp_df = filter_columns(mp_df, is_mp=True)  # Применяем фильтрацию для медиаплана
+
+        # Убираем строки, где показы = 0
+        if "показы" in mp_df.columns:
+            mp_df = mp_df[mp_df["показы"] != 0]
+
+        # Отображаем обработанный медиаплан
         st.dataframe(mp_df)
+
         # Извлечение рекламных площадок
         if "площадка" in mp_col_map:
             platforms = mp_df[mp_col_map["площадка"]].dropna().unique()
@@ -192,6 +209,7 @@ if mp_file:
             st.write(platforms)
         else:
             st.error("Не найден столбец с рекламными площадками.")
+
 
 # === Загрузка отчетов ===
 st.header("Загрузите данные (Excel или Google-таблицы)")

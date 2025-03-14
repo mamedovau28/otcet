@@ -2,73 +2,24 @@ import streamlit as st
 import pandas as pd
 import re
 
-# Словари для сопоставления названий колонок
+# Словарь для сопоставления названий колонок
 COLUMN_MAPPING = {
-    "площадка": ["площадка", "сайт", "ресурс", "название сайта"],
+    "дата": ["дата", "date"],
     "показы": ["показы", "импрессии", "impressions"],
     "клики": ["клики", "clicks"],
-    "охват": ["охват", "reach"],
-    "расход": ["расход", "затраты", "cost", "спенд", "расход до ндс", "расходдондс"]
+    "расход": ["расход", "затраты", "cost", "спенд", "расход до ндс", "расходдондс"],
+    "охват": ["охват", "reach"]
 }
 
 def standardize_columns(df):
-    """Приводит названия колонок к стандартному виду"""
-    df.columns = df.columns.astype(str).str.lower().str.strip()
+    df.columns = df.columns.str.lower().str.strip()
     column_map = {}
     for standard_col, possible_names in COLUMN_MAPPING.items():
         for col in df.columns:
-            # Проверяем, что хотя бы одно слово из возможных вариантов содержится в названии столбца
-            if any(word in col for word in possible_names):
+            if col in possible_names:
                 column_map[standard_col] = col
                 break
     return df.rename(columns=column_map), column_map
-
-def clean_mp(mp_df):
-    """
-    Ищем первую строку, в которой встречается слово "площадка" (без учета регистра).
-    Считаем эту строку заголовочной и возвращаем таблицу начиная с этой строки.
-    """
-    for i, row in mp_df.iterrows():
-        # Преобразуем значения строки в строки и ищем слово "площадка"
-        if row.astype(str).str.contains("площадка", case=False, na=False).any():
-            # Возьмем таблицу начиная с найденной строки
-            mp_df = mp_df.iloc[i:].reset_index(drop=True)
-            # Сделаем первую строку заголовками
-            mp_df.columns = mp_df.iloc[0]
-            mp_df = mp_df[1:].reset_index(drop=True)
-            return mp_df
-    return None
-
-def process_mp(mp_df):
-    """Обрабатывает медиаплан: ищет нужную таблицу, оставляет нужные столбцы и фильтрует строки."""
-    mp_df = clean_mp(mp_df)
-    if mp_df is None:
-        st.error("Ошибка: не удалось найти строку с заголовками, содержащую слово 'площадка'.")
-        return None
-
-    mp_df, col_map = standardize_columns(mp_df)
-
-    # Обязательные столбцы
-    required_cols = {"площадка", "показы", "клики"}
-    missing_columns = [col for col in required_cols if col not in col_map]
-    if missing_columns:
-        st.error(f"Отсутствуют обязательные столбцы: {', '.join(missing_columns)}")
-        return None
-
-    # Выбираем только нужные столбцы (охват необязателен)
-    selected_cols = list(required_cols)
-    if "охват" in col_map:
-        selected_cols.append("охват")
-
-    # Извлекаем данные только из выбранных столбцов
-    mp_df = mp_df[[col_map[col] for col in selected_cols if col in col_map]]
-
-    # Удаляем строки, где обязательные столбцы не заполнены
-    mp_df.dropna(subset=[col_map["площадка"], col_map["показы"], col_map["клики"]], how="any", inplace=True)
-
-    st.write("Обработанный медиаплан:")
-    st.dataframe(mp_df)
-    return mp_df
 
 def process_data(df):
     df, col_map = standardize_columns(df)
@@ -118,22 +69,22 @@ def process_data(df):
 # Интерфейс Streamlit
 st.title("Анализ качества рекламных кампаний")
 
-# === Загрузка МП ===
-st.header("Загрузите медиаплан (только Excel)")
+# Загрузка МП
+st.header("Загрузка медиаплана (МП)")
+mp_file = st.file_uploader("Загрузите файл медиаплана (Excel)", type=["xlsx"], key="mp_file")
 
-mp_file = st.file_uploader("Выберите файл с медиапланом", type=["xlsx"], key="mp_uploader")
-mp_data = None
-
+mp_df = None
 if mp_file:
     xls = pd.ExcelFile(mp_file)
-    sheet_name = st.selectbox("Выберите лист", xls.sheet_names) if len(xls.sheet_names) > 1 else xls.sheet_names[0]
+    sheet_names = xls.sheet_names
     
-    mp_data = pd.read_excel(mp_file, sheet_name=sheet_name)
-    mp_data = process_mp(mp_data)
+    if len(sheet_names) > 1:
+        sheet_name = st.selectbox("Выберите лист с данными", sheet_names, key="mp_sheet_select")
+    else:
+        sheet_name = sheet_names[0]
 
-    if mp_data is not None:
-        st.subheader("Обработанный медиаплан")
-        st.dataframe(mp_data)
+    mp_df = pd.read_excel(xls, sheet_name=sheet_name)
+    st.write("Медиаплан загружен:", sheet_name)
 
 # Загрузка и обработка данных (Excel или Google-таблицы)
 st.header("Загрузка отчетов")
@@ -156,7 +107,8 @@ for i in range(1, 11):
             try:
                 sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
                 gid = google_sheet_url.split("gid=")[1].split("&")[0] if "gid=" in google_sheet_url else "0"
-                csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+                csv_url = f"https://docs.google.
+com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
                 df = pd.read_csv(csv_url)
                 campaign_name = f"Загрузка {i}"
             except Exception as e:
@@ -191,11 +143,11 @@ for i in range(1, 11):
             # Генерация отчёта
             report_text = f"""
             {custom_campaign_name}
-            Показы: {format(total_impressions, ",.0f").replace(",", " ")}
-            Клики: {format(total_clicks, ",.0f").replace(",", " ")}
-            CTR: {ctr_value:.2%}
-            Охват: {format(total_reach, ",.0f").replace(",", " ")}
-            Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
+        Показы: {format(total_impressions, ",.0f").replace(",", " ")}
+        Клики: {format(total_clicks, ",.0f").replace(",", " ")}
+        CTR: {ctr_value:.2%}
+        Охват: {format(total_reach, ",.0f").replace(",", " ")}
+        Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
             """
 
             # Вывод отчёта

@@ -35,9 +35,8 @@ def process_data(df):
         for key in ["показы", "клики", "охват", "расход"]:
             df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True)  # Удаляем пробелы и лишние символы
             df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)  # Преобразуем в числа
-            df[col_map[key]] = df[col_map[key]] / 10
 
-    df[col_map["расход"]] = df[col_map["расход"]] / 10
+    df[col_map["расход"]] = df[col_map["расход"]] / 100
 
     if "охват" in col_map and "показы" in col_map:
         def adjust_coverage(row):

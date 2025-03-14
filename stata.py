@@ -1,3 +1,4 @@
+> Юлия Мамедова:
 import streamlit as st
 import pandas as pd
 import re
@@ -66,15 +67,18 @@ def process_data(df):
             
     return df, col_map
 
-def extract_campaign_name(text):
-    """Извлекает название РК из строки"""
-    parts = text.lower().split("//")
-    return parts[1].strip() if len(parts) > 1 else text.strip()
+def extract_campaign_name_from_gid(url):
+    """Извлекает название РК из gid Google Sheets URL"""
+    try:
+        gid = url.split("gid=")[1].split("&")[0]
+        return f"Campaign {gid}"  # Название РК на основе gid
+    except Exception:
+        return "Unknown Campaign"
 
 # Интерфейс Streamlit
 st.title("Анализ качества рекламных кампаний")
 
-upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файлы", "Ссылка на Google-таблицы"])
+upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файлы", "Ссылки на Google-таблицы"])
 
 dfs = []  # Список для хранения данных из нескольких файлов
 campaign_names = []  # Список для хранения названий РК
@@ -85,66 +89,15 @@ if upload_option == "Загрузить Excel-файлы":
         for uploaded_file in uploaded_files:
             df = pd.read_excel(uploaded_file)
             dfs.append(df)
-            campaign_name = extract_campaign_name(uploaded_file.name)
+            campaign_name = extract_campaign_name_from_gid(uploaded_file.name)
             campaign_names.append(campaign_name)
 
-elif upload_option == "Ссылка на Google-таблицы":
-    google_sheet_url = st.text_input("Введите ссылку на Google-таблицу")
-    if google_sheet_url:
-        try:
-            sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
-            gid = google_sheet_url.split("gid=")[1].split("&")[0] if "gid=" in google_sheet_url else "0"
-            csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
-            df = pd.read_csv(csv_url)
-            dfs.append(df)
-            campaign_names.append(extract_campaign_name(google_sheet_url))  # Используем ссылку как имя
-        except Exception as e:
-            st.error(f"Ошибка при загрузке CSV: {e}")
-
-    manual_name = st.text_input("Введите название РК (например: 'OneTarget')")
-    if manual_name:
-        campaign_names.append(extract_campaign_name(manual_name))
-
-if dfs:
-    for df, campaign_name in zip(dfs, campaign_names):
-        df, col_map = process_data(df)
-        st.write(f"Название РК: {campaign_name}")
-
-        # Выбор периода
-        if "дата" in col_map:
-            min_date = df[col_map["дата"]].min().date()
-            max_date = df[col_map["дата"]].max().date()
-            start_date, end_date = st.date_input("Выберите период", [min_date, max_date])
-
-            df_filtered = df[
-                (df[col_map["дата"]].dt.date >= start_date) & 
-                (df[col_map["дата"]].dt.date <= end_date)
-            ]
-
-            needed_cols = ["показы", "клики", "охват", "расход с ндс"]
-            
-            existing_cols = [col for col in needed_cols if col in df_filtered.columns]
-            summary = df_filtered[existing_cols].sum()
-
-            total_impressions = summary.get("показы", 0)
-            total_clicks = summary.get("клики", 0)
-            ctr_value = total_clicks / total_impressions if total_impressions > 0 else 0
-            total_reach = summary.get("охват", 0)
-            total_spend_nds = summary.get("расход с ндс", 0)
-
-            # Генерация отчёта
-            report_text = f"""
-            {campaign_name}
-        Показы: {format(total_impressions, ",.0f").replace(",", " ")}
-        Клики: {format(total_clicks, ",.0f").replace(",", " ")}
-        CTR: {ctr_value:.2%}
-        Охват: {format(total_reach, ",.0f").replace(",", " ")}
-        Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
-            """
-
-            # Вывод отчёта
-            st.subheader(f"Итоговый отчёт для {campaign_name}")
-            st.text_area(report_text, report_text, height=100)
-
-        # Вывод таблицы
-        st.dataframe(df)
+elif upload_option == "Ссылки на Google-таблицы":
+    google_sheet_urls = st.text_area("Введите ссылки на Google-таблицы (каждая ссылка с новой строки)").splitlines()
+    if google_sheet_urls:
+        for google_sheet_url in google_sheet_urls:
+            try:
+                csv_url = f"https://docs.google.com/spreadsheets/d/{google_sheet_url.split('/d/')[1].split('/')[0]}/export?format=csv&gid={google_sheet_url.split('gid=')[1].split('&')[0]}"
+                df = pd.read_csv(csv_url)
+                dfs.append(df)
+                campaign_name = extract_campaign_name_from_gid(google_sheet_url)

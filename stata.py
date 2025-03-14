@@ -48,7 +48,7 @@ def filter_columns(df):
     for col in df.columns:
         col_lower = col.lower()
         
-        if "проект" in col_lower:
+        if "площадка" in col_lower:
             required_columns.add(col)
         elif "охват" in col_lower:
             required_columns.add(col)

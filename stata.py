@@ -70,7 +70,7 @@ def filter_columns(df, is_mp=False):
                 required_columns.append(col)
             elif "расход" in col_lower:
                 required_columns.append(col)
-            elif re.search(r".*с ндс и .*", col_lower):
+            elif re.search(r".* ндс и .*", col_lower):
                 required_columns.append(col)
                 
         # Возвращаем DataFrame с колонками в нужном порядке

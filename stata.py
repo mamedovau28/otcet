@@ -87,13 +87,13 @@ def load_and_process_data(upload_option, campaign_name=None):
     df = None
 
     if upload_option == "Загрузить Excel-файл":
-        uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"])
+        uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"], key="file_uploader_excel")
         if uploaded_file:
             df = pd.read_excel(uploaded_file)
             campaign_name = extract_campaign_name(uploaded_file.name)
 
     elif upload_option == "Ссылка на Google-таблицу":
-        google_sheet_url = st.text_input("Введите ссылку на Google-таблицу")
+        google_sheet_url = st.text_input("Введите ссылку на Google-таблицу", key="google_sheet_url")
         if google_sheet_url:
             try:
                 sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
@@ -103,7 +103,8 @@ def load_and_process_data(upload_option, campaign_name=None):
             except Exception as e:
                 st.error(f"Ошибка при загрузке CSV: {e}")
 
-        manual_name = st.text_input("Введите название РК (например: 'OneTarget')")
+        manual_name = st.
+text_input("Введите название РК (например: 'OneTarget')", key="manual_campaign_name")
         if manual_name:
             campaign_name = extract_campaign_name(manual_name)
 
@@ -157,19 +158,19 @@ def load_and_process_data(upload_option, campaign_name=None):
 upload_option = st.radio(
     "Выберите способ загрузки данных статистики по площадкам:", 
     ["Загрузить Excel-файл", "Ссылка на Google-таблицу"],
-    key=f"upload_option_{time.time()}"
+    key="upload_option_1"
 )
 load_and_process_data(upload_option)
 
 # Кнопка для загрузки дополнительного файла
-if st.button("Загрузить еще один файл", key=f"button_{time.time()}"):
+if st.button("Загрузить еще один файл", key="button_1"):
     st.session_state["new_file"] = True
 
 if st.session_state["new_file"]:
     upload_option = st.radio(
         "Выберите способ загрузки данных статистики по площадкам:", 
         ["Загрузить Excel-файл", "Ссылка на Google-таблицу"],
-        key=f"upload_option_{time.time()}_new"
+        key="upload_option_2"
     )
     load_and_process_data(upload_option)
     st.session_state["new_file"] = False

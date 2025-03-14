@@ -132,91 +132,6 @@ def process_mp(mp_df):
 
 st.title("Анализ рекламных кампаний")
 
-> Юлия Мамедова:
-import streamlit as st
-import pandas as pd
-import re
-
-# Словарь для сопоставления названий колонок в МП (рекламные площадки)
-PLATFORM_MAPPING = {
-    "площадка": ["площадка", "название сайта", "сайт", "ресурс"]
-}
-
-def standardize_columns(df, mapping):
-    """
-    Приводит названия колонок к стандартному виду на основе переданного mapping.
-    Все имена столбцов приводятся к нижнему регистру и обрезаются пробелы.
-    """
-    df.columns = df.columns.astype(str).str.lower().str.strip()
-    column_map = {}
-    for standard_col, possible_names in mapping.items():
-        for col in df.columns:
-            if any(word in col for word in possible_names):
-                column_map[standard_col] = col
-                break
-    return df.rename(columns=column_map), column_map
-
-def clean_mp(mp_df):
-    """
-    Ищет первую строку, в которой встречается слово "площадка", "название сайта" или "ресурс"
-    (без учета регистра). Считает эту строку заголовочной и возвращает таблицу начиная с этой строки.
-    """
-    for i, row in mp_df.iterrows():
-        if row.astype(str).str.contains("площадка", case=False, na=False).any() or \
-           row.astype(str).str.contains("название сайта", case=False, na=False).any() or \
-           row.astype(str).str.contains("ресурс", case=False, na=False).any():
-            mp_df = mp_df.iloc[i:].reset_index(drop=True)
-            mp_df.columns = mp_df.iloc[0]
-            mp_df = mp_df[1:].reset_index(drop=True)
-            return mp_df
-    return None
-
-def process_mp(mp_df):
-    """
-    Обрабатывает медиаплан (МП):
-      - Очищает таблицу, начиная со строки, где встречается слово "площадка", "название сайта" или "ресурс".
-      - Стандартизирует имена колонок по PLATFORM_MAPPING.
-      - Оставляет только нужные столбцы: "площадка", "показы", "клики" (обязательные) и "охват" (необязательно).
-      - Удаляет строки, где в обязательных столбцах отсутствуют данные.
-      - Дополнительно фильтрует строки, оставляя только те, где в столбце "показы" значение не равно 0.
-    """
-    mp_df = clean_mp(mp_df)
-    if mp_df is None:
-        st.error("Ошибка: не удалось найти строку с заголовками, содержащую 'площадка', 'название сайта' или 'ресурс'.")
-        return None, {}
-    
-    mp_df, col_map = standardize_columns(mp_df, PLATFORM_MAPPING)
-
-    # Обязательные столбцы
-    required_cols = {"площадка", "показы", "клики"}
-    missing_columns = [col for col in required_cols if col not in col_map]
-    if missing_columns:
-        st.error(f"Отсутствуют обязательные столбцы: {', '.join(missing_columns)}")
-        return None, col_map
-
-    # Выбираем нужные столбцы (охват необязателен)
-    selected_cols = list(required_cols)
-    if "охват" in col_map:
-        selected_cols.append("охват")
-
-    mp_df = mp_df[[col_map[col] for col in selected_cols if col in col_map]]
-
-    # Удаляем строки, где обязательные столбцы не заполнены
-    mp_df.dropna(subset=[col_map["площадка"], col_map["показы"], col_map["клики"]], how="any", inplace=True)
-
-    # Пробуем привести столбец "показы" к числовому типу и оставляем только строки с ненулевыми значениями
-    try:
-        mp_df[col_map["показы"]] = pd.to_numeric(mp_df[col_map["показы"]], errors='coerce')
-        mp_df = mp_df[mp_df[col_map["показы"]] != 0]
-    except Exception as e:
-        st.warning("Не удалось привести столбец 'показы' к числовому типу. Строки не фильтруются по этому столбцу.")
-
-    st.write("Обработанный медиаплан:")
-    st.dataframe(mp_df)
-    return mp_df, col_map
-
-st.title("Анализ рекламных кампаний")
-
 # === Загрузка медиаплана (МП) ===
 st.header("Загрузите медиаплан (МП) (только Excel)")
 mp_file = st.file_uploader("Выберите файл с медиапланом (Excel)", type=["xlsx"], key="mp_uploader")
@@ -232,7 +147,6 @@ if mp_file:
     mp_df = pd.read_excel(mp_file, sheet_name=sheet_name)
     st.write("Медиаплан загружен:", sheet_name)
 
-> Юлия Мамедова:
 mp_df, mp_col_map = process_mp(mp_df)
     if mp_df is not None and "площадка" in mp_col_map:
         platforms = mp_df[mp_col_map["площадка"]].dropna().unique()

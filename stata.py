@@ -31,12 +31,15 @@ def process_data(df):
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
     if "расход" in col_map:
-        # Удаляем всё, кроме цифр, запятых и точек, и меняем запятые на точки
-        df[col_map["расход"]] = df[col_map["расход"]].astype(str).str.replace(r"[^\d,.]", "", regex=True)
-        df[col_map["расход"]] = df[col_map["расход"]].str.replace(",", ".")
+        df[col_map["расход"]] = (
+            df[col_map["расход"]]
+            .astype(str)
+            .str.replace(r"[^\d,.]", "", regex=True)  # Удаляем всё, кроме цифр, запятых и точек
+            .str.replace(",", ".")  # Меняем запятые на точки
+            .replace("", None)  # Если строка стала пустой, делаем None (чтобы dropna() их убрал)
+        )
 
-        # Преобразуем в числовой формат
-        df[col_map["расход"]] = pd.to_numeric(df[col_map["расход"]], errors='coerce')
+        df[col_map["расход"]] = pd.to_numeric(df[col_map["расход"]], errors="coerce")
 
         # Расчет расхода с НДС
         df["расход с ндс"] = df[col_map["расход"]] * 1.2

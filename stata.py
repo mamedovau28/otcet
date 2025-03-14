@@ -91,6 +91,7 @@ def load_and_process_data(unique_key):
             campaign_name = extract_campaign_name(uploaded_file.name)
 
     elif upload_option == "Ссылка на Google-таблицу":
+        # Динамически показываем поле для ввода ссылки на Google Таблицу
         google_sheet_url = st.text_input("Введите ссылку на Google-таблицу", key=f"text_input_{unique_key}")
         if google_sheet_url:
             try:

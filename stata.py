@@ -137,15 +137,21 @@ if df is not None:
         existing_cols = [col for col in needed_cols if col in df_filtered.columns]
         summary = df_filtered[existing_cols].sum()
 
+        total_impressions = summary.get("показы", 0)
+        total_clicks = summary.get("клики", 0)
+        ctr_value = total_clicks / total_impressions if total_impressions > 0 else 0
+        total_reach = summary.get("охват", 0)
+        total_spend_nds = summary.get("расход с ндс", 0)
+        
 # Генерация отчёта
-    report_text = f"""
+        report_text = f"""
     {campaign_name}
     Показы: {total_impressions:.0f}
     Клики: {total_clicks:.0f}
     CTR: {ctr_value:.2%}
     Охват: {total_reach:.0f}
     Расход с НДС: {total_spend_nds:.2f} руб.
-    """
+        """
     
         # Вывод данных в Streamlit
     st.subheader("Итоговый отчёт")

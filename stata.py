@@ -126,7 +126,7 @@ def process_data(df):
         df["ctr"] = df.apply(lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0, axis=1)
 
     # Фильтрация нужных столбцов
-    df = filter_columns(df, is_mp=True)
+    df = filter_columns(df)
 
     return df, col_map
     

@@ -79,7 +79,9 @@ all_data = []
 
 # Функция для загрузки и обработки данных
 def load_and_process_data(unique_key):
-    upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"], key=f"radio_{unique_key}")
+    upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", 
+                             ["Загрузить Excel-файл", "Ссылка на Google-таблицу", "Загрузить CSV файл", "Загрузить JSON файл"], 
+                             key=f"radio_{unique_key}")
 
     df = None
     campaign_name = None
@@ -100,10 +102,21 @@ def load_and_process_data(unique_key):
                 df = pd.read_csv(csv_url)
             except Exception as e:
                 st.error(f"Ошибка при загрузке CSV: {e}")
-
-        manual_name = st.text_input("Введите название РК (например: 'OneTarget')", key=f"manual_name_{unique_key}")
+                manual_name = st.text_input("Введите название РК (например: 'OneTarget')", key=f"manual_name_{unique_key}")
         if manual_name:
             campaign_name = extract_campaign_name(manual_name)
+
+    elif upload_option == "Загрузить CSV файл":
+        uploaded_file = st.file_uploader("Загрузите CSV файл", type=["csv"], key=f"csv_file_uploader_{unique_key}")
+        if uploaded_file:
+            df = pd.read_csv(uploaded_file)
+            campaign_name = extract_campaign_name(uploaded_file.name)
+
+    elif upload_option == "Загрузить JSON файл":
+        uploaded_file = st.file_uploader("Загрузите JSON файл", type=["json"], key=f"json_file_uploader_{unique_key}")
+        if uploaded_file:
+            df = pd.read_json(uploaded_file)
+            campaign_name = extract_campaign_name(uploaded_file.name)
 
     if df is not None:
         df, col_map = process_data(df)

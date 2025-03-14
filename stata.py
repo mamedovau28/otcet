@@ -32,9 +32,7 @@ def standardize_columns(df, mapping):
             if any(word in col for word in possible_names):
                 column_map[standard_col] = col
                 break
-
-    if mp_df is not None:
-        mp_df = filter_columns(mp_df)
+                
     return df.rename(columns=column_map), column_map
 
 def filter_columns(df):
@@ -63,8 +61,6 @@ def filter_columns(df):
             required_columns.add(col)
             
     mp_df = mp_df.replace("-", 0)
-    # Удаляем строки, где все значения - None или 0
-    mp_df = mp_df.loc[~(mp_df.isna() | (mp_df == 0)).all(axis=1)]
 
     return df[list(required_columns)] if required_columns else df
 

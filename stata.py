@@ -189,14 +189,14 @@ for i in range(1, 11):
             total_spend_nds = summary.get("расход с ндс", 0)
 
             # Генерация отчёта
-                report_text = f"""
+            report_text = f"""
             {custom_campaign_name}
             Показы: {format(total_impressions, ",.0f").replace(",", " ")}
             Клики: {format(total_clicks, ",.0f").replace(",", " ")}
             CTR: {ctr_value:.2%}
             Охват: {format(total_reach, ",.0f").replace(",", " ")}
             Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
-                """
+            """
 
             # Вывод отчёта
             st.subheader("Итоговый отчёт")

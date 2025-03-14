@@ -70,14 +70,12 @@ def process_data(df):
 st.title("Анализ качества рекламных кампаний")
 
 # Функция для загрузки и обработки данных
-def load_and_process_data(upload_option, campaign_name=None, unique_key="file_uploader_1", google_sheet_url=None):
+def load_and_process_data(upload_option, campaign_name=None, unique_key="file_uploader_1", google_sheet_url=None, uploaded_file=None):
     df = None
 
-    if upload_option == "Загрузить Excel-файл":
-        uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"], key=unique_key)
-        if uploaded_file:
-            df = pd.read_excel(uploaded_file)
-            campaign_name = uploaded_file.name.split(".")[0]  # Используем имя файла как название РК
+    if upload_option == "Загрузить Excel-файл" and uploaded_file:
+        df = pd.read_excel(uploaded_file)
+        campaign_name = uploaded_file.name.split(".")[0]  # Используем имя файла как название РК
 
     elif upload_option == "Ссылка на Google-таблицу" and google_sheet_url:
         try:
@@ -130,13 +128,23 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
         # Вывод таблицы
         st.dataframe(df)
 
-# Загрузка и обработка нескольких ссылок
-st.header("Загрузите до 10 ссылок на Google-таблицы")
+# Загрузка данных с выбором метода загрузки
+st.header("Выберите метод загрузки данных")
 
-for i in range(1, 11):
-    google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")
+upload_option = st.radio(
+    "Выберите метод загрузки",
+    ("Загрузить Excel-файл", "Ссылка на Google-таблицу")
+)
+
+if upload_option == "Загрузить Excel-файл":
+    uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"], key="file_uploader_excel")
+    if uploaded_file:
+        campaign_name = uploaded_file.name.split(".")[0]  # Используем имя файла как название РК
+        load_and_process_data(upload_option, campaign_name=campaign_name, unique_key="file_uploader_excel", uploaded_file=uploaded_file)
+
+elif upload_option == "Ссылка на Google-таблицу":
+    google_sheet_url = st.text_input("Введите ссылку на Google-таблицу", key="google_sheet_url")
     if google_sheet_url:
-        upload_option = "Ссылка на Google-таблицу"
-        campaign_name = f"Загрузка {i}"  # Имя по умолчанию
-        custom_campaign_name = st.text_input(f"Введите название РК {i} (или оставьте по умолчанию)", value=campaign_name)
-        load_and_process_data(upload_option, campaign_name=custom_campaign_name, unique_key=f"file_uploader_{i}", google_sheet_url=google_sheet_url)
+        campaign_name = f"Загрузка из Google-таблицы"  # Имя по умолчанию
+        custom_campaign_name = st.text_input(f"Введите название РК", value=campaign_name)
+        load_and_process_data(upload_option, campaign_name=custom_campaign_name, unique_key="file_uploader_google", google_sheet_url=google_sheet_url)

@@ -113,8 +113,7 @@ if upload_option == "Загрузить Excel-файл":
         campaign_name, client_name, project_name = extract_campaign_name(uploaded_file.name)
 
 elif upload_option == "Ссылка на Google-таблицу":
-    google_sheet_url = st.
-text_input("Введите ссылку на Google-таблицу")
+    google_sheet_url = st.text_input("Введите ссылку на Google-таблицу")
     if google_sheet_url:
         # Извлекаем ID таблицы
         sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]

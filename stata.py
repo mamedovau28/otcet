@@ -95,8 +95,7 @@ def process_data(df):
 st.title("Анализ рекламных кампаний")
 st.header("Загрузите медиаплан (МП) (только Excel)")
 
-mp_file = st.
-file_uploader("Выберите файл с медиапланом (Excel)", type=["xlsx"], key="mp_uploader")
+mp_file = st.file_uploader("Выберите файл с медиапланом (Excel)", type=["xlsx"], key="mp_uploader")
 
 mp_df = None
 if mp_file:

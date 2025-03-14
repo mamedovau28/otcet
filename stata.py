@@ -77,6 +77,10 @@ st.title("Анализ качества рекламных кампаний")
 # Список для хранения всех загруженных данных
 all_data = []
 
+# Состояние для отслеживания загрузки новых файлов
+if "new_file" not in st.session_state:
+    st.session_state["new_file"] = False
+
 # Функция для загрузки и обработки данных
 def load_and_process_data(upload_option, campaign_name=None):
     df = None
@@ -103,7 +107,7 @@ def load_and_process_data(upload_option, campaign_name=None):
             campaign_name = extract_campaign_name(manual_name)
 
     if df is not None:
-        df, col_map = process_data(df)
+df, col_map = process_data(df)
         st.write(f"Название РК: {campaign_name}")
 
         # Выбор периода
@@ -154,4 +158,9 @@ load_and_process_data(upload_option)
 
 # Кнопка для загрузки дополнительного файла
 if st.button("Загрузить еще один файл"):
-    st.experimental_rerun()  # перезапускаем приложение для отображения нового окошка
+    st.session_state["new_file"] = True
+
+if st.session_state["new_file"]:
+    upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"])
+    load_and_process_data(upload_option)
+    st.session_state["new_file"] = False

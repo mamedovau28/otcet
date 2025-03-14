@@ -38,9 +38,6 @@ def process_data(df):
         # Преобразуем в числовой формат
         df[col_map["расход"]] = pd.to_numeric(df[col_map["расход"]], errors='coerce')
 
-        # Если значение NaN, заменяем его на 0
-        df[col_map["расход"]] = df[col_map["расход"]].fillna(0)
-
         # Расчет расхода с НДС
         df["расход с ндс"] = df[col_map["расход"]] * 1.2
 

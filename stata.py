@@ -155,7 +155,10 @@ if mp_file:
     mp_df, mp_col_map = process_mp(mp_df)
     if mp_df is not None:
         st.subheader("Обработанный медиаплан")
+        # Убираем дубликаты столбцов
         mp_df = mp_df.loc[:, ~mp_df.columns.duplicated()].copy()
+        # Фильтруем столбцы
+        mp_df = filter_columns(mp_df)
         st.dataframe(mp_df)
         # Извлечение рекламных площадок
         if "площадка" in mp_col_map:
@@ -228,4 +231,4 @@ for i in range(1, 11):
             st.subheader("Итоговый отчёт")
             st.text_area(report_text, report_text, height=100)
 
-        st.dataframe(df_filtered)
+        st.dataframe(df)

@@ -30,11 +30,17 @@ def process_data(df):
     if "дата" in col_map:
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
-    # Преобразование показов и кликов
-    if "клики" in col_map and "показы" in col_map and "охват" in col_map and "расход" in col_map:
+    # Преобразование показов, кликов, охвата и расхода
+    if {"клики", "показы", "охват", "расход"}.issubset(col_map):
         for key in ["показы", "клики", "охват", "расход"]:
-            df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True)  # Удаляем пробелы и лишние символы
-            df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)  # Преобразуем в числа
+            # Проверяем, содержит ли колонка только цифры
+            if not pd.api.types.is_numeric_dtype(df[col_map[key]]):
+                df[col_map[key]] = (
+                    df[col_map[key]]
+                    .astype(str)
+                    .str.replace(r"[^\d]", "", regex=True)  # Оставляем только цифры
+                )
+                df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)  # Преобразуем в числа
 
     df[col_map["расход"]] = df[col_map["расход"]] / 100
 

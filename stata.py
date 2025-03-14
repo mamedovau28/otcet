@@ -51,7 +51,7 @@ def process_data(df):
 
             if coverage > 0 and impressions > 0:
                 if impressions / coverage > 10:  # Если показы в 10 раз больше охвата
-                    return impressions * coverage / 10  # Пересчитываем охват
+                    return impressions * coverage / 100  # Пересчитываем охват
             return coverage  # Оставляем как есть
 
         df["охват"] = df.apply(adjust_coverage, axis=1)

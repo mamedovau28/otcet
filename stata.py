@@ -50,7 +50,7 @@ def filter_columns(df):
     df.replace({"-": 0}, inplace=True)  # Заменяем "-" на 0
     df.fillna(0, inplace=True)  # Заменяем NaN и None на 0
     
-     for col in df.columns:
+    for col in df.columns:
         col_lower = col.lower().strip()
         
         if any(keyword in col_lower for keyword in ["площадка", "сайт", "ресурс"]):

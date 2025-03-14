@@ -121,7 +121,7 @@ elif upload_option == "Ссылка на Google-таблицу":
         try:
             sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
         except IndexError:
-st.error("Неверный формат ссылки")
+            st.error("Неверный формат ссылки")
             sheet_id = None
 
         if sheet_id:

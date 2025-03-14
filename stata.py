@@ -69,32 +69,60 @@ def process_data(df):
 # Интерфейс Streamlit
 st.title("Анализ качества рекламных кампаний")
 
-# Функция для загрузки и обработки данных
-def load_and_process_data(upload_option, campaign_name=None, unique_key="file_uploader_1", google_sheet_url=None, uploaded_file=None):
+# Загрузка МП
+st.header("Загрузка медиаплана (МП)")
+mp_file = st.file_uploader("Загрузите файл медиаплана (Excel)", type=["xlsx"], key="mp_file")
+
+mp_df = None
+if mp_file:
+    xls = pd.ExcelFile(mp_file)
+    sheet_names = xls.sheet_names
+    
+    if len(sheet_names) > 1:
+        sheet_name = st.selectbox("Выберите лист с данными", sheet_names, key="mp_sheet_select")
+    else:
+        sheet_name = sheet_names[0]
+
+    mp_df = pd.read_excel(xls, sheet_name=sheet_name)
+    st.write("Медиаплан загружен:", sheet_name)
+
+# Загрузка и обработка данных (Excel или Google-таблицы)
+st.header("Загрузка отчетов")
+
+for i in range(1, 11):
+    upload_option = st.selectbox(f"Способ загрузки файла {i}", ["Не выбрано", "Загрузить Excel-файл", "Ссылка на Google-таблицу"], key=f"upload_option_{i}")
+
     df = None
+    campaign_name = None
 
-    if upload_option == "Загрузить Excel-файл" and uploaded_file:
-        df = pd.read_excel(uploaded_file)
-        campaign_name = uploaded_file.name.split(".")[0]  # Используем имя файла как название РК
+    if upload_option == "Загрузить Excel-файл":
+        uploaded_file = st.file_uploader(f"Загрузите Excel-файл {i}", type=["xlsx"], key=f"file_uploader_{i}")
+        if uploaded_file:
+            df = pd.read_excel(uploaded_file)
+            campaign_name = uploaded_file.name.split(".")[0]  # Имя файла как название РК
 
-    elif upload_option == "Ссылка на Google-таблицу" and google_sheet_url:
-        try:
-            sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
-            gid = google_sheet_url.split("gid=")[1].split("&")[0] if "gid=" in google_sheet_url else "0"
-            csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
-            df = pd.read_csv(csv_url)
-        except Exception as e:
-            st.error(f"Ошибка при загрузке CSV: {e}")
+    elif upload_option == "Ссылка на Google-таблицу":
+        google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")
+        if google_sheet_url:
+            try:
+                sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
+                gid = google_sheet_url.split("gid=")[1].split("&")[0] if "gid=" in google_sheet_url else "0"
+                csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+                df = pd.read_csv(csv_url)
+                campaign_name = f"Загрузка {i}"
+            except Exception as e:
+                st.error(f"Ошибка при загрузке CSV: {e}")
 
     if df is not None:
         df, col_map = process_data(df)
-        st.write(f"Название РК: {campaign_name}")
+        custom_campaign_name = st.text_input(f"Введите название РК {i} (или оставьте по умолчанию)", value=campaign_name, key=f"campaign_name_{i}")
+        st.write(f"Название РК: {custom_campaign_name}")
 
         # Выбор периода
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
-            start_date, end_date = st.date_input("Выберите период", [min_date, max_date], key=f"date_input_{unique_key}")
+            start_date, end_date = st.date_input("Выберите период", [min_date, max_date], key=f"date_input_{i}")
 
             df_filtered = df[
                 (df[col_map["дата"]].dt.date >= start_date) & 
@@ -113,7 +141,7 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
 
             # Генерация отчёта
             report_text = f"""
-            {campaign_name}
+            {custom_campaign_name}
         Показы: {format(total_impressions, ",.0f").replace(",", " ")}
         Клики: {format(total_clicks, ",.0f").replace(",", " ")}
         CTR: {ctr_value:.2%}
@@ -127,26 +155,3 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
 
         # Вывод таблицы
         st.dataframe(df)
-
-# Загрузка нескольких файлов (до 10)
-st.header("Загрузите данные (до 10 файлов или ссылок)")
-
-for i in range(1, 11):
-    upload_option = st.radio(
-        f"Метод загрузки {i}",
-        ("Загрузить Excel-файл", "Ссылка на Google-таблицу"),
-        key=f"upload_option_{i}"
-    )
-
-    if upload_option == "Загрузить Excel-файл":
-        uploaded_file = st.file_uploader(f"Загрузите файл {i}", type=["xlsx"], key=f"file_uploader_{i}")
-        if uploaded_file:
-            campaign_name = uploaded_file.name.split(".")[0]  # Используем имя файла как название РК
-            load_and_process_data(upload_option, campaign_name=campaign_name, unique_key=f"file_{i}", uploaded_file=uploaded_file)
-
-    elif upload_option == "Ссылка на Google-таблицу":
-        google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")
-        if google_sheet_url:
-            campaign_name = f"Загрузка {i}"
-            custom_campaign_name = st.text_input(f"Введите название РК {i}", value=campaign_name, key=f"campaign_name_{i}")
-            load_and_process_data(upload_option, campaign_name=custom_campaign_name, unique_key=f"google_{i}", google_sheet_url=google_sheet_url)

@@ -57,7 +57,7 @@ def process_data(df):
             if "%" in value:
                 try:
                     # Преобразуем в число, если в охвате процент
-                    return float(value.replace("%", "")) / 100 * row[col_map["показы"]]
+                    return float(value.replace("%", "")) * row[col_map["показы"]]
                 except ValueError:
                     return 0  # Если ошибка при преобразовании
             else:

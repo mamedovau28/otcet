@@ -13,7 +13,7 @@ COLUMN_MAPPING = {
 
 # Словарь для сопоставления названий колонок в МП (рекламные площадки)
 PLATFORM_MAPPING = {
-    "площадка": ["площадка", "название сайта", "сайт", "ресурс"]
+    "площадка": ["площадка", "название сайта", "сайт", "ресурс", "Ресурс"]
 }
 
 def standardize_columns(df, mapping):
@@ -82,7 +82,7 @@ def clean_mp(mp_df):
     # Ищем строку, где встречается слово 'площадка', 'название сайта' или 'ресурс'
     header_row = None
     for i, row in mp_df.iterrows():
-        if row.astype(str).str.contains("площадка|название сайта|ресурс", case=False, na=False).any():
+        if row.astype(str).str.contains("площадка|название сайта|ресурс|Ресурс", case=False, na=False).any():
             header_row = i
             break
     

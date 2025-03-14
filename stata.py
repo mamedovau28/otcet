@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import re
+import time  # Для генерации уникальных идентификаторов
 
 # Словарь для сопоставления названий колонок
 COLUMN_MAPPING = {
@@ -153,14 +154,22 @@ def load_and_process_data(upload_option, campaign_name=None):
         all_data.append(df)
 
 # Загрузка и обработка первого файла
-upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"])
+upload_option = st.radio(
+    "Выберите способ загрузки данных статистики по площадкам:", 
+    ["Загрузить Excel-файл", "Ссылка на Google-таблицу"],
+    key=f"upload_option_{time.time()}"
+)
 load_and_process_data(upload_option)
 
 # Кнопка для загрузки дополнительного файла
-if st.button("Загрузить еще один файл"):
+if st.button("Загрузить еще один файл", key=f"button_{time.time()}"):
     st.session_state["new_file"] = True
 
 if st.session_state["new_file"]:
-    upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"])
+    upload_option = st.radio(
+        "Выберите способ загрузки данных статистики по площадкам:", 
+        ["Загрузить Excel-файл", "Ссылка на Google-таблицу"],
+        key=f"upload_option_{time.time()}_new"
+    )
     load_and_process_data(upload_option)
     st.session_state["new_file"] = False

@@ -78,11 +78,8 @@ st.title("Анализ качества рекламных кампаний")
 all_data = []
 
 # Функция для загрузки и обработки данных
-def load_and_process_data():
-    upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"])
-
+def load_and_process_data(upload_option, campaign_name=None):
     df = None
-    campaign_name = None
 
     if upload_option == "Загрузить Excel-файл":
         uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"])
@@ -101,7 +98,7 @@ def load_and_process_data():
             except Exception as e:
                 st.error(f"Ошибка при загрузке CSV: {e}")
 
-        manual_name = st. text_input("Введите название РК (например: 'OneTarget')")
+        manual_name = st.text_input("Введите название РК (например: 'OneTarget')")
         if manual_name:
             campaign_name = extract_campaign_name(manual_name)
 
@@ -152,8 +149,9 @@ def load_and_process_data():
         all_data.append(df)
 
 # Загрузка и обработка первого файла
-load_and_process_data()
+upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"])
+load_and_process_data(upload_option)
 
-# Опция для загрузки дополнительного файла
+# Кнопка для загрузки дополнительного файла
 if st.button("Загрузить еще один файл"):
-    st.experimental_rerun()  # перезапускаем приложение для открытия нового окна
+    st.experimental_rerun()  # перезапускаем приложение для отображения нового окошка

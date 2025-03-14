@@ -2,14 +2,13 @@ import streamlit as st
 import pandas as pd
 import re
 import requests
-import json
 
 # Словарь для сопоставления названий колонок
 COLUMN_MAPPING = {
     "дата": ["дата", "date"],
     "показы": ["показы", "импрессии", "impressions"],
     "клики": ["клики", "clicks"],
-    "расход": ["расход", "затраты", "cost", "спенд", "расход до ндс", "расходдондс"],
+    "расход": ["расход", "затраты", "cost", "спенд", "расход до ндс"],
     "охват": ["охват", "reach"]
 }
 
@@ -73,32 +72,14 @@ def process_data(df):
 
 def extract_campaign_name(text):
     """
-    Извлекает название РК, клиента и проекта из строки,
-    формата: ARWM // OneTarget // Sminex // Dom-Dostigenie.
+    Извлекает название РК, клиента и проекта из строки формата:
+    ARWM // OneTarget // Sminex // Dom-Dostigenie.
     Если встречается 'arwm' в начале – пропускаем его.
     """
     parts = text.lower().split(" // ")
     if len(parts) >= 4 and parts[0] == "arwm":
         return parts[1], parts[2], parts[3]
     return None, None, None
-
-def get_sheet_options(sheet_id):
-    """
-    Получает список листов (названия) из публичной ленты Google Sheets.
-    """
-    feed_url = f"https://spreadsheets.google.com/feeds/worksheets/{sheet_id}/public/full?alt=json"
-    try:
-        r = requests.get(feed_url)
-        if r.status_code == 200:
-            data = r.json()
-            entries = data.get('feed', {}).get('entry', [])
-            options = [entry['title']['$t'] for entry in entries]
-            return options
-        else:
-            return []
-    except Exception as e:
-        st.error(f"Ошибка при получении листов: {e}")
-        return []
 
 # --------------------------- Интерфейс Streamlit ---------------------------
 st.title("Анализ качества рекламных кампаний")
@@ -112,39 +93,34 @@ if upload_option == "Загрузить Excel-файл":
     uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"])
     if uploaded_file:
         df = pd.read_excel(uploaded_file)
-        # Извлечение названия РК из имени файла
         campaign_name, client_name, project_name = extract_campaign_name(uploaded_file.name)
 
 elif upload_option == "Ссылка на Google-таблицу":
     google_sheet_url = st.text_input("Введите ссылку на Google-таблицу")
     if google_sheet_url:
         try:
+            # Извлекаем sheet_id из ссылки
             sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
+            # Извлекаем gid из ссылки
+            if "gid=" in google_sheet_url:
+                gid = google_sheet_url.split("gid=")[1].split("&")[0]
+            else:
+                gid = "0"  # дефолтное значение
         except IndexError:
-            st.error("Неверный формат ссылки")
+            st.error("Неверный формат ссылки.")
             sheet_id = None
 
         if sheet_id:
-            # Получаем список листов для выбора
-            sheet_options = get_sheet_options(sheet_id)
-            if sheet_options:
-                selected_sheet = st.selectbox("Выберите лист:", sheet_options)
-            else:
-                st.warning("Не удалось получить список листов.")
-                selected_sheet = None
+            csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+            try:
+                df = pd.read_csv(csv_url)
+            except Exception as e:
+                st.error(f"Ошибка при загрузке CSV: {e}")
 
-            # Запрашиваем gid нужного листа вручную
-            gid = st.text_input("Введите gid выбранного листа (для первого листа по умолчанию введите 0)", value="0")
-            if gid:
-                url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
-                try:
-                    df = pd.read_csv(url)
-                except Exception as e:
-                    st.error(f"Ошибка при загрузке CSV: {e}")
-            # Если нужно задать название РК вручную (так как в ссылке его нет)
-            manual_name = st.text_input("Введите название РК (например: 'ARWM // OneTarget // Sminex // Dom-Dostigenie')")
-            if manual_name:
-                campaign_name, client_name, project_name = extract_campaign_name(manual_name)
+# Если название РК не извлекается из ссылки, предлагаем ввести вручную
+        manual_name = st.text_input("Введите название РК (например: 'ARWM // OneTarget // Sminex // Dom-Dostigenie')")
+        if manual_name:
+            campaign_name, client_name, project_name = extract_campaign_name(manual_name)
 
 if df is not None:
     st.write(f"### {campaign_name} | {client_name} | {project_name}")
@@ -160,7 +136,6 @@ if df is not None:
             (df[col_map["дата"]] <= pd.to_datetime(end_date))
         ]
 
-        # Определяем какие колонки суммировать
         needed_cols = ["показы", "клики", "охват", "расход с ндс"]
         existing_cols = [col for col in needed_cols if col in df_filtered.columns]
         summary = df_filtered[existing_cols].sum()

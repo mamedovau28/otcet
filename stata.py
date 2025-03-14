@@ -199,6 +199,17 @@ if mp_file:
             # Удаляем строки, где показы = 0 или NaN
             mp_df = mp_df[mp_df[show_column[0]] > 0]  # Оставляем только строки с показами больше 0
 
+        # Ищем столбец, который содержит "НДС"
+        ndc_column = [col for col in mp_df.columns if "ндс" in col.lower()]
+
+        # Если такой столбец найден, приводим его к числовому типу и удаляем строки с нулями
+        if ndc_column:
+            ndc_column_name = ndc_column[0]  # Получаем имя столбца
+            mp_df[ndc_column_name] = pd.to_numeric(mp_df[ndc_column_name], errors="coerce")  # Преобразуем в числовой тип, NaN для ошибок
+
+            # Удаляем строки, где значение в столбце НДС = 0 или NaN
+            mp_df = mp_df[mp_df[ndc_column_name] > 0]  # Оставляем только строки с показателями больше 0
+
         # Отображаем обработанный медиаплан
         st.dataframe(mp_df)
 

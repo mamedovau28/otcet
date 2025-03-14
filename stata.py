@@ -34,6 +34,9 @@ def standardize_columns(df, mapping):
                 break
     return df.rename(columns=column_map), column_map
 
+if mp_df is not None:
+    mp_df = filter_columns(mp_df)
+
 def filter_columns(df):
     """
     Оставляет только нужные столбцы:

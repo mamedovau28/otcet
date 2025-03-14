@@ -75,6 +75,12 @@ def filter_columns(df, is_mp=False):
                 
         # Возвращаем DataFrame с колонками в нужном порядке
         return df[required_columns] if required_columns else df
+        
+        # Удаляем строки, где значение в столбце "показы" равно 0
+        if "показы" in df.columns:
+            df = df[df["показы"] != 0]
+
+        return df
 
     # Если это не медиаплан (например, отчет), возвращаем df без изменений
     return df

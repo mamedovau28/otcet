@@ -36,16 +36,16 @@ def process_data(df):
             df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True)  # Удаляем пробелы и лишние символы
             df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)  # Преобразуем в числа
 
+        df[col_map["расход"]] = df[col_map["расход"]]/100
+
+           # Расчет расхода с НДС
+        df["расход с ндс"] = df[col_map["расход"]] * 1.2
+
         # Рассчитываем CTR
         df["ctr"] = df.apply(
             lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0,
             axis=1
         )
-
-        df[col_map["расход"]] = df[col_map["расход"]]/100
-
-           # Расчет расхода с НДС
-        df["расход с ндс"] = df[col_map["расход"]] * 1.2
 
     return df, col_map
     

@@ -22,8 +22,24 @@ def standardize_columns(df):
                 break
     return df.rename(columns=column_map), column_map
 
+def clean_mp(mp_df):
+    """Ищем первую строку с названием колонок и очищаем медиаплан, начиная с проекта"""
+    # Поиск строки, в которой встречается "проект" (или его вариации) в одном из столбцов
+    for i, row in mp_df.iterrows():
+        if row.str.contains(r'проект', case=False, na=False).any():  # Ищем слово "проект" (нечувствительно к регистру)
+            mp_df = mp_df.iloc[i:].reset_index(drop=True)  # Начинаем с найденной строки
+            mp_df.columns = mp_df.iloc[0]  # Первая строка становится заголовками
+            mp_df = mp_df[1:].reset_index(drop=True)  # Удаляем дублирующуюся строку заголовков
+            return mp_df
+    return None  # Если не нашли, возвращаем None
+
 def process_mp(mp_df):
-    """Обрабатывает медиаплан: извлекает нужные столбцы и удаляет пустые строки"""
+    """Обрабатывает медиаплан: находит нужные столбцы и удаляет пустые строки"""
+    mp_df = clean_mp(mp_df)  # Очищаем таблицу, начиная с проекта
+    if mp_df is None:
+        st.error("Ошибка: Не удалось найти таблицу в медиаплане.")
+        return None
+
     mp_df, col_map = standardize_columns(mp_df)
 
     required_cols = {"площадка", "показы", "клики"}

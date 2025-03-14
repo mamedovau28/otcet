@@ -66,6 +66,11 @@ def process_data(df):
             
     return df, col_map
 
+def extract_campaign_name(text):
+    """Извлекает название РК из строки"""
+    parts = text.lower().split("//")
+    return parts[1].strip() if len(parts) > 1 else text.strip()
+
 # Интерфейс Streamlit
 st.title("Анализ качества рекламных кампаний")
 
@@ -77,7 +82,7 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
         uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"], key=unique_key)
         if uploaded_file:
             df = pd.read_excel(uploaded_file)
-            campaign_name = uploaded_file.name.split(".")[0]  # Используем имя файла как название РК
+            campaign_name = extract_campaign_name(uploaded_file.name)
 
     elif upload_option == "Ссылка на Google-таблицу" and google_sheet_url:
         try:
@@ -87,6 +92,9 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
             df = pd.read_csv(csv_url)
         except Exception as e:
             st.error(f"Ошибка при загрузке CSV: {e}")
+
+        if google_sheet_url:
+            campaign_name = extract_campaign_name(google_sheet_url)
 
     if df is not None:
         df, col_map = process_data(df)
@@ -104,6 +112,7 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
             ]
 
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]
+            
             existing_cols = [col for col in needed_cols if col in df_filtered.columns]
             summary = df_filtered[existing_cols].sum()
 
@@ -130,13 +139,26 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
         # Вывод таблицы
         st.dataframe(df)
 
-# Загрузка и обработка нескольких ссылок
-st.header("Загрузите до 10 ссылок на Google-таблицы")
+# Загрузка и обработка ссылок
+st.header("Загрузите ссылки на Google-таблицы")
 
-for i in range(1, 11):
-    google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")
-    if google_sheet_url:
+# Контейнер для динамического добавления ссылок
+link_container = st.container()
+
+# Список ссылок, который будет наполняться динамически
+google_sheet_urls = []
+
+# Функция для добавления новой ссылки
+def add_new_link():
+    # Поле для первой ссылки
+    link_input = st.text_input("Ссылка на Google-таблицу", key=f"google_sheet_url_1")
+    if link_input:
+        google_sheet_urls.append(link_input)
+        # Появляется новое поле для ввода ссылки
+        link_container.text_input(f"Ссылка на Google-таблицу {len(google_sheet_urls) + 1}", key=f"google_sheet_url_{len(google_sheet_urls) + 1}")
+        # После добавления первой ссылки начинается обработка данных
         upload_option = "Ссылка на Google-таблицу"
-        campaign_name = f"Загрузка {i}"  # Имя по умолчанию
-        custom_campaign_name = st.text_input(f"Введите название РК {i} (или оставьте по умолчанию)", value=campaign_name)
-        load_and_process_data(upload_option, campaign_name=custom_campaign_name, unique_key=f"file_uploader_{i}", google_sheet_url=google_sheet_url)
+        load_and_process_data(upload_option, unique_key=f"file_uploader_{len(google_sheet_urls)}", google_sheet_url=link_input)
+
+# Кнопка для добавления новой ссылки
+add_new_link()

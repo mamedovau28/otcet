@@ -101,8 +101,7 @@ elif upload_option == "Ссылка на Google-таблицы":
         except Exception as e:
             st.error(f"Ошибка при загрузке CSV: {e}")
 
-    manual_name = st.
-text_input("Введите название РК (например: 'OneTarget')")
+    manual_name = st.text_input("Введите название РК (например: 'OneTarget')")
     if manual_name:
         campaign_names.append(extract_campaign_name(manual_name))
 

@@ -32,7 +32,6 @@ def process_data(df):
     # Преобразование показов, кликов, охвата и расхода
     if {"клики", "показы", "охват", "расход"}.issubset(col_map):
         for key in ["показы", "клики", "охват", "расход"]:
-            # Проверяем, содержит ли колонка только цифры
             if not pd.api.types.is_numeric_dtype(df[col_map[key]]):
                 df[col_map[key]] = (
                     df[col_map[key]]
@@ -43,6 +42,7 @@ def process_data(df):
 
     df[col_map["расход"]] = df[col_map["расход"]] / 100
 
+    # Охват
     if "охват" in col_map and "показы" in col_map:
         def adjust_coverage(row):
             coverage = row[col_map["охват"]]
@@ -104,7 +104,7 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
-            start_date, end_date = st.date_input("Выберите период", [min_date, max_date])
+            start_date, end_date = st.date_input("Выберите период", [min_date, max_date], key=f"date_input_{unique_key}")
 
             df_filtered = df[
                 (df[col_map["дата"]].dt.date >= start_date) & 

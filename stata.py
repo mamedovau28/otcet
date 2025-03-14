@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import re
-import time  # Для генерации уникальных идентификаторов
 
 # Словарь для сопоставления названий колонок
 COLUMN_MAPPING = {
@@ -75,15 +74,8 @@ def extract_campaign_name(text):
 # Интерфейс Streamlit
 st.title("Анализ качества рекламных кампаний")
 
-# Список для хранения всех загруженных данных
-all_data = []
-
-# Состояние для отслеживания загрузки новых файлов
-if "new_file" not in st.session_state:
-    st.session_state["new_file"] = False
-
 # Функция для загрузки и обработки данных
-def load_and_process_data(upload_option, campaign_name=None, unique_key="file_uploader_1"):
+def load_and_process_data(upload_option, campaign_name=None, unique_key="file_uploader_1", google_sheet_url=None):
     df = None
 
     if upload_option == "Загрузить Excel-файл":
@@ -92,20 +84,17 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
             df = pd.read_excel(uploaded_file)
             campaign_name = extract_campaign_name(uploaded_file.name)
 
-    elif upload_option == "Ссылка на Google-таблицу":
-        google_sheet_url = st.text_input("Введите ссылку на Google-таблицу", key="google_sheet_url")
-        if google_sheet_url:
-            try:
-                sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
-                gid = google_sheet_url.split("gid=")[1].split("&")[0] if "gid=" in google_sheet_url else "0"
-                csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
-                df = pd.read_csv(csv_url)
-            except Exception as e:
-                st.error(f"Ошибка при загрузке CSV: {e}")
+    elif upload_option == "Ссылка на Google-таблицу" and google_sheet_url:
+        try:
+            sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
+            gid = google_sheet_url.split("gid=")[1].split("&")[0] if "gid=" in google_sheet_url else "0"
+            csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+            df = pd.read_csv(csv_url)
+        except Exception as e:
+            st.error(f"Ошибка при загрузке CSV: {e}")
 
-        manual_name = st.text_input("Введите название РК (например: 'OneTarget')", key="manual_campaign_name")
-        if manual_name:
-            campaign_name = extract_campaign_name(manual_name)
+        if google_sheet_url:
+            campaign_name = extract_campaign_name(google_sheet_url)
 
     if df is not None:
         df, col_map = process_data(df)
@@ -150,26 +139,11 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
         # Вывод таблицы
         st.dataframe(df)
 
-        # Добавление данных в общий список
-        all_data.append(df)
+# Загрузка и обработка нескольких ссылок
+st.header("Загрузите до 10 ссылок на Google-таблицы")
 
-# Загрузка и обработка первого файла
-upload_option = st.radio(
-    "Выберите способ загрузки данных статистики по площадкам:", 
-    ["Загрузить Excel-файл", "Ссылка на Google-таблицу"],
-    key="upload_option_1"
-)
-load_and_process_data(upload_option, unique_key="file_uploader_1")
-
-# Кнопка для загрузки дополнительного файла
-if st.button("Загрузить еще один файл", key="button_1"):
-    st.session_state["new_file"] = True
-
-if st.session_state["new_file"]:
-    upload_option = st.radio(
-        "Выберите способ загрузки данных статистики по площадкам:", 
-        ["Загрузить Excel-файл", "Ссылка на Google-таблицу"],
-        key="upload_option_2"
-    )
-    load_and_process_data(upload_option, unique_key="file_uploader_2")
-    st.session_state["new_file"] = False
+for i in range(1, 11):
+    google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")
+    if google_sheet_url:
+        upload_option = "Ссылка на Google-таблицу"
+        load_and_process_data(upload_option, unique_key=f"file_uploader_{i}", google_sheet_url=google_sheet_url)

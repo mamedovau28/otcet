@@ -129,12 +129,12 @@ if df is not None:
 
         # Генерация отчёта
         report_text = f"""
-        {campaign_name}
-    Показы: {format(total_impressions:",.0f").replace(",", " ")}
-    Клики: {format(total_clicks:",.0f").replace(",", " ")}
+        Название РК: {campaign_name}
+    Показы: {format(total_impressions, ",.0f").replace(",", " ")}
+    Клики: {format(total_clicks, ",.0f").replace(",", " ")}
     CTR: {ctr_value:.2%}
-    Охват: {format(total_reach:",.0f").replace(",", " ")}
-    Расход с НДС: {format(total_spend_nds:",.0f").replace(",", " ")} руб.
+    Охват: {format(total_reach, ",.0f").replace(",", " ")}
+    Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")}
         """
 
         # Вывод отчёта

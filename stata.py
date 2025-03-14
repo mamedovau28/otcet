@@ -37,7 +37,7 @@ def standardize_columns(df, mapping):
 def filter_columns(df):
     """
     Оставляет только нужные столбцы:
-    - проект (если есть)
+    - площадка (если есть)
     - охват (если есть)
     - показ (если есть)
     - клик (если есть)
@@ -46,9 +46,9 @@ def filter_columns(df):
     required_columns = set()
     
     for col in df.columns:
-        col_lower = col.lower()
+        col_lower = col.lower().strip()
         
-        if "площадка" in col_lower:
+        if any(keyword in col_lower for keyword in ["площадка", "сайт", "ресурс"]):
             required_columns.add(col)
         elif "охват" in col_lower:
             required_columns.add(col)
@@ -59,7 +59,7 @@ def filter_columns(df):
         elif re.search(r".*с учетом ндс и ак.*", col_lower):
             required_columns.add(col)
 
-    return df[list(required_columns)]
+    return df[list(required_columns)] if required_columns else df
 
 # Встраиваем в процесс обработки данных
 def process_data(df):

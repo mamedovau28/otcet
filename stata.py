@@ -49,7 +49,7 @@ def process_data(df):
 
         if "охват" in col_map and "показы" in col_map:
             def adjust_coverage(row):
-                 coverage = row[col_map["охват"]]
+                coverage = row[col_map["охват"]]
                 impressions = row[col_map["показы"]]
 
                 if coverage > 0 and impressions > 0:

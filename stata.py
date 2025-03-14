@@ -74,72 +74,86 @@ def extract_campaign_name(text):
 # Интерфейс Streamlit
 st.title("Анализ качества рекламных кампаний")
 
-upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"])
+# Список для хранения всех загруженных данных
+all_data = []
 
-df = None
-campaign_name = None
+# Функция для загрузки и обработки данных
+def load_and_process_data():
+    upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"])
 
-if upload_option == "Загрузить Excel-файл":
-    uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"])
-    if uploaded_file:
-        df = pd.read_excel(uploaded_file)
-        campaign_name = extract_campaign_name(uploaded_file.name)
+    df = None
+    campaign_name = None
 
-elif upload_option == "Ссылка на Google-таблицу":
-    google_sheet_url = st.text_input("Введите ссылку на Google-таблицу")
-    if google_sheet_url:
-        try:
-            sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
-            gid = google_sheet_url.split("gid=")[1].split("&")[0] if "gid=" in google_sheet_url else "0"
-            csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
-            df = pd.read_csv(csv_url)
-        except Exception as e:
-            st.error(f"Ошибка при загрузке CSV: {e}")
+    if upload_option == "Загрузить Excel-файл":
+        uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"])
+        if uploaded_file:
+            df = pd.read_excel(uploaded_file)
+            campaign_name = extract_campaign_name(uploaded_file.name)
 
-    manual_name = st.text_input("Введите название РК (например: 'OneTarget')")
-    if manual_name:
-        campaign_name = extract_campaign_name(manual_name)
+    elif upload_option == "Ссылка на Google-таблицу":
+        google_sheet_url = st.text_input("Введите ссылку на Google-таблицу")
+        if google_sheet_url:
+            try:
+                sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
+                gid = google_sheet_url.split("gid=")[1].split("&")[0] if "gid=" in google_sheet_url else "0"
+                csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+                df = pd.read_csv(csv_url)
+            except Exception as e:
+                st.error(f"Ошибка при загрузке CSV: {e}")
 
-if df is not None:
-    df, col_map = process_data(df)
-    st.write(f"Название РК: {campaign_name}")
+        manual_name = st.text_input("Введите название РК (например: 'OneTarget')")
+        if manual_name:
+            campaign_name = extract_campaign_name(manual_name)
 
-    # Выбор периода
-    if "дата" in col_map:
-        min_date = df[col_map["дата"]].min().date()
-        max_date = df[col_map["дата"]].max().date()
-        
-        start_date, end_date = st.date_input("Выберите период", [min_date, max_date])
+    if df is not None:
+df, col_map = process_data(df)
+        st.write(f"Название РК: {campaign_name}")
 
-        df_filtered = df[
-            (df[col_map["дата"]].dt.date >= start_date) & 
-            (df[col_map["дата"]].dt.date <= end_date)
-        ]
+        # Выбор периода
+        if "дата" in col_map:
+            min_date = df[col_map["дата"]].min().date()
+            max_date = df[col_map["дата"]].max().date()
+            start_date, end_date = st.date_input("Выберите период", [min_date, max_date])
 
-        needed_cols = ["показы", "клики", "охват", "расход с ндс"]
-        
-        existing_cols = [col for col in needed_cols if col in df_filtered.columns]
-        summary = df_filtered[existing_cols].sum()
+            df_filtered = df[
+                (df[col_map["дата"]].dt.date >= start_date) & 
+                (df[col_map["дата"]].dt.date <= end_date)
+            ]
 
-        total_impressions = summary.get("показы", 0)
-        total_clicks = summary.get("клики", 0)
-        ctr_value = total_clicks / total_impressions if total_impressions > 0 else 0
-        total_reach = summary.get("охват", 0)
-        total_spend_nds = summary.get("расход с ндс", 0)
+            needed_cols = ["показы", "клики", "охват", "расход с ндс"]
+            
+            existing_cols = [col for col in needed_cols if col in df_filtered.columns]
+            summary = df_filtered[existing_cols].sum()
 
-        # Генерация отчёта
-        report_text = f"""
-        {campaign_name}
-    Показы: {format(total_impressions, ",.0f").replace(",", " ")}
-    Клики: {format(total_clicks, ",.0f").replace(",", " ")}
-    CTR: {ctr_value:.2%}
-    Охват: {format(total_reach, ",.0f").replace(",", " ")}
-    Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
-        """
+            total_impressions = summary.get("показы", 0)
+            total_clicks = summary.get("клики", 0)
+            ctr_value = total_clicks / total_impressions if total_impressions > 0 else 0
+            total_reach = summary.get("охват", 0)
+            total_spend_nds = summary.get("расход с ндс", 0)
 
-        # Вывод отчёта
-        st.subheader("Итоговый отчёт")
-        st.text_area(report_text, report_text, height=100)
+            # Генерация отчёта
+            report_text = f"""
+            {campaign_name}
+        Показы: {format(total_impressions, ",.0f").replace(",", " ")}
+        Клики: {format(total_clicks, ",.0f").replace(",", " ")}
+        CTR: {ctr_value:.2%}
+        Охват: {format(total_reach, ",.0f").replace(",", " ")}
+        Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
+            """
 
-    # Вывод таблицы
-    st.dataframe(df)
+            # Вывод отчёта
+            st.subheader("Итоговый отчёт")
+            st.text_area(report_text, report_text, height=100)
+
+        # Вывод таблицы
+        st.dataframe(df)
+
+        # Добавление данных в общий список
+        all_data.append(df)
+
+# Загрузка и обработка первого файла
+load_and_process_data()
+
+# Опция для загрузки дополнительного файла
+if st.button("Загрузить еще один файл"):
+    load_and_process_data()

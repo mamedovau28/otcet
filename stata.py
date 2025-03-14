@@ -1,7 +1,7 @@
+
 import streamlit as st
 import pandas as pd
 import re
-import requests
 
 # Словарь для сопоставления названий колонок
 COLUMN_MAPPING = {
@@ -21,7 +21,7 @@ def standardize_columns(df):
                 column_map[standard_col] = col
                 break
     return df.rename(columns=column_map), column_map
-    
+
 def process_data(df):
     df, col_map = standardize_columns(df)
     df.fillna(0, inplace=True)
@@ -30,29 +30,23 @@ def process_data(df):
     if "дата" in col_map:
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
-    # Преобразование показов, кликов, охвата и расхода
-    if {"клики", "показы", "охват", "расход"}.issubset(col_map):
-        for key in ["показы", "клики", "охват", "расход"]:
-            # Проверяем, содержит ли колонка только цифры
-            if not pd.api.types.is_numeric_dtype(df[col_map[key]]):
-                df[col_map[key]] = (
-                    df[col_map[key]]
-                    .astype(str)
-                    .str.replace(r"[^\d]", "", regex=True)  # Оставляем только цифры
-                )
-                df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)  # Преобразуем в числа
+    # Преобразование числовых значений
+    for key in ["показы", "клики", "охват", "расход"]:
+        if key in col_map:
+            df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors="coerce").fillna(0)
 
-    df[col_map["расход"]] = df[col_map["расход"]] / 100
+    # Проверка, не в копейках ли расходы
+    if "расход" in col_map and df[col_map["расход"]].max() > 10000:
+        df[col_map["расход"]] = df[col_map["расход"]] / 100  # Если суммы слишком большие, вероятно, в копейках
 
+    # Корректировка охвата
     if "охват" in col_map and "показы" in col_map:
         def adjust_coverage(row):
             coverage = row[col_map["охват"]]
             impressions = row[col_map["показы"]]
-
-            if coverage > 0 and impressions > 0:
-                if impressions / coverage > 10:  # Если показы в 10 раз больше охвата
-                    return impressions * coverage / 100  # Пересчитываем охват
-            return round(coverage)  # Оставляем как есть
+            if coverage > 0 and impressions > 0 and impressions / coverage > 10:
+                return impressions * coverage / 100
+            return int(coverage)  # Приводим к целому числу
 
         df["охват"] = df.apply(adjust_coverage, axis=1)
 
@@ -64,15 +58,15 @@ def process_data(df):
         lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0,
         axis=1
     )
-            
-    return df, col_map
-    
-def extract_campaign_name(text):
-    """
-    Извлекает название РК
-    parts = text.lower()
 
-# --------------------------- Интерфейс Streamlit ---------------------------
+    return df, col_map
+
+def extract_campaign_name(text):
+    """Извлекает название РК из строки"""
+    parts = text.lower().split("//")
+    return parts[1].strip() if len(parts) > 1 else text.strip()
+
+# Интерфейс Streamlit
 st.title("Анализ качества рекламных кампаний")
 
 upload_option = st.radio("Выберите способ загрузки данных:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"])
@@ -90,44 +84,34 @@ elif upload_option == "Ссылка на Google-таблицу":
     google_sheet_url = st.text_input("Введите ссылку на Google-таблицу")
     if google_sheet_url:
         try:
-            # Извлекаем sheet_id из ссылки
             sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
-            # Извлекаем gid из ссылки
-            if "gid=" in google_sheet_url:
-                gid = google_sheet_url.split("gid=")[1].split("&")[0]
-            else:
-                gid = "0"  # дефолтное значение
-        except IndexError:
-            st.error("Неверный формат ссылки.")
-            sheet_id = None
-
-        if sheet_id:
+            gid = google_sheet_url.split("gid=")[1].split("&")[0] if "gid=" in google_sheet_url else "0"
             csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
-            try:
-                df = pd.read_csv(csv_url)
-            except Exception as e:
-                st.error(f"Ошибка при загрузке CSV: {e}")
+            df = pd.read_csv(csv_url)
+        except Exception as e:
+            st.error(f"Ошибка при загрузке CSV: {e}")
 
-# Если название РК не извлекается из ссылки, предлагаем ввести вручную
-        manual_name = st.text_input("Введите название РК (например: 'OneTarget')")
-        if manual_name:
-            campaign_name = extract_campaign_name(manual_name)
+    manual_name = st.text_input("Введите название РК (например: 'OneTarget')")
+    if manual_name:
+        campaign_name = extract_campaign_name(manual_name)
 
 if df is not None:
-    st.write(f"{campaign_name}")
     df, col_map = process_data(df)
+    st.write(f"Название РК: {campaign_name}")
 
-    # Если присутствует столбец с датой, даем выбрать период
+    # Выбор периода
     if "дата" in col_map:
-        min_date = df[col_map["дата"]].min()
-        max_date = df[col_map["дата"]].max()
+        min_date = df[col_map["дата"]].min().date()
+        max_date = df[col_map["дата"]].max().date()
         start_date, end_date = st.date_input("Выберите период", [min_date, max_date])
+
         df_filtered = df[
-            (df[col_map["дата"]] >= pd.to_datetime(start_date)) &
-            (df[col_map["дата"]] <= pd.to_datetime(end_date))
+            (df[col_map["дата"]].dt.date >= start_date) & 
+            (df[col_map["дата"]].dt.date <= end_date)
         ]
 
         needed_cols = ["показы", "клики", "охват", "расход с ндс"]
+        
         existing_cols = [col for col in needed_cols if col in df_filtered.columns]
         summary = df_filtered[existing_cols].sum()
 
@@ -136,20 +120,20 @@ if df is not None:
         ctr_value = total_clicks / total_impressions if total_impressions > 0 else 0
         total_reach = summary.get("охват", 0)
         total_spend_nds = summary.get("расход с ндс", 0)
-        
-# Генерация отчёта
+
+        # Генерация отчёта
         report_text = f"""
-    {campaign_name}
-    Показы: {total_impressions:.0f}
-    Клики: {total_clicks:.0f}
-    CTR: {ctr_value:.2%}
-    Охват: {total_reach:.0f}
-    Расход с НДС: {total_spend_nds:.2f} руб.
+Название РК: {campaign_name}
+Показы: {total_impressions:,.0f}
+Клики: {total_clicks:,.0f}
+CTR: {ctr_value:.2%}
+Охват: {total_reach:,.0f}
+Расход с НДС: {total_spend_nds:,.2f} руб.
         """
-    
-        # Вывод данных в Streamlit
-    st.subheader("Итоговый отчёт")
-    st.text_area(report_text, report_text, height=100)
-    
+
+        # Вывод отчёта
+        st.subheader("Итоговый отчёт")
+        st.text_area("Результаты", report_text, height=100)
+
+    # Вывод таблицы
     st.dataframe(df)
-    

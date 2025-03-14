@@ -58,7 +58,8 @@ def filter_columns(df):
             required_columns.add(col)
         elif re.search(r".*с учетом ндс и ак.*", col_lower):
             required_columns.add(col)
-
+            
+    mp_df.dropna(how="all", inplace=True)  # Удаляем полностью пустые строки
     mp_df.replace("-", 0, inplace=True) 
 
     return df[list(required_columns)] if required_columns else df

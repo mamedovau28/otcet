@@ -140,11 +140,11 @@ if df is not None:
 # Генерация отчёта
         report_text = f"""
     {campaign_name}
-        Показы: {total_impressions:.0f}
-        Клики: {total_clicks:.0f}
-        CTR: {ctr_value:.2%}
-        Охват: {total_reach:.0f}
-        Расход с НДС: {total_spend_nds:.2f} руб.
+    Показы: {total_impressions:.0f}
+    Клики: {total_clicks:.0f}
+    CTR: {ctr_value:.2%}
+    Охват: {total_reach:.0f}
+    Расход с НДС: {total_spend_nds:.2f} руб.
         """
     
         # Вывод данных в Streamlit

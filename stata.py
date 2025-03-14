@@ -69,14 +69,8 @@ def process_data(df):
     
 def extract_campaign_name(text):
     """
-    Извлекает название РК, клиента и проекта из строки формата:
-    ARWM // OneTarget // Sminex // Dom-Dostigenie.
-    Если встречается 'arwm' в начале – пропускаем его.
-    """
-    parts = text.lower().split(" __ ", "//")
-    if len(parts) >= 4 and parts[0] == "arwm":
-        return parts[1], parts[2], parts[3]
-    return None, None, None
+    Извлекает название РК
+    parts = text.lower()
 
 # --------------------------- Интерфейс Streamlit ---------------------------
 st.title("Анализ качества рекламных кампаний")
@@ -115,12 +109,12 @@ elif upload_option == "Ссылка на Google-таблицу":
                 st.error(f"Ошибка при загрузке CSV: {e}")
 
 # Если название РК не извлекается из ссылки, предлагаем ввести вручную
-        manual_name = st.text_input("Введите название РК (например: 'ARWM // OneTarget // Sminex // Dom-Dostigenie')")
+        manual_name = st.text_input("Введите название РК (например: 'OneTarget')")
         if manual_name:
-            campaign_name, client_name, project_name = extract_campaign_name(manual_name)
+            campaign_name = extract_campaign_name(manual_name)
 
 if df is not None:
-    st.write(f"### {campaign_name} | {client_name} | {project_name}")
+    st.write(f"{campaign_name}")
     df, col_map = process_data(df)
 
     # Если присутствует столбец с датой, даем выбрать период

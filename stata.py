@@ -75,18 +75,7 @@ def filter_columns(df, is_mp=False):
                 
         # Возвращаем DataFrame с колонками в нужном порядке
         return df[required_columns] if required_columns else df
-        
-        # Преобразуем значения в столбце "показы" в числовой тип, используя apply
-        mp_df["показы"] = mp_df["показы"].apply(pd.to_numeric, errors="coerce")
-
-        # Проверяем результат преобразования
-        st.write(mp_df["показы"].head())
-
-        # Удаляем строки, где показы = 0 или NaN
-        mp_df = mp_df[mp_df["показы"] > 0]
-
-        return df
-
+       
     # Если это не медиаплан (например, отчет), возвращаем df без изменений
     return df
     

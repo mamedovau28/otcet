@@ -101,8 +101,6 @@ def process_mp(mp_df):
       - Оставляет только нужные колонки через filter_columns.
       - Возвращает очищенную таблицу и mapping найденных столбцов.
     """
-    st.write("Первые 5 строк медиаплана:")
-    st.dataframe(mp_df.head())
     mp_df = clean_mp(mp_df)
     if mp_df is None:
         st.error("Ошибка: не удалось найти строку с заголовками, содержащую 'площадка', 'название сайта' или 'ресурс'.")
@@ -110,6 +108,10 @@ def process_mp(mp_df):
     
     mp_df, col_map = standardize_columns(mp_df, PLATFORM_MAPPING)
     mp_df = filter_columns(mp_df)
+        if mp_df is None:
+        st.write("clean_mp не смог найти заголовки.")
+    else:
+        st.write("После clean_mp:", mp_df.head())
     return mp_df, col_map
 
 st.title("Анализ рекламных кампаний")

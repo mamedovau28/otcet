@@ -21,6 +21,23 @@ def standardize_columns(df):
                 column_map[standard_col] = col
                 break
     return df.rename(columns=column_map), column_map
+    
+   # Обработка охвата
+    if "охват" in col_map and "показы" in col_map:
+        def parse_coverage(row):
+            value = row[col_map["охват"]]
+            if "%" in value:
+                try:
+                    # Преобразуем в число, если в охвате процент
+                    return float(value.replace("%", "")) * row[col_map["показы"]]
+                except ValueError:
+                    return 0  # Если ошибка при преобразовании
+            else:
+                try:
+                    return float(value)
+                except ValueError:
+                    return 0  # Если ошибка при преобразовании
+        df["охват"] = df.apply(parse_coverage, axis=1)
 
 def process_data(df):
     df, col_map = standardize_columns(df)
@@ -49,25 +66,6 @@ def process_data(df):
 
     return df, col_map
     
-
-    # Обработка охвата
-    if "охват" in col_map and "показы" in col_map:
-        def parse_coverage(row):
-            value = row[col_map["охват"]]
-            if "%" in value:
-                try:
-                    # Преобразуем в число, если в охвате процент
-                    return float(value.replace("%", "")) * row[col_map["показы"]]
-                except ValueError:
-                    return 0  # Если ошибка при преобразовании
-            else:
-                try:
-                    return float(value)
-                except ValueError:
-                    return 0  # Если ошибка при преобразовании
-        df["охват"] = df.apply(parse_coverage, axis=1)
-
-
 def extract_campaign_name(text):
     """
     Извлекает название РК, клиента и проекта из строки формата:

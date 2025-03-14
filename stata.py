@@ -46,21 +46,19 @@ def process_data(df):
             lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0,
             axis=1
         )
+    if "охват" in col_map and "показы" in col_map:
+        def adjust_coverage(row):
+            coverage = row[col_map["охват"]]
+            impressions = row[col_map["показы"]]
 
-    return df, col_map
-
-    
-if "охват" in col_map and "показы" in col_map:
-    def adjust_coverage(row):
-        coverage = row[col_map["охват"]]
-        impressions = row[col_map["показы"]]
-
-        if coverage > 0 and impressions > 0:
-            if impressions / coverage > 10:  # Если показы в 10 раз больше охвата
-                return impressions * coverage / 100  # Пересчитываем охват
-                return coverage  # Оставляем как есть
+            if coverage > 0 and impressions > 0:
+                if impressions / coverage > 10:  # Если показы в 10 раз больше охвата
+                    return impressions * coverage / 100  # Пересчитываем охват
+                    return coverage  # Оставляем как есть
                 
-        df["охват"] = df.apply(adjust_coverage, axis=1)
+            df["охват"] = df.apply(adjust_coverage, axis=1)
+            
+    return df, col_map
 
     
 def extract_campaign_name(text):

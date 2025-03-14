@@ -61,6 +61,8 @@ def process_data(df):
             else row[col_map["охват"]],
             axis=1
         )
+        # Приводим столбец охват к числовому типу
+        df["охват"] = pd.to_numeric(df["охват"], errors='coerce').fillna(0)
 
     if "клики" in col_map and "показы" in col_map:
         # Удаляем пробелы и приводим к числовому типу

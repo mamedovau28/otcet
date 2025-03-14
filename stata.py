@@ -30,23 +30,9 @@ def process_data(df):
     if "дата" in col_map:
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
-    if "расход" in col_map:
-        df[col_map["расход"]] = (
-            df[col_map["расход"]]
-            .astype(str)
-            .str.replace(r"[^\d,.]", "", regex=True)  # Удаляем всё, кроме цифр, запятых и точек
-            .str.replace(",", ".")  # Меняем запятые на точки
-            .replace("", None)  # Если строка стала пустой, делаем None (чтобы dropna() их убрал)
-        )
-
-        df[col_map["расход"]] = pd.to_numeric(df[col_map["расход"]], errors="coerce")
-
-        # Расчет расхода с НДС
-        df["расход с ндс"] = df[col_map["расход"]] * 1.2
-
     # Преобразование показов и кликов
-    if "клики" in col_map and "показы" in col_map and "охват" in col_map:
-        for key in ["показы", "клики", "охват"]:
+    if "клики" in col_map and "показы" in col_map and "охват" in col_map and "расход" in col_map:
+        for key in ["показы", "клики", "охват", "расход"]:
             df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True)  # Удаляем пробелы и лишние символы
             df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)  # Преобразуем в числа
 
@@ -74,6 +60,21 @@ def process_data(df):
                 except ValueError:
                     return 0  # Если ошибка при преобразовании
         df["охват"] = df.apply(parse_coverage, axis=1)
+
+    if "расход" in col_map:
+        df[col_map["расход"]] = (
+            df[col_map["расход"]]
+            .astype(str)
+            .str.replace(r"[^\d,.]", "", regex=True)  # Удаляем всё, кроме цифр, запятых и точек
+            .str.replace(",", ".")  # Меняем запятые на точки
+            .replace("", None)  # Если строка стала пустой, делаем None (чтобы dropna() их убрал)
+        )
+
+        df[col_map["расход"]] = pd.to_numeric(df[col_map["расход"]], errors="coerce")
+
+        # Расчет расхода с НДС
+        df["расход с ндс"] = df[col_map["расход"]] * 1.2
+
 
 def extract_campaign_name(text):
     """

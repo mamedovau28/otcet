@@ -60,7 +60,7 @@ def filter_columns(df):
         elif re.search(r".*с учетом ндс и ак.*", col_lower):
             required_columns.add(col)
             
-    mp_df = mp_df.loc[~mp_df.apply(lambda row: all((pd.isna(x) or x == 0) for x in row), axis=1)]
+    mp_df.loc[~mp_df.apply(lambda row: all((pd.isna(x) or x == 0) for x in row), axis=1)]
     mp_df.replace("-", 0, inplace=True)  # Заменяем "-" на 0
 
     return df[list(required_columns)] if required_columns else df

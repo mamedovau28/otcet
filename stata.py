@@ -13,7 +13,7 @@ COLUMN_MAPPING = {
 
 # Словарь для сопоставления названий колонок в МП (рекламные площадки)
 PLATFORM_MAPPING = {
-    "площадка": ["площадка", "название сайта", "сайт", "ресурс"]
+    "площадка": ["площадка", "название сайта", "ресурс"]
 }
 
 def standardize_columns(df, mapping):
@@ -60,7 +60,7 @@ def filter_columns(df, is_mp=False):
 
             if "дата" in col_lower:
                 required_columns.append(col)
-            elif any(keyword in col_lower for keyword in ["площадка", "сайт", "ресурс"]):
+            elif any(keyword in col_lower for keyword in ["площадка", "название сайта", "ресурс"]):
                 required_columns.append(col)
             elif "показ" in col_lower:
                 required_columns.append(col)

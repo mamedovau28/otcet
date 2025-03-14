@@ -37,38 +37,41 @@ def standardize_columns(df, mapping):
 
 def filter_columns(df):
     """
-    Оставляет только нужные столбцы:
+    Оставляет только нужные столбцы в определенном порядке:
+    - дата (если есть)
     - площадка (если есть)
+    - показы (если есть)
+    - клики (если есть)
     - охват (если есть)
-    - показ (если есть)
-    - клик (если есть)
+    - расход (если есть)
     - столбец, содержащий "с учетом НДС и АК" (если есть)
     """
-    required_columns = set()
+    required_columns = []
 
     # Заменяем все символы "-" и значения NaN и None на 0
     df.replace({"-": 0}, inplace=True)  # Заменяем "-" на 0
     df.fillna(0, inplace=True)  # Заменяем NaN и None на 0
-    
+
     for col in df.columns:
         col_lower = col.lower().strip()
         
-        if any(keyword in col_lower for keyword in ["площадка", "сайт", "ресурс"]):
-            required_columns.add(col)
-        elif "охват" in col_lower:
-            required_columns.add(col)
+        if "дата" in col_lower:
+            required_columns.append(col)
+        elif any(keyword in col_lower for keyword in ["площадка", "сайт", "ресурс"]):
+            required_columns.append(col)
         elif "показ" in col_lower:
-            required_columns.add(col)
+            required_columns.append(col)
         elif "клик" in col_lower:
-            required_columns.add(col)
-        elif re.search(r".*с учетом ндс и ак.*", col_lower):
-            required_columns.add(col)
+            required_columns.append(col)
+        elif "охват" in col_lower:
+            required_columns.append(col)
         elif "расход" in col_lower:
-            required_columns.add(col)
-        elif "дата" in col_lower:
-            required_columns.add(col)
+            required_columns.append(col)
+        elif re.search(r".*с учетом ндс и ак.*", col_lower):
+            required_columns.append(col)
 
-    return df[list(required_columns)] if required_columns else df
+    # Возвращаем DataFrame с колонками в нужном порядке
+    return df[required_columns] if required_columns else df
     
 # Встраиваем в процесс обработки данных
 def process_data(df):

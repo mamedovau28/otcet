@@ -75,46 +75,39 @@ def process_data(df):
     
     return df, col_map
 
-def clean_mp(mp_df):
+def filter_columns(df):
     """
-    Находит строку с заголовками, удаляет лишние строки, заполняет объединенные ячейки.
+    Оставляет в таблице только нужные колонки:
+    - Обязательно: "площадка"
+    - Если есть: "охват", "клики", "показы"
+    - Колонка с текстом "... с учетом ндс и ак" (регистронезависимо)
     """
-    # Ищем строку, где встречается слово 'площадка', 'название сайта' или 'ресурс'
-    header_row = None
-    for i, row in mp_df.iterrows():
-        if row.astype(str).str.contains("площадка|название сайта|ресурс|Ресурс", case=False, na=False).any():
-            header_row = i
-            break
-    
-    if header_row is None:
-        st.error("Ошибка: Не найден заголовок с 'площадка', 'название сайта' или 'ресурс'")
-        return None
-    
-    # Убираем строки до заголовка
-    mp_df = mp_df.iloc[header_row:].reset_index(drop=True)
-    
-    # Устанавливаем первую строку как заголовки
-    mp_df.columns = mp_df.iloc[0]
-    mp_df = mp_df[1:].reset_index(drop=True)
-    
-    # Заполняем объединенные ячейки (если есть)
-    mp_df = mp_df.ffill(axis=0)
-    
-    return mp_df
-
+    required_columns = set()
+    for col in df.columns:
+        col_lower = col.lower()
+        if "площадка" in col_lower:
+            required_columns.add(col)
+        elif any(key in col_lower for key in ["охват", "клики", "показы"]):
+            required_columns.add(col)
+        elif re.search(r".*с учетом ндс и ак.*", col_lower):
+            required_columns.add(col)
+    return df[list(required_columns)]
 
 def process_mp(mp_df):
     """
     Обрабатывает медиаплан (МП):
       - Вызывает clean_mp, чтобы найти строку с заголовками (начало таблицы).
       - Стандартизирует имена колонок по PLATFORM_MAPPING.
+      - Оставляет только нужные колонки через filter_columns.
       - Возвращает очищенную таблицу и mapping найденных столбцов.
     """
     mp_df = clean_mp(mp_df)
     if mp_df is None:
         st.error("Ошибка: не удалось найти строку с заголовками, содержащую 'площадка', 'название сайта' или 'ресурс'.")
         return None, {}
+    
     mp_df, col_map = standardize_columns(mp_df, PLATFORM_MAPPING)
+    mp_df = filter_columns(mp_df)
     return mp_df, col_map
 
 st.title("Анализ рекламных кампаний")

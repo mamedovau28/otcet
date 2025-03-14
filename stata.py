@@ -34,10 +34,13 @@ def process_data(df):
         # Удаляем всё, кроме цифр, запятых и точек, и меняем запятые на точки
         df[col_map["расход"]] = df[col_map["расход"]].astype(str).str.replace(r"[^\d,.]", "", regex=True)
         df[col_map["расход"]] = df[col_map["расход"]].str.replace(",", ".")
-    
-        # Преобразуем в числовой формат (с заменой нечисловых значений на 0)
-        df[col_map["расход"]] = pd.to_numeric(df[col_map["расход"]], errors='coerce').fillna(0)
-    
+
+        # Преобразуем в числовой формат
+        df[col_map["расход"]] = pd.to_numeric(df[col_map["расход"]], errors='coerce')
+
+        # Если значение NaN, заменяем его на 0
+        df[col_map["расход"]] = df[col_map["расход"]].fillna(0)
+
         # Расчет расхода с НДС
         df["расход с ндс"] = df[col_map["расход"]] * 1.2
 
@@ -46,10 +49,17 @@ def process_data(df):
         def parse_coverage(row):
             value = str(row[col_map["охват"]]).strip().replace(" ", "").replace(",", ".")
             if "%" in value:
-                return float(value.replace("%", "")) / 100 * row[col_map["показы"]]
-            return pd.to_numeric(value, errors='coerce')
-
-        df["охват"] = df.apply(parse_coverage, axis=1).fillna(0)
+                try:
+                    # Преобразуем в число, если в охвате процент
+                    return float(value.replace("%", "")) / 100 * row[col_map["показы"]]
+                except ValueError:
+                    return 0  # Если ошибка при преобразовании
+            else:
+                try:
+                    return float(value)
+                except ValueError:
+                    return 0  # Если ошибка при преобразовании
+        df["охват"] = df.apply(parse_coverage, axis=1)
 
     # Преобразование показов и кликов
     if "клики" in col_map and "показы" in col_map:

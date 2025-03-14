@@ -35,9 +35,10 @@ def standardize_columns(df, mapping):
                 
     return df.rename(columns=column_map), column_map
 
-def filter_columns(df):
+def filter_columns(df, is_mp=False):
     """
-    Оставляет только нужные столбцы в определенном порядке:
+    Оставляет только нужные столбцы в определенном порядке.
+    Фильтрация применяется только к файлам медиаплана (если is_mp=True).
     - дата (если есть)
     - площадка (если есть)
     - показы (если есть)
@@ -46,32 +47,37 @@ def filter_columns(df):
     - расход (если есть)
     - столбец, содержащий "с учетом НДС и АК" (если есть)
     """
-    required_columns = []
+    # Если это медиаплан, применяем фильтрацию
+    if is_mp:
+        required_columns = []
 
-    # Заменяем все символы "-" и значения NaN и None на 0
-    df.replace({"-": 0}, inplace=True)  # Заменяем "-" на 0
-    df.fillna(0, inplace=True)  # Заменяем NaN и None на 0
+        # Заменяем все символы "-" и значения NaN и None на 0
+        df.replace({"-": 0}, inplace=True)  # Заменяем "-" на 0
+        df.fillna(0, inplace=True)  # Заменяем NaN и None на 0
 
-    for col in df.columns:
-        col_lower = col.lower().strip()
-        
-        if "дата" in col_lower:
-            required_columns.append(col)
-        elif any(keyword in col_lower for keyword in ["площадка", "сайт", "ресурс"]):
-            required_columns.append(col)
-        elif "показ" in col_lower:
-            required_columns.append(col)
-        elif "клик" in col_lower:
-            required_columns.append(col)
-        elif "охват" in col_lower:
-            required_columns.append(col)
-        elif "расход" in col_lower:
-            required_columns.append(col)
-        elif re.search(r".*с учетом ндс и ак.*", col_lower):
-            required_columns.append(col)
+        for col in df.columns:
+            col_lower = col.lower().strip()
 
-    # Возвращаем DataFrame с колонками в нужном порядке
-    return df[required_columns] if required_columns else df
+            if "дата" in col_lower:
+                required_columns.append(col)
+            elif any(keyword in col_lower for keyword in ["площадка", "сайт", "ресурс"]):
+                required_columns.append(col)
+            elif "показ" in col_lower:
+                required_columns.append(col)
+            elif "клик" in col_lower:
+                required_columns.append(col)
+            elif "охват" in col_lower:
+                required_columns.append(col)
+            elif "расход" in col_lower:
+                required_columns.append(col)
+            elif re.search(r".*с учетом ндс и ак.*", col_lower):
+                required_columns.append(col)
+                
+        # Возвращаем DataFrame с колонками в нужном порядке
+        return df[required_columns] if required_columns else df
+
+    # Если это не медиаплан (например, отчет), возвращаем df без изменений
+    return df
     
 # Встраиваем в процесс обработки данных
 def process_data(df):

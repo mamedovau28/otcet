@@ -104,7 +104,9 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
-            start_date, end_date = st.date_input("Выберите период", [min_date, max_date], key=f"date_input_{unique_key}")
+            start_date, end_date = st.
+
+date_input("Выберите период", [min_date, max_date], key=f"date_input_{unique_key}")
 
             df_filtered = df[
                 (df[col_map["дата"]].dt.date >= start_date) & 
@@ -146,4 +148,6 @@ for i in range(1, 11):
     google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")
     if google_sheet_url:
         upload_option = "Ссылка на Google-таблицу"
-        load_and_process_data(upload_option, unique_key=f"file_uploader_{i}", google_sheet_url=google_sheet_url)
+        campaign_name = f"Загрузка {i}"  # Имя по умолчанию
+        custom_campaign_name = st.text_input(f"Введите название РК {i} (или оставьте по умолчанию)", value=campaign_name)
+        load_and_process_data(upload_option, campaign_name=custom_campaign_name, unique_key=f"file_uploader_{i}", google_sheet_url=google_sheet_url)

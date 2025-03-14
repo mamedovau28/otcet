@@ -78,13 +78,13 @@ st.title("Анализ качества рекламных кампаний")
 upload_option = st.radio("Выберите способ загрузки данных:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"])
 
 df = None
-campaign_name = client_name = project_name = None
+campaign_name = None
 
 if upload_option == "Загрузить Excel-файл":
     uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"])
     if uploaded_file:
         df = pd.read_excel(uploaded_file)
-        campaign_name, client_name, project_name = extract_campaign_name(uploaded_file.name)
+        campaign_name = extract_campaign_name(uploaded_file.name)
 
 elif upload_option == "Ссылка на Google-таблицу":
     google_sheet_url = st.text_input("Введите ссылку на Google-таблицу")

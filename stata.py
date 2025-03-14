@@ -107,8 +107,7 @@ for i in range(1, 11):
             try:
                 sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
                 gid = google_sheet_url.split("gid=")[1].split("&")[0] if "gid=" in google_sheet_url else "0"
-                csv_url = f"https://docs.google.
-com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+                csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
                 df = pd.read_csv(csv_url)
                 campaign_name = f"Загрузка {i}"
             except Exception as e:

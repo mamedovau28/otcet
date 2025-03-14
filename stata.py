@@ -73,7 +73,7 @@ def extract_campaign_name(text):
     ARWM // OneTarget // Sminex // Dom-Dostigenie.
     Если встречается 'arwm' в начале – пропускаем его.
     """
-    parts = text.lower().split(" // ")
+    parts = text.lower().split(" __ ", "//")
     if len(parts) >= 4 and parts[0] == "arwm":
         return parts[1], parts[2], parts[3]
     return None, None, None

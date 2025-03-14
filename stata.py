@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import re
 
-# Словарь для сопоставления названий колонок
+# Словарь для сопоставления названий колонок в отчетах
 COLUMN_MAPPING = {
     "дата": ["дата", "date"],
     "показы": ["показы", "импрессии", "impressions"],
@@ -11,83 +11,125 @@ COLUMN_MAPPING = {
     "охват": ["охват", "reach"]
 }
 
-def standardize_columns(df):
-    df.columns = df.columns.str.lower().str.strip()
+# Словарь для сопоставления названий колонок в МП (рекламные площадки)
+PLATFORM_MAPPING = {
+    "площадка": ["площадка", "название сайта", "сайт", "ресурс"]
+}
+
+def standardize_columns(df, mapping):
+    """
+    Приводит названия колонок к стандартному виду по переданному mapping.
+    Все имена столбцов приводятся к нижнему регистру и обрезаются пробелы.
+    """
+    df.columns = df.columns.astype(str).str.lower().str.strip()
     column_map = {}
-    for standard_col, possible_names in COLUMN_MAPPING.items():
+    for standard_col, possible_names in mapping.items():
         for col in df.columns:
-            if col in possible_names:
+            if any(word in col for word in possible_names):
                 column_map[standard_col] = col
                 break
     return df.rename(columns=column_map), column_map
 
 def process_data(df):
-    df, col_map = standardize_columns(df)
+    """
+    Обрабатывает загруженные данные (Excel или Google-таблицы):
+      - Стандартизирует имена колонок по COLUMN_MAPPING
+      - Преобразует дату, приводит числовые значения к числовому типу
+      - Рассчитывает расход с НДС и CTR
+    """
+    df, col_map = standardize_columns(df, COLUMN_MAPPING)
     df.fillna(0, inplace=True)
-
-    # Преобразование даты
+    
     if "дата" in col_map:
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
-
-    # Преобразование показов, кликов, охвата и расхода
-    if {"клики", "показы", "охват", "расход"}.issubset(col_map):
-        for key in ["показы", "клики", "охват", "расход"]:
-            if not pd.api.types.is_numeric_dtype(df[col_map[key]]):
-                df[col_map[key]] = (
-                    df[col_map[key]]
-                    .astype(str)
-                    .str.replace(r"[^\d]", "", regex=True)  # Оставляем только цифры
-                )
-                df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)  # Преобразуем в числа
-
-    df[col_map["расход"]] = df[col_map["расход"]] / 100
-
-    # Охват
+    
+    # Приведение к числовому типу
+    for key in ["показы", "клики", "охват", "расход"]:
+        if key in col_map and not pd.api.types.is_numeric_dtype(df[col_map[key]]):
+            df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True)
+            df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)
+    
+    if "расход" in col_map:
+        df[col_map["расход"]] = df[col_map["расход"]] / 100
+    
+    # Корректировка охвата: если показы в 10 раз больше охвата, пересчитываем охват
     if "охват" in col_map and "показы" in col_map:
         def adjust_coverage(row):
             coverage = row[col_map["охват"]]
             impressions = row[col_map["показы"]]
-
             if coverage > 0 and impressions > 0:
-                if impressions / coverage > 10:  # Если показы в 10 раз больше охвата
-                    return impressions * coverage / 100  # Пересчитываем охват
-            return round(coverage)  # Оставляем как есть
-
+                if impressions / coverage > 10:
+                    return impressions * coverage / 100
+            return round(coverage)
         df["охват"] = df.apply(adjust_coverage, axis=1)
-
-    # Расчет расхода с НДС
-    df["расход с ндс"] = df[col_map["расход"]] * 1.2
-
-    # Рассчитываем CTR
-    df["ctr"] = df.apply(
-        lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0,
-        axis=1
-    )
-            
+    
+    # Расчет расхода с НДС и CTR
+    if "расход" in col_map:
+        df["расход с ндс"] = df[col_map["расход"]] * 1.2
+    if "клики" in col_map and "показы" in col_map:
+        df["ctr"] = df.apply(lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0, axis=1)
+    
     return df, col_map
 
-# Интерфейс Streamlit
-st.title("Анализ качества рекламных кампаний")
+def clean_mp(mp_df):
+    """
+    Ищет первую строку, содержащую слово "площадка", "название сайта" или "ресурс" (без учета регистра).
+    Считает эту строку заголовочной и возвращает таблицу, начиная с этой строки.
+    """
+    for i, row in mp_df.iterrows():
+        if row.astype(str).str.contains("площадка", case=False, na=False).any() or \
+           row.astype(str).str.contains("название сайта", case=False, na=False).any() or \
+           row.astype(str).str.contains("ресурс", case=False, na=False).any():
+            mp_df = mp_df.iloc[i:].reset_index(drop=True)
+            mp_df.columns = mp_df.iloc[0]
+            mp_df = mp_df[1:].reset_index(drop=True)
+            return mp_df
+    return None
 
-# Загрузка МП
-st.header("Загрузка медиаплана (МП)")
-mp_file = st.file_uploader("Загрузите файл медиаплана (Excel)", type=["xlsx"], key="mp_file")
+def process_mp(mp_df):
+    """
+    Обрабатывает медиаплан (МП):
+      - Вызывает clean_mp, чтобы найти строку с заголовками (начало таблицы).
+      - Стандартизирует имена колонок по PLATFORM_MAPPING.
+      - Возвращает очищенную таблицу и mapping найденных столбцов.
+    """
+    mp_df = clean_mp(mp_df)
+    if mp_df is None:
+        st.error("Ошибка: не удалось найти строку с заголовками, содержащую 'площадка', 'название сайта' или 'ресурс'.")
+        return None, {}
+    mp_df, col_map = standardize_columns(mp_df, PLATFORM_MAPPING)
+    return mp_df, col_map
+
+st.title("Анализ рекламных кампаний")
+
+# === Загрузка медиаплана (МП) ===
+st.header("Загрузите медиаплан (МП) (только Excel)")
+mp_file = st.file_uploader("Выберите файл с медиапланом", type=["xlsx"], key="mp_uploader")
 
 mp_df = None
 if mp_file:
     xls = pd.ExcelFile(mp_file)
     sheet_names = xls.sheet_names
-    
     if len(sheet_names) > 1:
-        sheet_name = st.selectbox("Выберите лист с данными", sheet_names, key="mp_sheet_select")
+        sheet_name = st.selectbox("Выберите лист с медиапланом", sheet_names, key="mp_sheet_select")
     else:
         sheet_name = sheet_names[0]
-
-    mp_df = pd.read_excel(xls, sheet_name=sheet_name)
+    mp_df = pd.read_excel(mp_file, sheet_name=sheet_name)
     st.write("Медиаплан загружен:", sheet_name)
+    mp_df, mp_col_map = process_mp(mp_df)
+    if mp_df is not None:
+        st.subheader("Обработанный медиаплан")
+        st.dataframe(mp_df)
+        # Извлечение рекламных площадок
+        if "площадка" in mp_col_map:
+            platforms = mp_df[mp_col_map["площадка"]].dropna().unique()
+            st.subheader("Найденные рекламные площадки:")
+            st.write(platforms)
+        else:
+            st.error("Не найден столбец с рекламными площадками.")
 
-# Загрузка и обработка данных (Excel или Google-таблицы)
-st.header("Загрузка отчетов")
+# === Загрузка отчетов ===
+st.header("Загрузите данные (Excel или Google-таблицы)")
 
 for i in range(1, 11):
     upload_option = st.selectbox(f"Способ загрузки файла {i}", ["Не выбрано", "Загрузить Excel-файл", "Ссылка на Google-таблицу"], key=f"upload_option_{i}")
@@ -99,7 +141,7 @@ for i in range(1, 11):
         uploaded_file = st.file_uploader(f"Загрузите Excel-файл {i}", type=["xlsx"], key=f"file_uploader_{i}")
         if uploaded_file:
             df = pd.read_excel(uploaded_file)
-            campaign_name = uploaded_file.name.split(".")[0]  # Имя файла как название РК
+            campaign_name = uploaded_file.name.split(".")[0]
 
     elif upload_option == "Ссылка на Google-таблицу":
         google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")
@@ -118,7 +160,6 @@ for i in range(1, 11):
         custom_campaign_name = st.text_input(f"Введите название РК {i} (или оставьте по умолчанию)", value=campaign_name, key=f"campaign_name_{i}")
         st.write(f"Название РК: {custom_campaign_name}")
 
-        # Выбор периода
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
@@ -139,7 +180,6 @@ for i in range(1, 11):
             total_reach = summary.get("охват", 0)
             total_spend_nds = summary.get("расход с ндс", 0)
 
-            # Генерация отчёта
             report_text = f"""
             {custom_campaign_name}
         Показы: {format(total_impressions, ",.0f").replace(",", " ")}
@@ -148,10 +188,7 @@ for i in range(1, 11):
         Охват: {format(total_reach, ",.0f").replace(",", " ")}
         Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
             """
-
-            # Вывод отчёта
             st.subheader("Итоговый отчёт")
             st.text_area(report_text, report_text, height=100)
 
-        # Вывод таблицы
         st.dataframe(df)

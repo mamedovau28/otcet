@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
+import re
 
-# Добавим "расход до ндс" в варианты для столбца "расход"
 COLUMN_MAPPING = {
     "дата": ["дата", "date"],
     "показы": ["показы", "импрессии", "impressions"],
@@ -11,10 +11,6 @@ COLUMN_MAPPING = {
 }
 
 def standardize_columns(df):
-    """
-    Приводим названия колонок к нижнему регистру и ищем нужные столбцы
-    на основе словаря COLUMN_MAPPING.
-    """
     df.columns = df.columns.str.lower().str.strip()
     column_map = {}
     for standard_col, possible_names in COLUMN_MAPPING.items():
@@ -27,48 +23,38 @@ def standardize_columns(df):
 def parse_cost_value(x):
     """
     Преобразует строку вида 'p.10 673,98' в число:
-    - Убираем 'p.' или 'p' (если есть).
-    - Удаляем пробелы.
-    - Заменяем запятую на точку.
-    - Пробуем привести к float.
-    - При ошибке возвращаем 0.
+    - Удаляем все символы, кроме цифр, точки, запятой
+    - Меняем запятую на точку
+    - Пробуем float(...)
     """
     if isinstance(x, str):
-        # Убираем 'p.' или 'p' (если вдруг есть)
-        x = x.replace('p.', '').replace('p', '')
-        # Удаляем пробелы
-        x = x.replace(' ', '')
-        # Заменяем запятую на точку
+        # Удаляем все лишние символы (включая p. или р.)
+        x = re.sub(r'[^0-9,\.]', '', x)
         x = x.replace(',', '.')
         try:
             return float(x)
         except:
             return 0.0
     else:
-        # Если это уже число, просто вернём как есть
-        return float(x)
+        try:
+            return float(x)
+        except:
+            return 0.0
 
 def process_data(df):
-    """
-    Приводит столбцы к нужным названиям, чистит данные,
-    считает Расход с НДС, пересчитывает охват (если %),
-    считает CTR (учитывая деление на 0).
-    """
     df, col_map = standardize_columns(df)
     df.fillna(0, inplace=True)
 
-    # Парсим дату, если есть соответствующий столбец
+    # Преобразуем даты
     if "дата" in col_map:
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
-    # Если есть столбец "расход", парсим значения и считаем с НДС
+    # Парсим и считаем Расход с НДС
     if "расход" in col_map:
-        # Преобразуем исходные значения (убираем 'p.', пробелы, запятые и т.д.)
         df[col_map["расход"]] = df[col_map["расход"]].apply(parse_cost_value)
-        # Добавляем расчет с НДС
         df["расход с ндс"] = df[col_map["расход"]] * 1.2
 
-    # Пересчитываем охват, если он в процентах (например, "0,20%")
+    # Пересчитываем охват, если он в процентах
     if "охват" in col_map and "показы" in col_map:
         df["охват"] = df.apply(
             lambda row: row[col_map["показы"]] * (
@@ -77,7 +63,7 @@ def process_data(df):
             axis=1
         )
 
-    # Считаем CTR: клики / показы (если показы > 0)
+    # Считаем CTR
     if "клики" in col_map and "показы" in col_map:
         df["ctr"] = df.apply(
             lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] else 0,
@@ -88,8 +74,8 @@ def process_data(df):
 
 def extract_campaign_name(filename):
     """
-    Извлекает название РК, клиента и проекта из имени файла.
-    Формат: ARWM // OneTarget // Sminex // Dom-Dostigenie
+    Извлекает название РК, клиента и проекта из строки,
+    формата: ARWM // OneTarget // Sminex // Dom-Dostigenie
     Если встречаем 'arwm' (в любом регистре) в начале, пропускаем его.
     """
     parts = filename.lower().split(" // ")
@@ -115,12 +101,15 @@ if upload_option == "Загрузить Excel-файл":
 elif upload_option == "Ссылка на Google-таблицу":
     google_sheet_url = st.text_input("Введите ссылку на Google-таблицу")
     if google_sheet_url:
-        # Извлекаем ID таблицы
         sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
-        # Формируем ссылку для получения CSV
         url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv"
         df = pd.read_csv(url)
-        campaign_name, client_name, project_name = extract_campaign_name(google_sheet_url)
+        # ВАЖНО: В ссылке Google, скорее всего, нет "ARWM // OneTarget..."!
+        # Значит, extract_campaign_name вернёт None, None, None.
+        # Либо попросим пользователя вручную ввести название:
+        manual_name = st.text_input("Введите название РК (например: 'ARWM // OneTarget // Sminex // Dom-Dostigenie')")
+        if manual_name:
+            campaign_name, client_name, project_name = extract_campaign_name(manual_name)
 
 if df is not None:
     st.write(f"### {campaign_name} | {client_name} | {project_name}")
@@ -133,21 +122,15 @@ if df is not None:
         max_date = df[col_map["дата"]].max()
         start_date, end_date = st.date_input("Выберите период", [min_date, max_date])
 
-        # Фильтруем
         df_filtered = df[
             (df[col_map["дата"]] >= pd.to_datetime(start_date)) &
             (df[col_map["дата"]] <= pd.to_datetime(end_date))
         ]
 
-        # Суммируем
-        # Обратите внимание, что dataframe может не содержать все нужные колонки
-        # поэтому перед суммированием проверим, есть ли они
-        cols_for_summary = []
-        for c in ["показы", "клики", "охват", "расход с ндс"]:
-            if c in df_filtered.columns:
-                cols_for_summary.append(c)
-
-        summary = df_filtered[cols_for_summary].sum()
+        # Собираем те столбцы, которые реально есть
+        needed_cols = ["показы", "клики", "охват", "расход с ндс"]
+        existing_cols = [col for col in needed_cols if col in df_filtered.columns]
+        summary = df_filtered[existing_cols].sum()
 
         st.write("### Итоговый отчёт")
         st.write(f"**{campaign_name}**")
@@ -175,5 +158,4 @@ if df is not None:
         total_spend_nds = summary.get("расход с ндс", 0)
         st.write(f"Расход с НДС: {total_spend_nds:.2f} руб.")
 
-    # Выводим обработанный датафрейм
     st.dataframe(df)

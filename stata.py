@@ -13,12 +13,15 @@ COLUMN_MAPPING = {
 
 # Словарь для сопоставления названий колонок в МП (рекламные площадки)
 PLATFORM_MAPPING = {
-    "площадка": ["площадка", "название сайта", "сайт", "ресурс", "Ресурс"]
+    "площадка": ["площадка", "название сайта", "сайт", "ресурс"]
 }
 
 def standardize_columns(df, mapping):
+    """
+    Приводит названия колонок к стандартному виду по переданному mapping.
+    Все имена столбцов приводятся к нижнему регистру и обрезаются пробелы.
+    """
     df.columns = df.columns.astype(str).str.lower().str.strip()
-    df = df.loc[:, df.columns != 'nan']
     column_map = {}
     for standard_col, possible_names in mapping.items():
         for col in df.columns:
@@ -28,12 +31,19 @@ def standardize_columns(df, mapping):
     return df.rename(columns=column_map), column_map
 
 def process_data(df):
+    """
+    Обрабатывает загруженные данные (Excel или Google-таблицы):
+      - Стандартизирует имена колонок по COLUMN_MAPPING
+      - Преобразует дату, приводит числовые значения к числовому типу
+      - Рассчитывает расход с НДС и CTR
+    """
     df, col_map = standardize_columns(df, COLUMN_MAPPING)
     df.fillna(0, inplace=True)
     
     if "дата" in col_map:
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
     
+    # Приведение к числовому типу
     for key in ["показы", "клики", "охват", "расход"]:
         if key in col_map and not pd.api.types.is_numeric_dtype(df[col_map[key]]):
             df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True)
@@ -42,11 +52,18 @@ def process_data(df):
     if "расход" in col_map:
         df[col_map["расход"]] = df[col_map["расход"]] / 100
     
+    # Корректировка охвата: если показы в 10 раз больше охвата, пересчитываем охват
     if "охват" in col_map and "показы" in col_map:
-        df["охват"] = df.apply(lambda row: round(row[col_map["охват"]] * row[col_map["показы"]] / 100) 
-                                 if row[col_map["охват"]] > 0 and row[col_map["показы"]] > row[col_map["охват"]] * 10 
-                                 else round(row[col_map["охват"]]), axis=1)
+        def adjust_coverage(row):
+            coverage = row[col_map["охват"]]
+            impressions = row[col_map["показы"]]
+            if coverage > 0 and impressions > 0:
+                if impressions / coverage > 10:
+                    return impressions * coverage / 100
+            return round(coverage)
+        df["охват"] = df.apply(adjust_coverage, axis=1)
     
+    # Расчет расхода с НДС и CTR
     if "расход" in col_map:
         df["расход с ндс"] = df[col_map["расход"]] * 1.2
     if "клики" in col_map and "показы" in col_map:
@@ -54,32 +71,34 @@ def process_data(df):
     
     return df, col_map
 
-def filter_columns(df):
-    required_columns = set()
-    for col in df.columns:
-        col_lower = col.lower()
-        if "площадка" in col_lower:
-            required_columns.add(col)
-        elif any(key in col_lower for key in ["охват", "клики", "показы"]):
-            required_columns.add(col)
-        elif re.search(r".*с учетом ндс и ак.*", col_lower):
-            required_columns.add(col)
-    return df[list(required_columns)]
+def clean_mp(mp_df):
+    """
+    Ищет первую строку, содержащую слово "площадка", "название сайта" или "ресурс" (без учета регистра).
+    Считает эту строку заголовочной и возвращает таблицу, начиная с этой строки.
+    """
+    for i, row in mp_df.iterrows():
+        if row.astype(str).str.contains("площадка", case=False, na=False).any() or \
+           row.astype(str).str.contains("название сайта", case=False, na=False).any() or \
+           row.astype(str).str.contains("ресурс", case=False, na=False).any():
+            mp_df = mp_df.iloc[i:].reset_index(drop=True)
+            mp_df.columns = mp_df.iloc[0]
+            mp_df = mp_df[1:].reset_index(drop=True)
+            return mp_df
+    return None
 
 def process_mp(mp_df):
-    if 'clean_mp' in globals():
-        mp_df = clean_mp(mp_df)
-    
+    """
+    Обрабатывает медиаплан (МП):
+      - Вызывает clean_mp, чтобы найти строку с заголовками (начало таблицы).
+      - Стандартизирует имена колонок по PLATFORM_MAPPING.
+      - Возвращает очищенную таблицу и mapping найденных столбцов.
+    """
+    mp_df = clean_mp(mp_df)
     if mp_df is None:
-        st.error("Ошибка: не удалось найти строку с заголовками.")
+        st.error("Ошибка: не удалось найти строку с заголовками, содержащую 'площадка', 'название сайта' или 'ресурс'.")
         return None, {}
-    
-    mp_df, col_map = standardize_columns(mp_df, PLATFORM_MAPPING)
-    if "площадка" not in col_map:
-        st.error("Ошибка: Не найдена колонка с площадкой.")
-        return None, {}
-    
-    mp_df = filter_columns(mp_df)
+
+mp_df, col_map = standardize_columns(mp_df, PLATFORM_MAPPING)
     return mp_df, col_map
 
 st.title("Анализ рекламных кампаний")
@@ -174,4 +193,4 @@ for i in range(1, 11):
             st.subheader("Итоговый отчёт")
             st.text_area(report_text, report_text, height=100)
 
-        st.dataframe(df)
+        st.dataframe(df) 

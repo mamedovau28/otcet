@@ -2,24 +2,43 @@ import streamlit as st
 import pandas as pd
 import re
 
-# Словарь для сопоставления названий колонок
+# Словари для сопоставления названий колонок
 COLUMN_MAPPING = {
-    "дата": ["дата", "date"],
+    "площадка": ["площадка", "сайт", "ресурс"],
     "показы": ["показы", "импрессии", "impressions"],
     "клики": ["клики", "clicks"],
-    "расход": ["расход", "затраты", "cost", "спенд", "расход до ндс", "расходдондс"],
-    "охват": ["охват", "reach"]
+    "охват": ["охват", "reach"],
+    "расход": ["расход", "затраты", "cost", "спенд", "расход до ндс", "расходдондс"]
 }
 
 def standardize_columns(df):
+    """Приводит названия колонок к стандартному виду"""
     df.columns = df.columns.str.lower().str.strip()
     column_map = {}
     for standard_col, possible_names in COLUMN_MAPPING.items():
         for col in df.columns:
-            if col in possible_names:
+            if any(word in col for word in possible_names):
                 column_map[standard_col] = col
                 break
     return df.rename(columns=column_map), column_map
+
+def process_mp(mp_df):
+    """Обрабатывает медиаплан: извлекает нужные столбцы и удаляет пустые строки"""
+    mp_df, col_map = standardize_columns(mp_df)
+
+    required_cols = {"площадка", "показы", "клики"}
+    if not required_cols.issubset(col_map):
+        st.error("Ошибка: В медиаплане нет всех обязательных столбцов ('Площадка', 'Показы', 'Клики').")
+        return None
+
+    selected_columns = [col_map[col] for col in required_cols]
+    if "охват" in col_map:
+        selected_columns.append(col_map["охват"])
+
+    mp_df = mp_df[selected_columns]
+    mp_df.dropna(subset=[col_map["площадка"], col_map["показы"], col_map["клики"]], inplace=True)
+
+    return mp_df
 
 def process_data(df):
     df, col_map = standardize_columns(df)

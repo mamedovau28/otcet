@@ -64,7 +64,7 @@ def process_data(df):
     # Преобразование показов и кликов
     if "клики" in col_map and "показы" in col_map:
         for key in ["показы", "клики"]:
-            df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True)  # Удаляем пробелы и лишние символы
+            df[col_map[key]] = df[col_map[key]].astype(str).str.replace({'^р.': '', '\s': ''}, regex=True).astype(float)  # Удаляем пробелы и лишние символы
             df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)  # Преобразуем в числа
 
         # Рассчитываем CTR

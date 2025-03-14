@@ -108,7 +108,7 @@ def process_mp(mp_df):
     
     mp_df, col_map = standardize_columns(mp_df, PLATFORM_MAPPING)
     mp_df = filter_columns(mp_df)
-        if mp_df is None:
+    if mp_df is None:
         st.write("clean_mp не смог найти заголовки.")
     else:
         st.write("После clean_mp:", mp_df.head())

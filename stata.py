@@ -98,7 +98,7 @@ def process_mp(mp_df):
         st.error("Ошибка: не удалось найти строку с заголовками, содержащую 'площадка', 'название сайта' или 'ресурс'.")
         return None, {}
 
-mp_df, col_map = standardize_columns(mp_df, PLATFORM_MAPPING)
+    mp_df, col_map = standardize_columns(mp_df, PLATFORM_MAPPING)
     return mp_df, col_map
 
 st.title("Анализ рекламных кампаний")

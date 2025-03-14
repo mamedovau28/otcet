@@ -11,64 +11,63 @@ COLUMN_MAPPING = {
     "расход": ["расход", "затраты", "cost", "спенд", "расход до ндс", "расходдондс"]
 }
 
-#def standardize_columns(df):
-   # """Приводит названия колонок к стандартному виду"""
-   # df.columns = df.columns.str.lower().str.strip()
-   # column_map = {}
-   # for standard_col, possible_names in COLUMN_MAPPING.items():
-     #   for col in df.columns:
-        #    if any(word in col for word in possible_names):
-        #        column_map[standard_col] = col
-        #        break
-   # return df.rename(columns=column_map), column_map
-
 def standardize_columns(df):
-    """Функция для стандартизации названий колонок"""
-    df.columns = df.columns.str.lower().str.strip()  # Приводим имена столбцов к нижнему регистру и убираем пробелы
+    """Приводит названия колонок к стандартному виду"""
+    df.columns = df.columns.astype(str).str.lower().str.strip()
     column_map = {}
-    
     for standard_col, possible_names in COLUMN_MAPPING.items():
         for col in df.columns:
-            # Убедимся, что столбец - строка, прежде чем выполнять поиск подстроки
-            if isinstance(col, str) and any(word in col for word in possible_names):
+            # Проверяем, что хотя бы одно слово из возможных вариантов содержится в названии столбца
+            if any(word in col for word in possible_names):
                 column_map[standard_col] = col
                 break
-    
     return df.rename(columns=column_map), column_map
 
-
 def clean_mp(mp_df):
-    """Ищем первую строку с названием колонок и очищаем медиаплан, начиная с проекта"""
-    # Поиск строки, в которой встречается "проект" (или его вариации) в одном из столбцов
+    """
+    Ищем первую строку, в которой встречается слово "площадка" (без учета регистра).
+    Считаем эту строку заголовочной и возвращаем таблицу начиная с этой строки.
+    """
     for i, row in mp_df.iterrows():
-        if row.str.contains(r'проект', case=False, na=False).any():  # Ищем слово "проект" (нечувствительно к регистру)
-            mp_df = mp_df.iloc[i:].reset_index(drop=True)  # Начинаем с найденной строки
-            mp_df.columns = mp_df.iloc[0]  # Первая строка становится заголовками
-            mp_df = mp_df[1:].reset_index(drop=True)  # Удаляем дублирующуюся строку заголовков
+        # Преобразуем значения строки в строки и ищем слово "площадка"
+        if row.astype(str).str.contains("площадка", case=False, na=False).any():
+            # Возьмем таблицу начиная с найденной строки
+            mp_df = mp_df.iloc[i:].reset_index(drop=True)
+            # Сделаем первую строку заголовками
+            mp_df.columns = mp_df.iloc[0]
+            mp_df = mp_df[1:].reset_index(drop=True)
             return mp_df
-    return None  # Если не нашли, возвращаем None
+    return None
 
 def process_mp(mp_df):
-    # Стандартизируем имена колонок и извлекаем названия колонок
-    mp_df, col_map = standardize_columns(mp_df)
-    
-    # Проверка обязательных столбцов
-    required_columns = ['площадка', 'показы', 'клики']
-    missing_columns = [col for col in required_columns if col not in col_map]
+    """Обрабатывает медиаплан: ищет нужную таблицу, оставляет нужные столбцы и фильтрует строки."""
+    mp_df = clean_mp(mp_df)
+    if mp_df is None:
+        st.error("Ошибка: не удалось найти строку с заголовками, содержащую слово 'площадка'.")
+        return None
 
+    mp_df, col_map = standardize_columns(mp_df)
+
+    # Обязательные столбцы
+    required_cols = {"площадка", "показы", "клики"}
+    missing_columns = [col for col in required_cols if col not in col_map]
     if missing_columns:
         st.error(f"Отсутствуют обязательные столбцы: {', '.join(missing_columns)}")
-        return mp_df  # Если отсутствуют обязательные столбцы, вернем данные без изменений
-    
-    # Извлекаем только нужные столбцы
-    selected_columns = ["площадка", "показы", "клики", "охват"]
-    existing_columns = [col for col in selected_columns if col in col_map]
-    mp_df = mp_df[existing_columns]
+        return None
 
-    # Убираем строки с пустыми значениями в обязательных столбцах (площадка, показы, клики)
-    mp_df.dropna(subset=["площадка", "показы", "клики"], how="any", inplace=True)
+    # Выбираем только нужные столбцы (охват необязателен)
+    selected_cols = list(required_cols)
+    if "охват" in col_map:
+        selected_cols.append("охват")
 
-    # Возвращаем отфильтрованную таблицу
+    # Извлекаем данные только из выбранных столбцов
+    mp_df = mp_df[[col_map[col] for col in selected_cols if col in col_map]]
+
+    # Удаляем строки, где обязательные столбцы не заполнены
+    mp_df.dropna(subset=[col_map["площадка"], col_map["показы"], col_map["клики"]], how="any", inplace=True)
+
+    st.write("Обработанный медиаплан:")
+    st.dataframe(mp_df)
     return mp_df
 
 def process_data(df):

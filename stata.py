@@ -126,10 +126,10 @@ def process_data(df):
         df["ctr"] = df.apply(lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0, axis=1)
 
     # Фильтрация нужных столбцов
-    df = filter_columns(df)
+    df = filter_columns(df, is_mp=True)
 
     return df, col_map
-
+    
 def clean_mp(mp_df):
     """
     Ищет первую строку, содержащую слово "площадка", "название сайта" или "ресурс" (без учета регистра).

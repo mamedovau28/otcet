@@ -66,18 +66,15 @@ def process_data(df):
             
     return df, col_map
 
-def extract_campaign_name_from_gid(url):
-    """Извлекает название РК из gid Google Sheets URL"""
-    try:
-        gid = url.split("gid=")[1].split("&")[0]
-        return f"Campaign {gid}"  # Название РК на основе gid
-    except Exception:
-        return "Unknown Campaign"
+def extract_campaign_name(text):
+    """Извлекает название РК из строки"""
+    parts = text.lower().split("//")
+    return parts[1].strip() if len(parts) > 1 else text.strip()
 
 # Интерфейс Streamlit
 st.title("Анализ качества рекламных кампаний")
 
-upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файлы", "Ссылки на Google-таблицы"])
+upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файлы", "Ссылка на Google-таблицы"])
 
 dfs = []  # Список для хранения данных из нескольких файлов
 campaign_names = []  # Список для хранения названий РК
@@ -88,21 +85,25 @@ if upload_option == "Загрузить Excel-файлы":
         for uploaded_file in uploaded_files:
             df = pd.read_excel(uploaded_file)
             dfs.append(df)
-            campaign_name = extract_campaign_name_from_gid(uploaded_file.name)
+            campaign_name = extract_campaign_name(uploaded_file.name)
             campaign_names.append(campaign_name)
 
-elif upload_option == "Ссылки на Google-таблицы":
-    google_sheet_urls = st.text_area("Введите ссылки на Google-таблицы (каждая ссылка с новой строки)").splitlines()
-    if google_sheet_urls:
-        for google_sheet_url in google_sheet_urls:
-            try:
-                csv_url = f"https://docs.google.com/spreadsheets/d/{google_sheet_url.split('/d/')[1].split('/')[0]}/export?format=csv&gid={google_sheet_url.split('gid=')[1].split('&')[0]}"
-                df = pd.read_csv(csv_url)
-                dfs.append(df)
-                campaign_name = extract_campaign_name_from_gid(google_sheet_url)
-                campaign_names.append(campaign_name)
-            except Exception as e:
-                st.error(f"Ошибка при загрузке CSV: {e}")
+elif upload_option == "Ссылка на Google-таблицы":
+    google_sheet_url = st.text_input("Введите ссылку на Google-таблицу")
+    if google_sheet_url:
+        try:
+            sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
+            gid = google_sheet_url.split("gid=")[1].split("&")[0] if "gid=" in google_sheet_url else "0"
+            csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+            df = pd.read_csv(csv_url)
+            dfs.append(df)
+            campaign_names.append(extract_campaign_name(google_sheet_url))  # Используем ссылку как имя
+        except Exception as e:
+            st.error(f"Ошибка при загрузке CSV: {e}")
+
+    manual_name = st.text_input("Введите название РК (например: 'OneTarget')")
+    if manual_name:
+        campaign_names.append(extract_campaign_name(manual_name))
 
 if dfs:
     for df, campaign_name in zip(dfs, campaign_names):

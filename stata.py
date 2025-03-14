@@ -30,7 +30,7 @@ def clean_mp(mp_df):
     """
     for i, row in mp_df.iterrows():
         # Преобразуем значения строки в строки и ищем слово "площадка"
-        if row.astype(str).str.contains("площадка", case=False, na=False).any():
+        if row.astype(str).str.contains("площадка", "название сайта", "ресурс", case=False, na=False).any():
             # Возьмем таблицу начиная с найденной строки
             mp_df = mp_df.iloc[i:].reset_index(drop=True)
             # Сделаем первую строку заголовками

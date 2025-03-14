@@ -1,132 +1,88 @@
-import pandas as pd
 import streamlit as st
-import calendar
+import pandas as pd
 
-def find_value_by_keyword(df, keyword, not_found_msg, empty_msg):
-    """Ищет строку с нужным словом и берет значение из следующего столбца"""
-    for col_idx, col in enumerate(df.columns):
-        for idx, value in df[col].items():
-            if isinstance(value, str) and keyword in value.lower():
-                # Проверяем строку ниже по текущему столбцу
-                if idx + 1 < len(df):
-                    next_row_value = df[col][idx + 1]
-                    if isinstance(next_row_value, str) and "период" in next_row_value.lower():  # Проверка типа и наличия слова "период"
-                        # Ищем название проекта в следующем столбце
-                        next_col_idx = col_idx + 1  
-                        if next_col_idx < len(df.columns):
-                            next_col = df.columns[next_col_idx]
-                            return df[next_col][idx]
-                        else:
-                            return empty_msg
-                    elif isinstance(next_row_value, str):  # Если в строке ниже нет "периода", но это строка, считаем это название проекта
-                        return next_row_value
-                else:
-                    return empty_msg  # Если ниже нет строки
-    return not_found_msg  # Если не нашли "проект"
+# Функция для извлечения названия РК, клиента и проекта из имени файла
+def extract_campaign_name(filename):
+    parts = filename.lower().split(" // ")
+    if len(parts) >= 4 and parts[0] == "arwm":
+        return parts[1], parts[2], parts[3]  # Площадка, клиент, проект
+    return None, None, None
 
-def find_period(df):
-    """Находит период в таблице. Проверяет строку ниже, если есть, или следующий столбец."""
-    for col_idx, col in enumerate(df.columns):
-        for idx, value in df[col].items():
-            if isinstance(value, str) and "период" in value.lower():
-                # Проверяем строку ниже
-                if idx + 1 < len(df) and isinstance(df[col][idx + 1], str):
-                    return df[col][idx + 1].strip()
-                # Если в той же строке, но в следующем столбце есть значение – берем его
-                next_col_idx = col_idx + 1
-                if next_col_idx < len(df.columns):
-                    next_col = df.columns[next_col_idx]
-                    next_value = df[next_col][idx]
-                    if isinstance(next_value, str):
-                        return next_value.strip()
-    return "Период не найден"
+# Функция обработки данных
+def process_data(df):
+    # Очистка данных (замена пустых значений на 0)
+    df.fillna(0, inplace=True)
 
-def parse_period(period_str):
-    """
-    Преобразует период, заданный в сокращенном формате.
-    Если период содержит "-", считаем, что это уже диапазон дат и возвращаем его как есть.
-    Если период вида "фев.25" или "фев.2025", то он преобразуется в формат:
-    "01.MM.YYYY-last_day.MM.YYYY", где last_day – последний день месяца.
-    """
-    if not isinstance(period_str, str):
-        return period_str
-    period_str = period_str.strip().lower().replace(" ", "")
-    if "-" in period_str:
-        # Если это диапазон дат, возвращаем без изменений.
-        return period_str
+    # Приводим названия колонок к нижнему регистру для удобства
+    df.columns = df.columns.str.lower()
 
-    # Русские аббревиатуры месяцев
-    months = {
-        "янв": 1, "фев": 2, "мар": 3, "апр": 4, "май": 5, "июн": 6, "июл": 7, "авг": 8, "сен": 9, "окт": 10, "ноя": 11, "дек": 12
-    }
-    # Ищем, с каким месяцем начинается строка
-    for abbr, month in months.items():
-        if period_str.startswith(abbr):
-            year_part = period_str[len(abbr):]  # остаток строки – год
-            if len(year_part) == 2:
-                year = int("20" + year_part)
-            elif len(year_part) == 4:
-                year = int(year_part)
-            else:
-                return period_str  # если год задан некорректно, возвращаем исходное значение
-            last_day = calendar.monthrange(year, month)[1]
-            return f"01.{month:02}.{year}-{last_day}.{month:02}.{year}"
-    return period_str
+    # Преобразуем даты
+    if 'дата' in df.columns:
+        df['дата'] = pd.to_datetime(df['дата'], format='%d.%m.%Y', errors='coerce')
 
-def find_table_start(df):
-    """Находит координаты ячейки с '№' или 'месяц' и возвращает индекс строки и колонки"""
-    for col_idx, col in enumerate(df.columns):
-        for row_idx, value in df[col].items():
-            if isinstance(value, str):
-                if "№" in value or "месяц" in value.lower():
-                    return row_idx, col_idx  # Возвращаем строку и колонку, где нашли "№" или "месяц"
-    return None, None  
+    # Добавляем расчет расхода с НДС
+    if 'расход' in df.columns:
+        df['расход с ндс'] = df['расход'] * 1.2
 
-def extract_campaigns_table(df):
-    """Извлекает таблицу с рекламными кампаниями, начиная с найденной строки и колонки"""
-    row_idx, col_idx = find_table_start(df)
-    if row_idx is not None and col_idx is not None:
-        return df.iloc[row_idx:, col_idx:]
-    return None
+    # Пересчитываем охват, если он в процентах
+    if 'охват' in df.columns and 'показы' in df.columns:
+        df['охват'] = df.apply(lambda row: row['показы'] * (float(str(row['охват']).replace('%', '').replace(',', '.')) / 100) if isinstance(row['охват'], str) and '%' in row['охват'] else row['охват'], axis=1)
 
-st.title("Обработка данных рекламных кампаний")
-uploaded_file = st.file_uploader("Загрузите файл Excel", type=["xlsx", "xls"])
-
-if uploaded_file:
-    df = pd.read_excel(uploaded_file, sheet_name=None)
-    sheet_name = st.selectbox("Выберите лист", list(df.keys()))
-    df = df[sheet_name]
+    # Рассчитываем CTR
+    if 'клики' in df.columns and 'показы' in df.columns:
+        df['ctr'] = df['клики'] / df['показы']
     
-    # Поиск проекта
-    project_name = find_value_by_keyword(df, "проект", "Проект не найден", "Название проекта отсутствует")
-    
-    # Поиск периода
-    period_raw = find_period(df)
-    
-    # Если период найден, парсим его в нужный формат
-    period = period_raw
-    if isinstance(period_raw, str) and "не найден" not in period_raw.lower() and "отсутствует" not in period_raw.lower():
-        period = parse_period(period_raw)
-    
-    # Поиск таблицы с рекламными кампаниями
-    campaigns_table = extract_campaigns_table(df)
-    
-    # Вывод информации о проекте
-    st.subheader("Информация о проекте")
-    if project_name.startswith("Проект не найден") or project_name.startswith("Название проекта отсутствует"):
-        st.warning(project_name)
-    else:
-        st.success(f"Название проекта: {project_name}")
-    
-    if isinstance(period, str) and (period.startswith("Период не найден") or period.startswith("Период отсутствует")):
-        st.warning(period)
-    else:
-        st.success(f"Период: {period}")
-    
-    # Вывод таблицы рекламных кампаний
-    st.subheader("Таблица рекламных кампаний")
-    if campaigns_table is not None:
-        st.success("Таблица рекламных кампаний найдена:")
-        st.dataframe(campaigns_table)
-    else:
-        st.warning("Таблица рекламных кампаний не найдена")
+    return df
+
+# Интерфейс Streamlit
+st.title("Анализ качества рекламных кампаний")
+
+# Выбор способа загрузки данных
+upload_option = st.radio("Выберите способ загрузки данных:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"])
+
+df = None
+campaign_name = client_name = project_name = None
+
+if upload_option == "Загрузить Excel-файл":
+    uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"])
+    if uploaded_file:
+        df = pd.read_excel(uploaded_file)
+        campaign_name, client_name, project_name = extract_campaign_name(uploaded_file.name)
+
+elif upload_option == "Ссылка на Google-таблицу":
+    google_sheet_url = st.text_input("Введите ссылку на Google-таблицу")
+    if google_sheet_url:
+        sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]  # Извлекаем ID таблицы
+        url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv"
+        df = pd.read_csv(url)
+        campaign_name, client_name, project_name = extract_campaign_name(google_sheet_url)
+
+# Если данные загружены, обрабатываем их
+if df is not None:
+    st.write(f"### {campaign_name} | {client_name} | {project_name}")
+
+    df = process_data(df)
+
+    # Выбор периода
+    if 'дата' in df.columns:
+        min_date, max_date = df['дата'].min(), df['дата'].max()
+        start_date, end_date = st.date_input("Выберите период", [min_date, max_date])
+        
+        # Фильтруем данные по периоду
+        df_filtered = df[(df['дата'] >= pd.to_datetime(start_date)) & (df['дата'] <= pd.to_datetime(end_date))]
+
+        # Суммируем данные за выбранный период
+        summary = df_filtered[['показы', 'клики', 'охват', 'расход с ндс']].sum()
+
+        # Выводим отчёт
+        st.write("### Итоговый отчёт")
+        st.write(f"**{campaign_name}**")
+        st.write(f"**{client_name}**")
+        st.write(f"Показы: {summary['показы']:.0f}")
+        st.write(f"Клики: {summary['клики']:.0f}")
+        st.write(f"CTR: {summary['клики'] / summary['показы']:.2%}")
+        st.write(f"Охват: {summary['охват']:.0f}")
+        st.write(f"Расход с НДС: {summary['расход с ндс']:.2f} руб.")
+
+    # Показываем обработанную таблицу
+    st.dataframe(df)

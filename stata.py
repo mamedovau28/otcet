@@ -101,8 +101,7 @@ def load_and_process_data(unique_key):
             except Exception as e:
                 st.error(f"Ошибка при загрузке CSV: {e}")
 
-        manual_name = st.
-text_input("Введите название РК (например: 'OneTarget')", key=f"manual_name_{unique_key}")
+        manual_name = st.text_input("Введите название РК (например: 'OneTarget')", key=f"manual_name_{unique_key}")
         if manual_name:
             campaign_name = extract_campaign_name(manual_name)
 

@@ -34,6 +34,33 @@ def standardize_columns(df, mapping):
                 break
     return df.rename(columns=column_map), column_map
 
+def filter_columns(df):
+    """
+    Оставляет только нужные столбцы:
+    - проект (если есть)
+    - охват (если есть)
+    - показ (если есть)
+    - клик (если есть)
+    - столбец, содержащий "с учетом НДС и АК" (если есть)
+    """
+    required_columns = set()
+    
+    for col in df.columns:
+        col_lower = col.lower()
+        
+        if "проект" in col_lower:
+            required_columns.add(col)
+        elif "охват" in col_lower:
+            required_columns.add(col)
+        elif "показ" in col_lower:
+            required_columns.add(col)
+        elif "клик" in col_lower:
+            required_columns.add(col)
+        elif re.search(r".*с учетом ндс и ак.*", col_lower):
+            required_columns.add(col)
+
+    return df[list(required_columns)]
+
 
 def process_data(df):
     """

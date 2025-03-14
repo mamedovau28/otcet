@@ -11,16 +11,31 @@ COLUMN_MAPPING = {
     "расход": ["расход", "затраты", "cost", "спенд", "расход до ндс", "расходдондс"]
 }
 
+#def standardize_columns(df):
+   # """Приводит названия колонок к стандартному виду"""
+   # df.columns = df.columns.str.lower().str.strip()
+   # column_map = {}
+   # for standard_col, possible_names in COLUMN_MAPPING.items():
+     #   for col in df.columns:
+        #    if any(word in col for word in possible_names):
+        #        column_map[standard_col] = col
+        #        break
+   # return df.rename(columns=column_map), column_map
+
 def standardize_columns(df):
-    """Приводит названия колонок к стандартному виду"""
-    df.columns = df.columns.str.lower().str.strip()
+    """Функция для стандартизации названий колонок"""
+    df.columns = df.columns.str.lower().str.strip()  # Приводим имена столбцов к нижнему регистру и убираем пробелы
     column_map = {}
+    
     for standard_col, possible_names in COLUMN_MAPPING.items():
         for col in df.columns:
-            if any(word in col for word in possible_names):
+            # Убедимся, что столбец - строка, прежде чем выполнять поиск подстроки
+            if isinstance(col, str) and any(word in col for word in possible_names):
                 column_map[standard_col] = col
                 break
+    
     return df.rename(columns=column_map), column_map
+
 
 def clean_mp(mp_df):
     """Ищем первую строку с названием колонок и очищаем медиаплан, начиная с проекта"""

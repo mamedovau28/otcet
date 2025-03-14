@@ -59,7 +59,7 @@ def filter_columns(df):
         elif re.search(r".*с учетом ндс и ак.*", col_lower):
             required_columns.add(col)
             
-    mp_df.replace("-", 0, inplace=True)  # Заменяем "-" на 0
+    mp_df = mp_df.replace("-", 0)
     # Удаляем строки, где все значения - None или 0
     mp_df = mp_df.loc[~(mp_df.isna() | (mp_df == 0)).all(axis=1)]
 

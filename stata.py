@@ -77,18 +77,31 @@ def process_data(df):
 
 def clean_mp(mp_df):
     """
-    Ищет первую строку, содержащую слово "площадка", "название сайта" или "ресурс" (без учета регистра).
-    Считает эту строку заголовочной и возвращает таблицу, начиная с этой строки.
+    Находит строку с заголовками, удаляет лишние строки, заполняет объединенные ячейки.
     """
+    # Ищем строку, где встречается слово 'площадка', 'название сайта' или 'ресурс'
+    header_row = None
     for i, row in mp_df.iterrows():
-        if row.astype(str).str.contains("площадка", case=False, na=False).any() or \
-           row.astype(str).str.contains("название сайта", case=False, na=False).any() or \
-           row.astype(str).str.contains("ресурс", case=False, na=False).any():
-            mp_df = mp_df.iloc[i:].reset_index(drop=True)
-            mp_df.columns = mp_df.iloc[0]
-            mp_df = mp_df[1:].reset_index(drop=True)
-            return mp_df
-    return None
+        if row.astype(str).str.contains("площадка|название сайта|ресурс", case=False, na=False).any():
+            header_row = i
+            break
+    
+    if header_row is None:
+        st.error("Ошибка: Не найден заголовок с 'площадка', 'название сайта' или 'ресурс'")
+        return None
+    
+    # Убираем строки до заголовка
+    mp_df = mp_df.iloc[header_row:].reset_index(drop=True)
+    
+    # Устанавливаем первую строку как заголовки
+    mp_df.columns = mp_df.iloc[0]
+    mp_df = mp_df[1:].reset_index(drop=True)
+    
+    # Заполняем объединенные ячейки (если есть)
+    mp_df = mp_df.ffill(axis=0)
+    
+    return mp_df
+
 
 def process_mp(mp_df):
     """

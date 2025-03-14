@@ -136,6 +136,22 @@ if mp_file:
     mp_df, mp_col_map = process_mp(mp_df)
     if mp_df is not None:
         st.subheader("Обработанный медиаплан")
+        if mp_df is None or mp_df.empty:
+            st.error("Ошибка: таблица медиаплана пуста или не была загружена корректно!")
+            st.stop()
+
+        # Проверка на дубликаты столбцов
+        if mp_df.columns.duplicated().any():
+            st.error(f"Ошибка: найдено {mp_df.columns.duplicated().sum()} дубликатов колонок!")
+            st.stop()
+
+        # Проверка типов данных
+        st.write("Типы данных в таблице:", mp_df.dtypes)
+
+        # Отобразить несколько строк для анализа
+        st.write("Первые строки медиаплана:")
+        st.dataframe(mp_df.head())
+        
         st.dataframe(mp_df)
         # Извлечение рекламных площадок
         if "площадка" in mp_col_map:

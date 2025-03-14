@@ -88,22 +88,22 @@ def process_data(df):
 # Интерфейс Streamlit
 st.title("Анализ качества рекламных кампаний")
 
-# Загрузка МП
-st.header("Загрузка медиаплана (МП)")
-mp_file = st.file_uploader("Загрузите файл медиаплана (Excel)", type=["xlsx"], key="mp_file")
+# === Загрузка МП ===
+st.header("Загрузите медиаплан (только Excel)")
 
-mp_df = None
+mp_file = st.file_uploader("Выберите файл с медиапланом", type=["xlsx"], key="mp_uploader")
+mp_data = None
+
 if mp_file:
     xls = pd.ExcelFile(mp_file)
-    sheet_names = xls.sheet_names
+    sheet_name = st.selectbox("Выберите лист", xls.sheet_names) if len(xls.sheet_names) > 1 else xls.sheet_names[0]
     
-    if len(sheet_names) > 1:
-        sheet_name = st.selectbox("Выберите лист с данными", sheet_names, key="mp_sheet_select")
-    else:
-        sheet_name = sheet_names[0]
+    mp_data = pd.read_excel(mp_file, sheet_name=sheet_name)
+    mp_data = process_mp(mp_data)
 
-    mp_df = pd.read_excel(xls, sheet_name=sheet_name)
-    st.write("Медиаплан загружен:", sheet_name)
+    if mp_data is not None:
+        st.subheader("Обработанный медиаплан")
+        st.dataframe(mp_data)
 
 # Загрузка и обработка данных (Excel или Google-таблицы)
 st.header("Загрузка отчетов")

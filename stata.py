@@ -30,23 +30,29 @@ def process_data(df):
     if "дата" in col_map:
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
-    # Преобразование числовых значений
-    for key in ["показы", "клики", "охват", "расход"]:
-        if key in col_map:
-            df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors="coerce").fillna(0)
+    # Преобразование показов, кликов, охвата и расхода
+    if {"клики", "показы", "охват", "расход"}.issubset(col_map):
+        for key in ["показы", "клики", "охват", "расход"]:
+            # Проверяем, содержит ли колонка только цифры
+            if not pd.api.types.is_numeric_dtype(df[col_map[key]]):
+                df[col_map[key]] = (
+                    df[col_map[key]]
+                    .astype(str)
+                    .str.replace(r"[^\d]", "", regex=True)  # Оставляем только цифры
+                )
+                df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)  # Преобразуем в числа
 
-    # Проверка, не в копейках ли расходы
-    if "расход" in col_map and df[col_map["расход"]].max() > 10000:
-        df[col_map["расход"]] = df[col_map["расход"]] / 100  # Если суммы слишком большие, вероятно, в копейках
+    df[col_map["расход"]] = df[col_map["расход"]] / 100
 
-    # Корректировка охвата
     if "охват" in col_map and "показы" in col_map:
         def adjust_coverage(row):
             coverage = row[col_map["охват"]]
             impressions = row[col_map["показы"]]
-            if coverage > 0 and impressions > 0 and impressions / coverage > 10:
-                return impressions * coverage / 100
-            return int(coverage)  # Приводим к целому числу
+
+            if coverage > 0 and impressions > 0:
+                if impressions / coverage > 10:  # Если показы в 10 раз больше охвата
+                    return impressions * coverage / 100  # Пересчитываем охват
+            return round(coverage)  # Оставляем как есть
 
         df["охват"] = df.apply(adjust_coverage, axis=1)
 
@@ -58,7 +64,7 @@ def process_data(df):
         lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0,
         axis=1
     )
-
+            
     return df, col_map
 
 def extract_campaign_name(text):

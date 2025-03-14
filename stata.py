@@ -146,8 +146,7 @@ if mp_file:
         sheet_name = sheet_names[0]
     mp_df = pd.read_excel(mp_file, sheet_name=sheet_name)
     st.write("Медиаплан загружен:", sheet_name)
-
-mp_df, mp_col_map = process_mp(mp_df)
+    mp_df, mp_col_map = process_mp(mp_df)
     if mp_df is not None and "площадка" in mp_col_map:
         platforms = mp_df[mp_col_map["площадка"]].dropna().unique()
         st.subheader("Найденные рекламные площадки:")

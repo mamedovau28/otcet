@@ -2,6 +2,42 @@ import streamlit as st
 import pandas as pd
 import re
 
+# Словарь для сопоставления названий колонок МП (рекламные площадки)
+PLATFORM_MAPPING = {
+    "площадка": ["площадка", "название сайта", "сайт", "ресурс"]
+}
+
+def standardize_columns(df, mapping):
+    """
+    Приводит названия колонок к стандартному виду на основе переданного mapping.
+    Все имена приводятся к нижнему регистру и убираются лишние пробелы.
+    """
+    df.columns = df.columns.astype(str).str.lower().str.strip()
+    column_map = {}
+    for standard_col, possible_names in mapping.items():
+        for col in df.columns:
+            # Если хотя бы одно из слов из возможных вариантов встречается в названии столбца
+            if any(word in col for word in possible_names):
+                column_map[standard_col] = col
+                break
+    return df.rename(columns=column_map), column_map
+
+def clean_mp(mp_df):
+    """
+    Ищет первую строку, в которой встречается слово "площадка", "название сайта" или "ресурс"
+    (без учета регистра). Считает эту строку заголовочной и возвращает таблицу начиная с этой строки.
+    """
+    for i, row in mp_df.iterrows():
+        # Преобразуем значения строки в строки и ищем нужное слово
+        if row.astype(str).str.contains("площадка", case=False, na=False).any() or \
+           row.astype(str).str.contains("название сайта", case=False, na=False).any() or \
+           row.astype(str).str.contains("ресурс", case=False, na=False).any():
+            mp_df = mp_df.iloc[i:].reset_index(drop=True)
+            mp_df.columns = mp_df.iloc[0]  # Первая строка становится заголовками
+            mp_df = mp_df[1:].reset_index(drop=True)
+            return mp_df
+    return None
+
 # Словарь для сопоставления названий колонок
 COLUMN_MAPPING = {
     "дата": ["дата", "date"],
@@ -70,21 +106,31 @@ def process_data(df):
 st.title("Анализ качества рекламных кампаний")
 
 # Загрузка МП
-st.header("Загрузка медиаплана (МП)")
-mp_file = st.file_uploader("Загрузите файл медиаплана (Excel)", type=["xlsx"], key="mp_file")
+st.header("Загрузите медиаплан (МП)")
+mp_file = st.file_uploader("Выберите файл с медиапланом (Excel)", type=["xlsx"], key="mp_uploader")
 
 mp_df = None
 if mp_file:
     xls = pd.ExcelFile(mp_file)
     sheet_names = xls.sheet_names
-    
     if len(sheet_names) > 1:
-        sheet_name = st.selectbox("Выберите лист с данными", sheet_names, key="mp_sheet_select")
+        sheet_name = st.selectbox("Выберите лист с медиапланом", sheet_names, key="mp_sheet_select")
     else:
         sheet_name = sheet_names[0]
-
-    mp_df = pd.read_excel(xls, sheet_name=sheet_name)
+    mp_df = pd.read_excel(mp_file, sheet_name=sheet_name)
     st.write("Медиаплан загружен:", sheet_name)
+    mp_df, mp_col_map = process_mp(mp_df)
+    if mp_df is not None:
+        st.subheader("Обработанный медиаплан")
+        st.dataframe(mp_df)
+        
+        # Извлечение рекламных площадок (из столбца "площадка", "название сайта" или "ресурс")
+        if "площадка" in mp_col_map:
+            platforms = mp_df[mp_col_map["площадка"]].dropna().unique()
+            st.subheader("Найденные рекламные площадки:")
+            st.write(platforms)
+        else:
+            st.error("Не найден столбец с рекламными площадками.")
 
 # Загрузка и обработка данных (Excel или Google-таблицы)
 st.header("Загрузка отчетов")

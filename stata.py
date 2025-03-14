@@ -20,8 +20,12 @@ def standardize_columns(df, mapping):
     """
     Приводит названия колонок к стандартному виду по переданному mapping.
     Все имена столбцов приводятся к нижнему регистру и обрезаются пробелы.
+    Столбцы с заголовком 'nan' удаляются.
     """
     df.columns = df.columns.astype(str).str.lower().str.strip()
+    # Удаляем столбцы с заголовком 'nan'
+    df = df.loc[:, df.columns != 'nan']
+    
     column_map = {}
     for standard_col, possible_names in mapping.items():
         for col in df.columns:

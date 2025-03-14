@@ -1,7 +1,29 @@
 import streamlit as st
 import pandas as pd
 
-# Функция для извлечения названия РК, клиента и проекта из имени файла
+# Словарь для поиска нужных колонок
+COLUMN_MAPPING = {
+    "дата": ["дата", "date"],
+    "показы": ["показы", "импрессии", "impressions"],
+    "клики": ["клики", "clicks"],
+    "расход": ["расход", "затраты", "cost", "спенд"],
+    "охват": ["охват", "reach"]
+}
+
+# Функция для приведения названий колонок к единому формату
+def standardize_columns(df):
+    df.columns = df.columns.str.lower().str.strip()  # Приводим к нижнему регистру и убираем пробелы
+    column_map = {}  # Словарь соответствий
+    
+    for standard_col, possible_names in COLUMN_MAPPING.items():
+        for col in df.columns:
+            if col in possible_names:
+                column_map[standard_col] = col
+                break  # Берем первое совпадение
+
+    return df.rename(columns=column_map), column_map
+
+# Функция для извлечения названия РК, клиента и проекта
 def extract_campaign_name(filename):
     parts = filename.lower().split(" // ")
     if len(parts) >= 4 and parts[0] == "arwm":
@@ -10,29 +32,33 @@ def extract_campaign_name(filename):
 
 # Функция обработки данных
 def process_data(df):
+    df, col_map = standardize_columns(df)  # Приводим названия колонок к стандарту
+
     # Очистка данных (замена пустых значений на 0)
     df.fillna(0, inplace=True)
 
-    # Приводим названия колонок к нижнему регистру для удобства
-    df.columns = df.columns.str.lower()
-
     # Преобразуем даты
-    if 'дата' in df.columns:
-        df['дата'] = pd.to_datetime(df['дата'], format='%d.%m.%Y', errors='coerce')
+    if "дата" in col_map:
+        df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
     # Добавляем расчет расхода с НДС
-    if 'расход' in df.columns:
-        df['расход с ндс'] = df['расход'] * 1.2
+    if "расход" in col_map:
+        df["расход с ндс"] = df[col_map["расход"]] * 1.2
 
     # Пересчитываем охват, если он в процентах
-    if 'охват' in df.columns and 'показы' in df.columns:
-        df['охват'] = df.apply(lambda row: row['показы'] * (float(str(row['охват']).replace('%', '').replace(',', '.')) / 100) if isinstance(row['охват'], str) and '%' in row['охват'] else row['охват'], axis=1)
+    if "охват" in col_map and "показы" in col_map:
+        df["охват"] = df.apply(
+            lambda row: row[col_map["показы"]] * (float(str(row[col_map["охват"]]).replace("%", "").replace(",", ".")) / 100)
+            if isinstance(row[col_map["охват"]], str) and "%" in row[col_map["охват"]]
+            else row[col_map["охват"]],
+            axis=1
+        )
 
     # Рассчитываем CTR
-    if 'клики' in df.columns and 'показы' in df.columns:
-        df['ctr'] = df['клики'] / df['показы']
-    
-    return df
+    if "клики" in col_map and "показы" in col_map:
+        df["ctr"] = df[col_map["клики"]] / df[col_map["показы"]]
+
+    return df, col_map
 
 # Интерфейс Streamlit
 st.title("Анализ качества рекламных кампаний")
@@ -61,18 +87,18 @@ elif upload_option == "Ссылка на Google-таблицу":
 if df is not None:
     st.write(f"### {campaign_name} | {client_name} | {project_name}")
 
-    df = process_data(df)
+    df, col_map = process_data(df)
 
     # Выбор периода
-    if 'дата' in df.columns:
-        min_date, max_date = df['дата'].min(), df['дата'].max()
+    if "дата" in col_map:
+        min_date, max_date = df[col_map["дата"]].min(), df[col_map["дата"]].max()
         start_date, end_date = st.date_input("Выберите период", [min_date, max_date])
         
         # Фильтруем данные по периоду
-        df_filtered = df[(df['дата'] >= pd.to_datetime(start_date)) & (df['дата'] <= pd.to_datetime(end_date))]
+        df_filtered = df[(df[col_map["дата"]] >= pd.to_datetime(start_date)) & (df[col_map["дата"]] <= pd.to_datetime(end_date))]
 
         # Суммируем данные за выбранный период
-        summary = df_filtered[['показы', 'клики', 'охват', 'расход с ндс']].sum()
+        summary = df_filtered[["показы", "клики", "охват", "расход с ндс"]].sum()
 
         # Выводим отчёт
         st.write("### Итоговый отчёт")

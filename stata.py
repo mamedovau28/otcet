@@ -50,28 +50,26 @@ def process_data(df):
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
     if "расход" in col_map:
-        df[col_map["расход"]] = df[col_map["расход"]].apply(parse_cost_value)
+        df[col_map["расход"]] = df[col_map["расход"]].astype(str).str.replace(" ", "").str.replace(",", ".")
+        df[col_map["расход"]] = pd.to_numeric(df[col_map["расход"]], errors='coerce').fillna(0)
         df["расход с ндс"] = df[col_map["расход"]] * 1.2
 
     if "охват" in col_map and "показы" in col_map:
-        df["охват"] = df.apply(
-            lambda row: row[col_map["показы"]] * (
-                float(str(row[col_map["охват"]]).replace("%", "").replace(",", "."))
-            ) / 100 if isinstance(row[col_map["охват"]], str) and "%" in row[col_map["охват"]]
-            else row[col_map["охват"]],
-            axis=1
-        )
-        # Приводим столбец охват к числовому типу
-        df["охват"] = pd.to_numeric(df["охват"], errors='coerce').fillna(0)
+        def parse_coverage(row):
+            value = str(row[col_map["охват"]]).strip().replace(" ", "").replace(",", ".")
+            if "%" in value:
+                return float(value.replace("%", "")) / 100 * row[col_map["показы"]]
+            return pd.to_numeric(value, errors='coerce')
+        
+        df["охват"] = df.apply(parse_coverage, axis=1).fillna(0)
 
     if "клики" in col_map and "показы" in col_map:
-        # Удаляем пробелы и приводим к числовому типу
-        df[col_map["показы"]] = pd.to_numeric(
-            df[col_map["показы"]].astype(str).str.replace(" ", ""), errors='coerce'
-        ).fillna(0)
-        df[col_map["клики"]] = pd.to_numeric(
-            df[col_map["клики"]].astype(str).str.replace(" ", ""), errors='coerce'
-        ).fillna(0)
+        df[col_map["показы"]] = df[col_map["показы"]].astype(str).str.replace(" ", "").str.replace(",", ".")
+        df[col_map["показы"]] = pd.to_numeric(df[col_map["показы"]], errors='coerce').fillna(0)
+
+        df[col_map["клики"]] = df[col_map["клики"]].astype(str).str.replace(" ", "").str.replace(",", ".")
+        df[col_map["клики"]] = pd.to_numeric(df[col_map["клики"]], errors='coerce').fillna(0)
+
         df["ctr"] = df.apply(
             lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0,
             axis=1

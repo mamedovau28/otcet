@@ -49,6 +49,9 @@ def filter_columns(df):
     # Заменяем все символы "-" и значения NaN и None на 0
     df.replace({"-": 0}, inplace=True)  # Заменяем "-" на 0
     df.fillna(0, inplace=True)  # Заменяем NaN и None на 0
+
+    # Убираем строки, где все значения равны 0
+    df = df.loc[~(df.eq(0).all(axis=1))]
     
     for col in df.columns:
         col_lower = col.lower().strip()
@@ -63,8 +66,6 @@ def filter_columns(df):
             required_columns.add(col)
         elif re.search(r".*с учетом ндс и ак.*", col_lower):
             required_columns.add(col)
-
-    df.dropna(how="all", inplace=True)  # Удаляем пустые строки
 
     return df[list(required_columns)] if required_columns else df
     

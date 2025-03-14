@@ -61,46 +61,49 @@ def filter_columns(df):
 
     return df[list(required_columns)]
 
-
+# Встраиваем в процесс обработки данных
 def process_data(df):
     """
     Обрабатывает загруженные данные (Excel или Google-таблицы):
-      - Стандартизирует имена колонок по COLUMN_MAPPING
-      - Преобразует дату, приводит числовые значения к числовому типу
+      - Стандартизирует имена колонок
+      - Преобразует дату, приводит числовые значения к нужному типу
       - Рассчитывает расход с НДС и CTR
+      - Очищает ненужные столбцы
     """
     df, col_map = standardize_columns(df, COLUMN_MAPPING)
     df.fillna(0, inplace=True)
-    
+
     if "дата" in col_map:
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
-    
+
     # Приведение к числовому типу
     for key in ["показы", "клики", "охват", "расход"]:
         if key in col_map and not pd.api.types.is_numeric_dtype(df[col_map[key]]):
             df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True)
             df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)
-    
+
     if "расход" in col_map:
         df[col_map["расход"]] = df[col_map["расход"]] / 100
-    
-    # Корректировка охвата: если показы в 10 раз больше охвата, пересчитываем охват
+
+    # Корректировка охвата
     if "охват" in col_map and "показы" in col_map:
         def adjust_coverage(row):
             coverage = row[col_map["охват"]]
             impressions = row[col_map["показы"]]
-            if coverage > 0 and impressions > 0:
-                if impressions / coverage > 10:
-                    return impressions * coverage / 100
+            if coverage > 0 and impressions > 0 and impressions / coverage > 10:
+                return impressions * coverage / 100
             return round(coverage)
         df["охват"] = df.apply(adjust_coverage, axis=1)
-    
+
     # Расчет расхода с НДС и CTR
     if "расход" in col_map:
         df["расход с ндс"] = df[col_map["расход"]] * 1.2
     if "клики" in col_map and "показы" in col_map:
         df["ctr"] = df.apply(lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0, axis=1)
-    
+
+    # Фильтрация нужных столбцов
+    df = filter_columns(df)
+
     return df, col_map
 
 def clean_mp(mp_df):

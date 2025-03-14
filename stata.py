@@ -22,26 +22,6 @@ def standardize_columns(df):
                 break
     return df.rename(columns=column_map), column_map
 
-def parse_cost_value(x):
-    """
-    Преобразует строку вида 'p.10 673,98' в число:
-    - Удаляет все символы, кроме цифр, точки и запятой,
-    - Заменяет запятую на точку,
-    - Преобразует в float.
-    """
-    if isinstance(x, str):
-        x = re.sub(r'[^0-9,\.]', '', x)
-        x = x.replace(',', '.')
-        try:
-            return float(x)
-        except:
-            return 0.0
-    else:
-        try:
-            return float(x)
-        except:
-            return 0.0
-
 def process_data(df):
     df, col_map = standardize_columns(df)
     df.fillna(0, inplace=True)

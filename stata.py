@@ -76,9 +76,12 @@ def filter_columns(df, is_mp=False):
         # Возвращаем DataFrame с колонками в нужном порядке
         return df[required_columns] if required_columns else df
         
-        # Удаляем строки, где значение в столбце "показы" равно 0
-        if "показы" in df.columns:
-            df = df[df["показы"] != 0]
+        # Приводим столбец "показы" к числовому типу и удаляем строки с нулями
+        if "показы" in mp_df.columns:
+            mp_df["показы"] = pd.to_numeric(mp_df["показы"], errors="coerce")  # Преобразуем в числовой тип, NaN для ошибок
+
+            # Удаляем строки, где показы = 0 или NaN
+            mp_df = mp_df[mp_df["показы"] > 0]  # Оставляем только строки с показами больше 0
 
         return df
 

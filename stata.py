@@ -129,7 +129,7 @@ if df is not None:
 
         # Генерация отчёта
         report_text = f"""
-        Название РК: {campaign_name}
+        {campaign_name}
     Показы: {format(total_impressions, ",.0f").replace(",", " ")}
     Клики: {format(total_clicks, ",.0f").replace(",", " ")}
     CTR: {ctr_value:.2%}

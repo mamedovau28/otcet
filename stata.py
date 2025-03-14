@@ -63,6 +63,13 @@ def process_data(df):
         )
 
     if "клики" in col_map and "показы" in col_map:
+        # Удаляем пробелы и приводим к числовому типу
+        df[col_map["показы"]] = pd.to_numeric(
+            df[col_map["показы"]].astype(str).str.replace(" ", ""), errors='coerce'
+        ).fillna(0)
+        df[col_map["клики"]] = pd.to_numeric(
+            df[col_map["клики"]].astype(str).str.replace(" ", ""), errors='coerce'
+        ).fillna(0)
         df["ctr"] = df.apply(
             lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0,
             axis=1

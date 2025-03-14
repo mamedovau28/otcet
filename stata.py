@@ -40,16 +40,16 @@ def process_data(df):
     df[col_map["расход"]] = df[col_map["расход"]] / 10
 
     if "охват" in col_map and "показы" in col_map:
-    def adjust_coverage(row):
-        coverage = row[col_map["охват"]]
-        impressions = row[col_map["показы"]]
+        def adjust_coverage(row):
+            coverage = row[col_map["охват"]]
+            impressions = row[col_map["показы"]]
 
-        if coverage > 0 and impressions > 0:
-            if impressions / coverage > 10:  # Если показы в 10 раз больше охвата
-                return impressions * (coverage / 100)  # Пересчитываем охват
-        return coverage  # Оставляем как есть
+            if coverage > 0 and impressions > 0:
+                if impressions / coverage > 10:  # Если показы в 10 раз больше охвата
+                    return impressions * (coverage / 100)  # Пересчитываем охват
+            return coverage  # Оставляем как есть
 
-    df["охват"] = df.apply(adjust_coverage, axis=1)
+        df["охват"] = df.apply(adjust_coverage, axis=1)
             
     return df, col_map
     

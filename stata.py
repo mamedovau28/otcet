@@ -30,12 +30,16 @@ def process_data(df):
     if "дата" in col_map:
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
-    # Очистка и расчет "Расход с НДС"
     if "расход" in col_map:
-        df[col_map["расход"]] = df[col_map["расход"]].astype(str).str.replace(r"[^\d,.]", "", regex=True)  # Удаляем всё, кроме чисел, запятых и точек
-        df[col_map["расход"]] = df[col_map["расход"]].str.replace(",", ".")  # Меняем запятые на точки
+        # Удаляем всё, кроме цифр, запятых и точек, и меняем запятые на точки
+        df[col_map["расход"]] = df[col_map["расход"]].astype(str).str.replace(r"[^\d,.]", "", regex=True)
+        df[col_map["расход"]] = df[col_map["расход"]].str.replace(",", ".")
+    
+        # Преобразуем в числовой формат (с заменой нечисловых значений на 0)
         df[col_map["расход"]] = pd.to_numeric(df[col_map["расход"]], errors='coerce').fillna(0)
-        df["расход с ндс"] = df[col_map["расход"]] * 1.2  # Добавляем 20% НДС
+    
+        # Расчет расхода с НДС
+        df["расход с ндс"] = df[col_map["расход"]] * 1.2
 
     # Обработка охвата
     if "охват" in col_map and "показы" in col_map:

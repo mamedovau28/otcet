@@ -54,12 +54,14 @@ def process_data(df):
             axis=1
         )
 
-    # Рассчитываем CTR
-if "клики" in col_map and "показы" in col_map:
-    df["ctr"] = df.apply(
-        lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0,
-        axis=1
-    )
+    if df is not None:
+        df, col_map = process_data(df)  # Преобразуем данные
+
+        if "клики" in col_map and "показы" in col_map:
+            df["ctr"] = df.apply(
+                lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0,
+                axis=1
+            )
 
 # Интерфейс Streamlit
 st.title("Анализ качества рекламных кампаний")

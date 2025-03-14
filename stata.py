@@ -64,9 +64,6 @@ def filter_columns(df):
         elif re.search(r".*с учетом ндс и ак.*", col_lower):
             required_columns.add(col)
 
-    # Убираем строки, где все значения равны 0
-    df = df.loc[~(df.eq(0).all(axis=1))]
-
     return df[list(required_columns)] if required_columns else df
     
 # Встраиваем в процесс обработки данных

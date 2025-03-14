@@ -66,11 +66,6 @@ def process_data(df):
             
     return df, col_map
 
-def extract_campaign_name(text):
-    """Извлекает название РК из строки"""
-    parts = text.lower().split("//")
-    return parts[1].strip() if len(parts) > 1 else text.strip()
-
 # Интерфейс Streamlit
 st.title("Анализ качества рекламных кампаний")
 
@@ -82,7 +77,7 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
         uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"], key=unique_key)
         if uploaded_file:
             df = pd.read_excel(uploaded_file)
-            campaign_name = extract_campaign_name(uploaded_file.name)
+            campaign_name = uploaded_file.name.split(".")[0]  # Используем имя файла как название РК
 
     elif upload_option == "Ссылка на Google-таблицу" and google_sheet_url:
         try:
@@ -92,9 +87,6 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
             df = pd.read_csv(csv_url)
         except Exception as e:
             st.error(f"Ошибка при загрузке CSV: {e}")
-
-        if google_sheet_url:
-            campaign_name = extract_campaign_name(google_sheet_url)
 
     if df is not None:
         df, col_map = process_data(df)
@@ -112,7 +104,6 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
             ]
 
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]
-            
             existing_cols = [col for col in needed_cols if col in df_filtered.columns]
             summary = df_filtered[existing_cols].sum()
 

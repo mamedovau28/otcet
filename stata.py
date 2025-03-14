@@ -152,11 +152,14 @@ def process_mp(mp_df):
         return None, {}
 
     mp_df, col_map = standardize_columns(mp_df, PLATFORM_MAPPING)
-    return mp_df, col_map
 
+    # Применяем фильтрацию столбцов сразу после стандартизации
+    mp_df = filter_columns(mp_df, is_mp=True)
+
+    return mp_df, col_map
+    
 st.title("Анализ рекламных кампаний")
 
-# === Загрузка медиаплана (МП) ===
 st.header("Загрузите медиаплан (МП) (только Excel)")
 mp_file = st.file_uploader("Выберите файл с медиапланом", type=["xlsx"], key="mp_uploader")
 
@@ -170,13 +173,11 @@ if mp_file:
         sheet_name = sheet_names[0]
     mp_df = pd.read_excel(mp_file, sheet_name=sheet_name)
     st.write("Медиаплан загружен:", sheet_name)
-    mp_df, mp_col_map = process_mp(mp_df)
+    mp_df, mp_col_map = process_mp(mp_df)  # Фильтрация теперь будет применяться здесь
     if mp_df is not None:
         st.subheader("Обработанный медиаплан")
         # Убираем дубликаты столбцов
         mp_df = mp_df.loc[:, ~mp_df.columns.duplicated()].copy()
-        # Фильтруем столбцы
-        mp_df = filter_columns(mp_df)
         st.dataframe(mp_df)
         # Извлечение рекламных площадок
         if "площадка" in mp_col_map:

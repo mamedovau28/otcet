@@ -53,7 +53,7 @@ def process_data(df):
     # Обработка охвата
     if "охват" in col_map and "показы" in col_map:
         def parse_coverage(row):
-            value = str(row[col_map["охват"]]).strip().replace(" ", "").replace(",", ".")
+            value = row[col_map["охват"]]
             if "%" in value:
                 try:
                     # Преобразуем в число, если в охвате процент

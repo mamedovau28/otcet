@@ -123,7 +123,7 @@ if df is not None:
 
         # Генерация отчёта
         report_text = f"""
-Название РК: {campaign_name}
+{campaign_name}
 Показы: {total_impressions:,.0f}
 Клики: {total_clicks:,.0f}
 CTR: {ctr_value:.2%}
@@ -133,7 +133,7 @@ CTR: {ctr_value:.2%}
 
         # Вывод отчёта
         st.subheader("Итоговый отчёт")
-        st.text_area("Результаты", report_text, height=100)
+        st.text_area(report_text, report_text, height=100)
 
     # Вывод таблицы
     st.dataframe(df)

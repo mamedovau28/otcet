@@ -55,6 +55,15 @@ def process_data(df):
             return round(coverage)  # Оставляем как есть
 
         df["охват"] = df.apply(adjust_coverage, axis=1)
+
+    # Расчет расхода с НДС
+    df["расход с ндс"] = df[col_map["расход"]] * 1.2
+
+    # Рассчитываем CTR
+    df["ctr"] = df.apply(
+        lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0,
+        axis=1
+    )
             
     return df, col_map
     

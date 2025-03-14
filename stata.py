@@ -214,14 +214,6 @@ if mp_file:
 
         # Отображаем обработанный медиаплан
         st.dataframe(mp_df)
-
-        # Извлечение рекламных площадок
-        if "площадка" in mp_col_map:
-            platforms = mp_df[mp_col_map["площадка"]].dropna().unique()
-            st.subheader("Найденные рекламные площадки:")
-            st.write(platforms)
-        else:
-            st.error("Не найден столбец с рекламными площадками.")
             
 # === Загрузка отчетов ===
 st.header("Загрузите данные (Excel или Google-таблицы)")

@@ -108,7 +108,8 @@ if df is not None:
     if "дата" in col_map:
         min_date = df[col_map["дата"]].min().date()
         max_date = df[col_map["дата"]].max().date()
-start_date, end_date = st.date_input("Выберите период", [min_date, max_date])
+        
+        start_date, end_date = st.date_input("Выберите период", [min_date, max_date])
 
         df_filtered = df[
             (df[col_map["дата"]].dt.date >= start_date) & 

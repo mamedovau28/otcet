@@ -83,11 +83,11 @@ if "new_file" not in st.session_state:
     st.session_state["new_file"] = False
 
 # Функция для загрузки и обработки данных
-def load_and_process_data(upload_option, campaign_name=None):
+def load_and_process_data(upload_option, campaign_name=None, unique_key="file_uploader_1"):
     df = None
 
     if upload_option == "Загрузить Excel-файл":
-        uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"], key="file_uploader_excel")
+        uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"], key=unique_key)
         if uploaded_file:
             df = pd.read_excel(uploaded_file)
             campaign_name = extract_campaign_name(uploaded_file.name)
@@ -159,7 +159,7 @@ upload_option = st.radio(
     ["Загрузить Excel-файл", "Ссылка на Google-таблицу"],
     key="upload_option_1"
 )
-load_and_process_data(upload_option)
+load_and_process_data(upload_option, unique_key="file_uploader_1")
 
 # Кнопка для загрузки дополнительного файла
 if st.button("Загрузить еще один файл", key="button_1"):
@@ -171,5 +171,5 @@ if st.session_state["new_file"]:
         ["Загрузить Excel-файл", "Ссылка на Google-таблицу"],
         key="upload_option_2"
     )
-    load_and_process_data(upload_option)
+    load_and_process_data(upload_option, unique_key="file_uploader_2")
     st.session_state["new_file"] = False

@@ -228,4 +228,4 @@ for i in range(1, 11):
             st.subheader("Итоговый отчёт")
             st.text_area(report_text, report_text, height=100)
 
-        st.dataframe(df) 
+        st.dataframe(df_filtered)

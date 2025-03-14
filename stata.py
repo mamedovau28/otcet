@@ -35,8 +35,6 @@ def standardize_columns(df, mapping):
                 
     return df.rename(columns=column_map), column_map
 
-st.write(mp_df["показы"].unique())
-
 def filter_columns(df, is_mp=False):
     """
     Оставляет только нужные столбцы в определенном порядке.

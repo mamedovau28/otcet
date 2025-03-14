@@ -42,7 +42,13 @@ def process_data(df):
             axis=1
         )
 
+        df[col_map["расход"]] = df[col_map["расход"]]/100
+
+           # Расчет расхода с НДС
+        df["расход с ндс"] = df[col_map["расход"]] * 1.2
+
     return df, col_map
+    
 
     # Обработка охвата
     if "охват" in col_map and "показы" in col_map:
@@ -60,20 +66,6 @@ def process_data(df):
                 except ValueError:
                     return 0  # Если ошибка при преобразовании
         df["охват"] = df.apply(parse_coverage, axis=1)
-
-    if "расход" in col_map:
-        df[col_map["расход"]] = (
-            df[col_map["расход"]]
-            .astype(str)
-            .str.replace(r"[^\d,.]", "", regex=True)  # Удаляем всё, кроме цифр, запятых и точек
-            .str.replace(",", ".")  # Меняем запятые на точки
-            .replace("", None)  # Если строка стала пустой, делаем None (чтобы dropna() их убрал)
-        )
-
-        df[col_map["расход"]] = pd.to_numeric(df[col_map["расход"]], errors="coerce")
-
-        # Расчет расхода с НДС
-        df["расход с ндс"] = df[col_map["расход"]] * 1.2
 
 
 def extract_campaign_name(text):

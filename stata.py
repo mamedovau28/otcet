@@ -32,10 +32,10 @@ def standardize_columns(df, mapping):
             if any(word in col for word in possible_names):
                 column_map[standard_col] = col
                 break
-    return df.rename(columns=column_map), column_map
 
-if mp_df is not None:
-    mp_df = filter_columns(mp_df)
+    if mp_df is not None:
+        mp_df = filter_columns(mp_df)
+    return df.rename(columns=column_map), column_map
 
 def filter_columns(df):
     """

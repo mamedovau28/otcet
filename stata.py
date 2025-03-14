@@ -49,26 +49,26 @@ def clean_mp(mp_df):
     return None  # Если не нашли, возвращаем None
 
 def process_mp(mp_df):
-    """Обрабатывает медиаплан: находит нужные столбцы и удаляет пустые строки"""
-    mp_df = clean_mp(mp_df)  # Очищаем таблицу, начиная с проекта
-    if mp_df is None:
-        st.error("Ошибка: Не удалось найти таблицу в медиаплане.")
-        return None
-
+    # Стандартизируем имена колонок и извлекаем названия колонок
     mp_df, col_map = standardize_columns(mp_df)
+    
+    # Проверка обязательных столбцов
+    required_columns = ['площадка', 'показы', 'клики']
+    missing_columns = [col for col in required_columns if col not in col_map]
 
-    required_cols = {"площадка", "показы", "клики"}
-    if not required_cols.issubset(col_map):
-        st.error("Ошибка: В медиаплане нет всех обязательных столбцов ('Площадка', 'Показы', 'Клики').")
-        return None
+    if missing_columns:
+        st.error(f"Отсутствуют обязательные столбцы: {', '.join(missing_columns)}")
+        return mp_df  # Если отсутствуют обязательные столбцы, вернем данные без изменений
+    
+    # Извлекаем только нужные столбцы
+    selected_columns = ["площадка", "показы", "клики", "охват"]
+    existing_columns = [col for col in selected_columns if col in col_map]
+    mp_df = mp_df[existing_columns]
 
-    selected_columns = [col_map[col] for col in required_cols]
-    if "охват" in col_map:
-        selected_columns.append(col_map["охват"])
+    # Убираем строки с пустыми значениями в обязательных столбцах (площадка, показы, клики)
+    mp_df.dropna(subset=["площадка", "показы", "клики"], how="any", inplace=True)
 
-    mp_df = mp_df[selected_columns]
-    mp_df.dropna(subset=[col_map["площадка"], col_map["показы"], col_map["клики"]], inplace=True)
-
+    # Возвращаем отфильтрованную таблицу
     return mp_df
 
 def process_data(df):

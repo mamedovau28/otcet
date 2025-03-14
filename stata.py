@@ -139,7 +139,6 @@ if df is not None:
 
         st.write("### Итоговый отчёт")
         st.write(f"**{campaign_name}**")
-        st.write(f"**{client_name}**")
 
         total_impressions = summary.get("показы", 0)
         st.write(f"Показы: {total_impressions:.0f}")
@@ -157,3 +156,18 @@ if df is not None:
         st.write(f"Расход с НДС: {total_spend_nds:.2f} руб.")
 
     st.dataframe(df)
+
+# Генерация отчёта
+    report_text = f"""
+    {campaign_name}
+    Показы: {total_impressions:.0f}
+    Клики: {total_clicks:.0f}
+    CTR: {ctr_value:.2%}
+    Охват: {total_reach:.0f}
+    Расход с НДС: {total_spend_nds:.2f} руб.
+    """
+    
+        # Вывод данных в Streamlit
+    st.subheader("Итоговый отчёт")
+    st.text_area(report_text, report_text, height=100)
+    

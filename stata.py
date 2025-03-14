@@ -75,7 +75,7 @@ def extract_campaign_name(text):
 # Интерфейс Streamlit
 st.title("Анализ качества рекламных кампаний")
 
-upload_option = st.radio("Выберите способ загрузки данных:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"])
+upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"])
 
 df = None
 campaign_name = None

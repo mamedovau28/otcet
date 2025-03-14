@@ -106,7 +106,7 @@ def load_and_process_data():
             campaign_name = extract_campaign_name(manual_name)
 
     if df is not None:
-df, col_map = process_data(df)
+        df, col_map = process_data(df)
         st.write(f"Название РК: {campaign_name}")
 
         # Выбор периода

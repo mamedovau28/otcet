@@ -104,9 +104,7 @@ def load_and_process_data(upload_option, campaign_name=None, unique_key="file_up
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
-            start_date, end_date = st.
-
-date_input("Выберите период", [min_date, max_date], key=f"date_input_{unique_key}")
+            start_date, end_date = st.date_input("Выберите период", [min_date, max_date], key=f"date_input_{unique_key}")
 
             df_filtered = df[
                 (df[col_map["дата"]].dt.date >= start_date) & 

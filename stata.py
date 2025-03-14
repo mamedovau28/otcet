@@ -31,11 +31,34 @@ def process_data(df):
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
     # Преобразование показов и кликов
-    if "клики" in col_map and "показы" in col_map and "охват" in col_map and "расход" in col_map:
-        for key in ["показы", "клики", "охват", "расход"]:
-            df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True)  # Удаляем пробелы и лишние символы
+    if "клики" in col_map and "показы" in col_map:
+        for key in ["показы", "клики"]:
+            df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True)  # Оставляем только цифры
             df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)  # Преобразуем в числа
-            
+
+    # Обработка охвата (учет процентов)
+    if "охват" in col_map and "показы" in col_map:
+        def parse_coverage(row):
+            value = str(row[col_map["охват"]]).strip().replace(" ", "").replace(",", ".")
+            if "%" in value:
+                try:
+                    return float(value.replace("%", "")) / 100 * row[col_map["показы"]]  # Пересчет процентов
+                except ValueError:
+                    return 0
+            return pd.to_numeric(value, errors='coerce')
+
+        df[col_map["охват"]] = df.apply(parse_coverage, axis=1).fillna(0)
+
+    # Преобразование расхода (оставляем десятичные дроби)
+    if "расход" in col_map:
+        df[col_map["расход"]] = (
+            df[col_map["расход"]]
+            .astype(str)
+            .str.replace(r"[^\d,.]", "", regex=True)  # Удаляем всё, кроме цифр, запятых и точек
+            .str.replace(",", ".")  # Меняем запятые на точки
+        )
+        df[col_map["расход"]] = pd.to_numeric(df[col_map["расход"]], errors="coerce").fillna(0)
+
     return df, col_map
 
     

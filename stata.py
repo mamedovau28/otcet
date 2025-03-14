@@ -78,20 +78,20 @@ st.title("Анализ качества рекламных кампаний")
 all_data = []
 
 # Функция для загрузки и обработки данных
-def load_and_process_data():
-    upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"])
+def load_and_process_data(unique_key):
+    upload_option = st.radio("Выберите способ загрузки данных статистики по площадкам:", ["Загрузить Excel-файл", "Ссылка на Google-таблицу"], key=f"radio_{unique_key}")
 
     df = None
     campaign_name = None
 
     if upload_option == "Загрузить Excel-файл":
-        uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"])
+        uploaded_file = st.file_uploader("Загрузите файл", type=["xlsx"], key=f"file_uploader_{unique_key}")
         if uploaded_file:
             df = pd.read_excel(uploaded_file)
             campaign_name = extract_campaign_name(uploaded_file.name)
 
     elif upload_option == "Ссылка на Google-таблицу":
-        google_sheet_url = st.text_input("Введите ссылку на Google-таблицу")
+        google_sheet_url = st.text_input("Введите ссылку на Google-таблицу", key=f"text_input_{unique_key}")
         if google_sheet_url:
             try:
                 sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
@@ -101,7 +101,7 @@ def load_and_process_data():
             except Exception as e:
                 st.error(f"Ошибка при загрузке CSV: {e}")
 
-        manual_name = st.text_input("Введите название РК (например: 'OneTarget')")
+        manual_name = st.text_input("Введите название РК (например: 'OneTarget')", key=f"manual_name_{unique_key}")
         if manual_name:
             campaign_name = extract_campaign_name(manual_name)
 
@@ -113,7 +113,7 @@ def load_and_process_data():
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
-            start_date, end_date = st.date_input("Выберите период", [min_date, max_date])
+            start_date, end_date = st.date_input("Выберите период", [min_date, max_date], key=f"date_input_{unique_key}")
 
             df_filtered = df[
                 (df[col_map["дата"]].dt.date >= start_date) & 
@@ -152,8 +152,9 @@ def load_and_process_data():
         all_data.append(df)
 
 # Загрузка и обработка первого файла
-load_and_process_data()
+load_and_process_data(unique_key=1)
 
 # Опция для загрузки дополнительного файла
 if st.button("Загрузить еще один файл"):
-    load_and_process_data()
+    next_key = len(all_data) + 1
+    load_and_process_data(unique_key=next_key)

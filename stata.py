@@ -93,6 +93,10 @@ def filter_columns(df):
             required_columns.add(col)
     return df[list(required_columns)]
 
+mp_df = pd.read_excel(mp_file, sheet_name=sheet_name)
+mp_df = mp_df.loc[:, ~mp_df.columns.duplicated()].copy()
+mp_df, mp_col_map = process_mp(mp_df)
+
 def process_mp(mp_df):
     """
     Обрабатывает медиаплан (МП):

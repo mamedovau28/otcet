@@ -277,6 +277,13 @@ def check_matching_campaign(mp_df, campaign_name):
             matching_columns = [column for column in mp_df.columns if re.search(regex, column, re.IGNORECASE)]
             if matching_columns:
                 found_columns[col] = matching_columns
+
+        # Загрузим сохраненную таблицу из файла CSV
+        saved_matching_rows = pd.read_csv("saved_matching_rows.csv")
+
+        # Выведем таблицу в Streamlit
+        st.write("Таблица с найденными данными:")
+        st.write(saved_matching_rows)
         
         return match_message, saved_matching_rows
     else:

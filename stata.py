@@ -496,7 +496,7 @@ for i in range(1, 11):
                 "Выберите период", [min_date, max_date], key=f"date_input_{i}"
             )
 
-            df_filtered = df[
+            df_filtered = df[ 
                 (df[col_map["дата"]].dt.date >= start_date) & 
                 (df[col_map["дата"]].dt.date <= end_date)
             ]
@@ -527,6 +527,12 @@ for i in range(1, 11):
             """
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")
             st.text_area(report_text, report_text, height=100)
+
+            # Проверка расхождений и вывод предупреждений
+            warnings = check_for_differences(df_filtered, existing_cols, ["показы план", "клики план", "охват план", "бюджет план"])
+            if warnings:
+                for warning in warnings:
+                    st.warning(warning)
 
             # Исправлено: Приводим дату к строке для графиков
             df_filtered["дата_график"] = df_filtered[col_map["дата"]].dt.strftime('%Y-%m-%d')

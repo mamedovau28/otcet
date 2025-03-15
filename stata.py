@@ -291,12 +291,6 @@ for i in range(1, 11):
             """
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")
             st.text_area(report_text, report_text, height=100)
-
-            # Используем st.empty() для пустого контейнера
-            container = st.empty()
-
-            # Построение графиков
-            container.pyplot(plt)
            
             # Построим график по дням
             plt.figure(figsize=(10, 6))

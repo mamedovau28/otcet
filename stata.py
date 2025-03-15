@@ -294,6 +294,20 @@ def analyze_campaign(mp_df, df, col_map):
     st.write(f"Разница в охвате: {total_reach_report - daily_reach * (end_date - start_date).days:.0f}")
     st.write(f"Разница в расходе: {total_spend_report - daily_spend * (end_date - start_date).days:.2f} руб.")
 
+def check_matching_campaign(mp_df, campaign_name):
+    """
+    Функция для проверки совпадения кампании по имени.
+    """
+    if mp_df is None:
+        return "Медиаплан не загружен."
+
+    # Поиск соответствующей кампании в медиаплане
+    matched_campaign = mp_df[mp_df["название РК"].str.contains(campaign_name, case=False, na=False)]
+
+    if matched_campaign.empty:
+        return f"Кампания с именем '{campaign_name}' не найдена в медиаплане."
+    else:
+        return f"Найдена кампания с именем '{campaign_name}' в медиаплане."
         
 st.title("Анализ рекламных кампаний")
 

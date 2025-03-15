@@ -302,6 +302,16 @@ for i in range(1, 11):
             plt.grid(True)
             plt.legend()
             st.pyplot(plt)  # Отображаем график в Streamlit
+            
+            # Столбцы для кликов
+            plt.bar(df_filtered[col_map["дата"]], df_filtered["клики"], color='r', alpha=0.7, label="Клики")
 
+            plt.title(f"Клики по дням для {custom_campaign_name}")
+            plt.xlabel("Дата")
+            plt.ylabel("Клики")
+            plt.xticks(rotation=45)
+            plt.grid(True, axis='y')
+            plt.legend()
+            st.pyplot(plt)  # Отображаем график с кликами в Streamlit
     
     st.dataframe(df)

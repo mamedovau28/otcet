@@ -345,29 +345,25 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
             df.rename(columns={col: "охват план"}, inplace=True)
         # Можно добавить дополнительные условия по другим столбцам, если нужно
 
-    # Теперь нужно вычислить расхождения между фактическими и плановыми показателями
-    warnings = []
+    return df
 
-    # Рассчитываем разницу и процентное отклонение для показателей
-    for plan_col, fact_col in plan_cols.items():
-        if plan_col in df.columns and fact_col in df.columns:
-            fact_total = df[fact_col].sum()
-            plan_total = df[plan_col].sum()
+def check_for_differences(df_filtered, existing_cols, plan_cols):
+    warnings = []
+    # Проверка на наличие столбцов
+    for plan_col, fact_col in zip(plan_cols, existing_cols):
+        if plan_col in df_filtered.columns and fact_col in df_filtered.columns:
+            # Суммируем значения только там, где "показы" больше 10
+            fact_total = df_filtered[fact_col].sum()
+            plan_total = df_filtered[plan_col].sum()
 
             if plan_total > 0:
                 diff = fact_total - plan_total
                 diff_percent = (diff / plan_total) * 100
 
-                # Выводим расхождения, если процентное отклонение больше 3%
                 if abs(diff_percent) > 3:
                     warnings.append(f"⚠️ Разница по {fact_col}: {diff:+,.0f} ({diff_percent:+.2f}%)")
 
-    if warnings:
-        for warning in warnings:
-            print(warning)  # Или используйте st.warning(warning) для отображения на веб-интерфейсе
-
-    return df
-
+    return warnings
 
     
 st.title("Анализ рекламных кампаний")

@@ -260,12 +260,22 @@ for i in range(1, 11):
 
             # Построим график по дням
             plt.figure(figsize=(10, 6))
-            plt.plot(df_filtered[col_map["дата"]], df_filtered["показы"], marker='o', label="Показы")
-            plt.title(f"Показы по дням для {custom_campaign_name}")
+            
+            # Линия для показов
+            plt.plot(df_filtered[col_map["дата"]], df_filtered["показы"], marker='o', label="Показы", color='b')
+
+            # Линия для охвата
+            plt.plot(df_filtered[col_map["дата"]], df_filtered["охват"], marker='o', label="Охват", color='g')
+
+            # Заливка фона под линией охвата
+            plt.fill_between(df_filtered[col_map["дата"]], 0, df_filtered["охват"], color='g', alpha=0.2)
+
+            plt.title(f"Показы и Охват по дням для {custom_campaign_name}")
             plt.xlabel("Дата")
-            plt.ylabel("Показы")
+            plt.ylabel("Значение")
             plt.xticks(rotation=45)
             plt.grid(True)
+            plt.legend()
             st.pyplot(plt)  # Отображаем график в Streamlit
 
             # Результаты по выбранному периоду
@@ -280,7 +290,7 @@ for i in range(1, 11):
             total_spend_nds = summary.get("расход с ндс", 0)
 
             report_text = f"""
-            {custom_campaign_name}
+    {custom_campaign_name}
     Показы: {total_impressions}
     Клики: {total_clicks}
     CTR: {ctr_value:.2%}

@@ -302,19 +302,4 @@ for i in range(1, 11):
             st.subheader("Итоговый отчёт")
             st.text_area(report_text, report_text, height=100)
 
-# === График распределения ===
-if data_frames:
-    combined_df = pd.concat(data_frames)
-    combined_df = combined_df.groupby("Дата").sum().reset_index()
-
-    st.subheader("Распределение показов и охватов по дням")
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(combined_df["Дата"], combined_df["Показы"], label="Показы", marker='o')
-    ax.plot(combined_df["Дата"], combined_df["Охват"], label="Охват", marker='s')
-    ax.set_xlabel("Дата")
-    ax.set_ylabel("Количество")
-    ax.legend()
-    ax.grid()
-    st.pyplot(fig)
-
     st.dataframe(df)

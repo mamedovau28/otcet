@@ -284,94 +284,8 @@ def check_matching_campaign(mp_df, campaign_name):
     else:
         return "Совпадений по площадке не найдено.", None
 
-def process_and_check_differences(df, saved_matching_rows, campaign_days, start_date, existing_cols, existing_plan_cols):
-    """
-    Обрабатываем данные и вычисляем расхождения между плановыми и фактическими показателями.
-    Переносим числовые данные из saved_matching_rows в df, рассчитываем разницу и процентное отклонение.
-    """
-    if saved_matching_rows is None or df is None or campaign_days <= 0 or start_date is None:
-        return df, []  # Если нет данных или некорректное число дней, возвращаем df без изменений и пустой список предупреждений
-
-    # Находим все числовые столбцы в saved_matching_rows
-    numeric_cols = saved_matching_rows.select_dtypes(include=['number']).columns
-
-    if numeric_cols.empty:
-        print("Нет числовых столбцов для переноса.")
-        return df, []
-
-    # Определяем столбец с датами в df (если он есть)
-    date_col = None
-    for col in df.columns:
-        if "дата" in col.lower():
-            date_col = col
-            break
-
-    if date_col is None:
-        print("Не найден столбец с датой в df.")
-        return df, []
-
-    # Преобразуем столбец даты в формат datetime
-    df[date_col] = pd.to_datetime(df[date_col])
-
-    # Маска для строк, где дата меньше start_date
-    before_start_mask = df[date_col] < start_date
-
-    # Словарь для хранения соответствия плановых и фактических показателей
-    plan_cols = {
-        "показы план": "показы",
-        "клики план": "клики",
-        "охват план": "охват",
-        "бюджет план": "расход с ндс"
-    }
-
-    # Для каждого числового столбца находим, как его назвать, и дублируем данные
-    for col in numeric_cols:
-        # Делим значения на campaign_days
-        df[col] = saved_matching_rows[col].iloc[0] / campaign_days
-        
-        # Применяем маску для строк до start_date, где значения будут равны 0
-        df.loc[before_start_mask, col] = 0
-
-        # Переименовываем столбцы в зависимости от их содержания
-        if "ндс" in col.lower():
-            df.rename(columns={col: "бюджет план"}, inplace=True)
-        elif "показы" in col.lower() and "план" in col.lower():
-            df.rename(columns={col: "показы план"}, inplace=True)
-        elif "клики" in col.lower() and "план" in col.lower():
-            df.rename(columns={col: "клики план"}, inplace=True)
-        elif "охват" in col.lower():
-            df.rename(columns={col: "охват план"}, inplace=True)
-
-    # Рассчитываем разницу и процентное отклонение для показателей
-    warnings = []
-    for plan_col, fact_col in plan_cols.items():
-        if plan_col in existing_plan_cols and fact_col in existing_cols:
-            # Суммируем значения только там, где "показы" больше 10
-            df_filtered_valid = df[df["показы"] > 10]
-            fact_total = df_filtered_valid[fact_col].sum()
-            plan_total = df_filtered_valid[plan_col].sum()
-
-            if plan_total > 0:
-                diff = fact_total - plan_total
-                diff_percent = (diff / plan_total) * 100
-
-                if abs(diff_percent) > 5:
-                    warnings.append(f"⚠️ Разница по {fact_col}: {diff:+,.0f} ({diff_percent:+.2f}%)")
-
-    return df, warnings
 
 
-# Функция для расчета расхождений
-def calculate_differences(existing_cols, existing_plan_cols, summary_fact, summary_plan):
-    differences = {}
-    for fact_col, plan_col in zip(existing_cols, existing_plan_cols):
-        fact_value = summary_fact.get(fact_col, 0)
-        plan_value = summary_plan.get(plan_col, 0)
-        diff = fact_value - plan_value
-        percent_diff = (diff / plan_value * 100) if plan_value != 0 else 0
-        differences[fact_col] = (diff, percent_diff)
-    return differences
-    
 st.title("Анализ рекламных кампаний")
 
 # === Загрузка медиаплана ===
@@ -462,10 +376,7 @@ for i in range(1, 11):
                 st.error(f"Ошибка при загрузке CSV: {e}")
 
     if df is not None:
-        # Обработка данных
         df, col_map = process_data(df)
-        
-        # Название РК
         custom_campaign_name = st.text_input(
             f"Введите название РК {i} (или оставьте по умолчанию)", 
             value=campaign_name, 
@@ -492,53 +403,34 @@ for i in range(1, 11):
             st.write("Обновленная таблица с расчетами:")
             st.write(saved_matching_rows)  
 
-        # Фильтрация по датам
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
 
-            # Выбор периода
+            # Исправлено: date_input возвращает список, его нужно распаковать
             start_date, end_date = st.date_input(
                 "Выберите период", [min_date, max_date], key=f"date_input_{i}"
             )
 
-            # Фильтрация данных по выбранному диапазону
             df_filtered = df[
                 (df[col_map["дата"]].dt.date >= start_date) & 
                 (df[col_map["дата"]].dt.date <= end_date)
             ]
 
-            # Фильтрация строк с показами > 10
-            df_filtered_valid = df_filtered[df_filtered["показы"] > 10]
-
             # Вычисления итогов
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]
-            plan_cols = ["показы план", "клики план", "охват план", "бюджет план"]
-            existing_cols = [col for col in needed_cols if col in df_filtered_valid.columns]
-            existing_plan_cols = [col for col in plan_cols if col in df_filtered_valid.columns]
+            existing_cols = [col for col in needed_cols if col in df_filtered.columns]
+            summary = df_filtered[existing_cols].sum()
 
-            # Суммируем значения
-            summary_fact = df_filtered_valid[existing_cols].sum()
-            summary_plan = df_filtered_valid[existing_plan_cols].sum()
-
-            total_impressions = summary_fact.get("показы", 0)
-            total_clicks = summary_fact.get("клики", 0)
+            total_impressions = summary.get("показы", 0)
+            total_clicks = summary.get("клики", 0)
             ctr_value = total_clicks / total_impressions if total_impressions > 0 else 0
-            total_reach = summary_fact.get("охват", 0)
-            total_spend_nds = summary_fact.get("расход с ндс", 0)
-
-            # Считаем расхождения
-            differences = calculate_differences(existing_cols, existing_plan_cols, summary_fact, summary_plan)
+            total_reach = summary.get("охват", 0)
+            total_spend_nds = summary.get("расход с ндс", 0)
 
             # Форматируем даты
             start_date_str = start_date.strftime("%d.%m.%Y")
             end_date_str = end_date.strftime("%d.%m.%Y")
-
-            # Вывод расхождений
-            if differences:
-                st.write("Расхождения:")
-                for col, (diff, percent) in differences.items():
-                    st.write(f"{col}: {diff:+,.0f} ({percent:+.2f}%)")
 
             report_text = f"""
     {custom_campaign_name}

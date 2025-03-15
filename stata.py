@@ -166,6 +166,60 @@ def process_mp(mp_df):
 
     return mp_df, col_map
 
+def find_column(df, keywords):
+    """
+    Функция для поиска столбцов, содержащих ключевые слова.
+    """
+    found_columns = {}
+    for keyword in keywords:
+        column_matches = [col for col in df.columns if re.search(keyword, col, re.IGNORECASE)]
+        if column_matches:
+            found_columns[keyword] = column_matches[0]  # Сохраняем первый найденный столбец
+    return found_columns
+
+def calculate_campaign_period(df, col_map, mp_df=None):
+    """
+    Определяем дату начала и конца рекламной кампании, если загружены и МП, и отчет.
+    """
+    if mp_df is None or df is None:
+        st.error("Ошибка: не загружен один из файлов (МП или отчет).")
+        return None, None
+    
+    # Находим первую дату с показами больше 10
+    df_filtered = df[df[col_map["показы"]] > 10]
+    if not df_filtered.empty:
+        start_date = df_filtered[col_map["дата"]].min().date()
+    else:
+        st.error("Нет данных о показах больше 10.")
+        return None, None
+    
+    # Конец кампании по умолчанию - последний день месяца
+    end_date = datetime(start_date.year, start_date.month, 1) + timedelta(days=32)
+    end_date = end_date.replace(day=1) - timedelta(days=1)
+
+    return start_date, end_date
+
+def distribute_mp_data(mp_df, start_date, end_date, col_map):
+    """
+    Равномерно распределяем данные по дням и возвращаем средние значения.
+    """
+    # Вычисляем количество дней в рекламном периоде
+    num_days = (end_date - start_date).days + 1
+    
+    # Получаем сумму показов, кликов, охвата, расхода из медиаплана
+    total_impressions = mp_df[col_map["показы"]].sum()
+    total_clicks = mp_df[col_map["клики"]].sum()
+    total_reach = mp_df[col_map["охват"]].sum()
+    total_spend_nds = mp_df[col_map["бюджет с ндс"]].sum()
+    
+    # Равномерно распределяем данные по дням
+    daily_impressions = total_impressions / num_days
+    daily_clicks = total_clicks / num_days
+    daily_reach = total_reach / num_days
+    daily_spend = total_spend_nds / num_days
+
+    return daily_impressions, daily_clicks, daily_reach, daily_spend
+
 # Функция для проверки совпадений, игнорируя регистр и окончания
 def check_matching_campaign(mp_df, campaign_name):
     # Приводим название РК к нижнему регистру

@@ -267,6 +267,19 @@ for i in range(1, 11):
             total_reach = summary.get("охват", 0)
             total_spend_nds = summary.get("расход с ндс", 0)
 
+            def process_data(df):
+                col_map = {}
+                for col in df.columns:
+                    lower_col = col.lower()
+                    if "дата" in lower_col:
+                        col_map["дата"] = col
+                    elif "показы" in lower_col:
+                        col_map["показы"] = col
+                    elif "охват" in lower_col:
+                        col_map["охват"] = col
+                        return df, col_map
+                        data_frames = []
+
             report_text = f"""
             {custom_campaign_name}
     Показы: {total_impressions}
@@ -284,19 +297,19 @@ for i in range(1, 11):
                 df_filtered.columns = ["Дата", "Показы", "Охват"]
                 data_frames.append(df_filtered)
 
-def process_data(df):
-    col_map = {}
-    for col in df.columns:
-        lower_col = col.lower()
-        if "дата" in lower_col:
-            col_map["дата"] = col
-        elif "показы" in lower_col:
-            col_map["показы"] = col
-        elif "охват" in lower_col:
-            col_map["охват"] = col
-    return df, col_map
+    if data_frames:
+        combined_df = pd.concat(data_frames)
+        combined_df = combined_df.groupby("Дата").sum().reset_index()
+    
+        st.subheader("Распределение показов и охватов по дням")
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.plot(combined_df["Дата"], combined_df["Показы"], label="Показы", marker='o')
+        ax.plot(combined_df["Дата"], combined_df["Охват"], label="Охват", marker='s')
+        ax.set_xlabel("Дата")
+        ax.set_ylabel("Количество")
+        ax.legend()
+        ax.grid()
+        st.pyplot(fig)
 
-data_frames = []
 
-
-st.dataframe(df)
+    st.dataframe(df)

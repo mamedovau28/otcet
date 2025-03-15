@@ -215,6 +215,22 @@ if mp_file:
         # Отображаем обработанный медиаплан
         st.dataframe(mp_df)
             
+# === Объявляем глобальный список для хранения обработанных данных ===
+data_frames = []
+
+# === Функция обработки данных ===
+def process_data(df):
+    col_map = {}
+    for col in df.columns:
+        lower_col = col.lower()
+        if "дата" in lower_col:
+            col_map["дата"] = col
+        elif "показы" in lower_col:
+            col_map["показы"] = col
+        elif "охват" in lower_col:
+            col_map["охват"] = col
+    return df, col_map  # Перенес return за пределы цикла
+
 # === Загрузка отчетов ===
 st.header("Загрузите данные (Excel или Google-таблицы)")
 
@@ -267,19 +283,6 @@ for i in range(1, 11):
             total_reach = summary.get("охват", 0)
             total_spend_nds = summary.get("расход с ндс", 0)
 
-            def process_data(df):
-                col_map = {}
-                for col in df.columns:
-                    lower_col = col.lower()
-                    if "дата" in lower_col:
-                        col_map["дата"] = col
-                    elif "показы" in lower_col:
-                        col_map["показы"] = col
-                    elif "охват" in lower_col:
-                        col_map["охват"] = col
-                        return df, col_map
-                        data_frames = []
-
             report_text = f"""
             {custom_campaign_name}
     Показы: {total_impressions}
@@ -289,7 +292,7 @@ for i in range(1, 11):
     Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
             """
             st.subheader("Итоговый отчёт")
-            st.text_area(report_text, report_text, height=100)
+            st.text_area(f"Отчет по {custom_campaign_name}", report_text, height=100)
 
             if "дата" in col_map and "показы" in col_map and "охват" in col_map:
                 df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]])
@@ -297,19 +300,20 @@ for i in range(1, 11):
                 df_filtered.columns = ["Дата", "Показы", "Охват"]
                 data_frames.append(df_filtered)
 
-    if data_frames:
-        combined_df = pd.concat(data_frames)
-        combined_df = combined_df.groupby("Дата").sum().reset_index()
-    
-        st.subheader("Распределение показов и охватов по дням")
-        fig, ax = plt.subplots(figsize=(10, 5))
-        ax.plot(combined_df["Дата"], combined_df["Показы"], label="Показы", marker='o')
-        ax.plot(combined_df["Дата"], combined_df["Охват"], label="Охват", marker='s')
-        ax.set_xlabel("Дата")
-        ax.set_ylabel("Количество")
-        ax.legend()
-        ax.grid()
-        st.pyplot(fig)
+# === График распределения ===
+if data_frames:
+    combined_df = pd.concat(data_frames)
+    combined_df = combined_df.groupby("Дата").sum().reset_index()
+
+    st.subheader("Распределение показов и охватов по дням")
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.plot(combined_df["Дата"], combined_df["Показы"], label="Показы", marker='o')
+    ax.plot(combined_df["Дата"], combined_df["Охват"], label="Охват", marker='s')
+    ax.set_xlabel("Дата")
+    ax.set_ylabel("Количество")
+    ax.legend()
+    ax.grid()
+    st.pyplot(fig)
 
 
     st.dataframe(df)

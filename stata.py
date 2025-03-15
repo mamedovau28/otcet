@@ -413,15 +413,15 @@ for i in range(1, 11):
         st.write(f"Название РК: {custom_campaign_name}")
 
         if mp_df is not None:  # Если медиаплан был загружен
-            match_message, saved_matching_rows = check_matching_campaign(mp_df, custom_campaign_name, start_date, end_date)
+            match_message, saved_matching_rows = check_matching_campaign(mp_df, custom_campaign_name)
     
-        # Если есть совпадения по названию рекламной кампании
-        if isinstance(match_message, str):
-            st.write(match_message)  # Выводим сообщение о результате поиска
-        else:
-            st.write("Данные рекламной кампании:", match_message)  # Выводим сам DataFrame с результатами
-            st.write("Обновленная таблица с расчетами:")
-            st.write(saved_matching_rows)  # Выводим таблицу с разделением на дни
+            # Если есть совпадения по названию рекламной кампании
+            if isinstance(match_message, str):
+                st.write(match_message)  # Выводим сообщение о результате поиска
+            else:
+                st.write("Данные рекламной кампании:", match_message)  # Выводим сам DataFrame с результатами
+                st.write("Обновленная таблица с расчетами:")
+                st.write(saved_matching_rows)  # Выводим таблицу с разделением на дни
 
 
         if "дата" in col_map:

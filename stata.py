@@ -270,8 +270,8 @@ for i in range(1, 11):
             total_spend_nds = summary.get("расход с ндс", 0)
 
             report_text = f"""
-    {df_filtered}
     {custom_campaign_name}
+    Период: с {start_date} по {end_date}
     Показы: {total_impressions:.0%}
     Клики: {total_clicks:.0%}
     CTR: {ctr_value:.2%}

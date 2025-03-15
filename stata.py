@@ -210,33 +210,15 @@ def distribute_mp_data(mp_df, start_date, end_date, col_map):
 
     return daily_impressions, daily_clicks, daily_reach, daily_spend
 
-def calculate_daily_avg(mp_df, col_map):
-    """
-    Рассчитывает среднее распределение показов, кликов и бюджета по дням.
-    """
-    # Проверяем, есть ли столбцы для показов, кликов и бюджета
-    required_columns = ['показы', 'клики', 'расход']
-    
-    daily_avg = {}
-    
-    for metric in required_columns:
-        if metric in col_map:
-            daily_avg[metric] = mp_df[col_map[metric]].mean()  # Среднее по столбцу
-            
-    # Добавляем столбцы с расчетом среднего для каждого дня
-    if 'показы' in col_map:
-        mp_df['среднее показы'] = daily_avg['показы']
-    if 'клики' in col_map:
-        mp_df['среднее клики'] = daily_avg['клики']
-    if 'расход' in col_map:
-        mp_df['среднее расход'] = daily_avg['расход']
-
-    return mp_df, daily_avg
-
 def analyze_campaign(mp_df, df, col_map):
     """
     Анализируем данные медиаплана и отчета.
     """
+    # Проверяем, были ли загружены оба файла (МП и отчет)
+    if mp_df is None or df is None:
+        st.error("Ошибка: не загружен один из файлов (МП или отчет).")
+        return
+
     # 1. Проверяем, совпали ли площадки
     matched_platform = False
     mp_platform_column = find_column(mp_df, ["площадка", "название сайта", "ресурс"])  # Ищем столбцы по площадке

@@ -161,22 +161,34 @@ def process_mp(mp_df):
 
 # Функция для проверки совпадений, игнорируя регистр и окончания
 def check_matching_campaign(mp_df, campaign_name):
-    # Приводим названия к нижнему регистру и убираем окончания (например, пробелы, числа и прочее)
+    # Приводим название РК к нижнему регистру
     campaign_name = campaign_name.strip().lower()
+
+    # Список возможных имен столбцов для площадки
+    possible_columns = ['площадка', 'название сайта', 'ресурс']
     
-    # Предположим, что в медиаплане есть столбец "площадка"
-    if 'площадка' in mp_df.columns:
-        mp_df['площадка_lower'] = mp_df['площадка'].str.strip().str.lower()  # Приводим к нижнему регистру
-        matching_rows = mp_df[mp_df['площадка_lower'].str.contains(campaign_name)]
-        
-        if not matching_rows.empty:
-            # Если найдено совпадение
-            matched_campaign = matching_rows['площадка'].iloc[0]
-            return f"Найдено совпадение по площадке: {matched_campaign}"
-        else:
-            return "Совпадений не найдено."
+    # Ищем столбец, который может содержать название площадки
+    match_column = None
+    for col in possible_columns:
+        if col in mp_df.columns:
+            match_column = col
+            break  # Прерываем, как только нашли подходящий столбец
+
+    if match_column is None:
+        return "Не найден столбец с названием площадки в медиаплане."
+
+    # Приводим название площадки к нижнему регистру
+    mp_df['pлощадка_lower'] = mp_df[match_column].str.strip().str.lower()
+
+    # Поиск совпадений по названию РК
+    matching_rows = mp_df[mp_df['pлощадка_lower'].str.contains(campaign_name, na=False)]
+    
+    if not matching_rows.empty:
+        # Если найдено совпадение
+        matched_campaign = matching_rows[match_column].iloc[0]
+        return f"Найдено совпадение по площадке: {matched_campaign}"
     else:
-        return "Столбец 'площадка' не найден в медиаплане."
+        return "Совпадений по площадке не найдено."
     
 st.title("Анализ рекламных кампаний")
 

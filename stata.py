@@ -250,6 +250,10 @@ def check_matching_campaign(mp_df, campaign_name):
         matched_campaign = matching_rows[match_column].iloc[0]
         match_message = f"Найдено совпадение по площадке: {matched_campaign}"
         
+        # Печатаем найденные строки
+        st.write("Найденные строки по площадке:")
+        st.write(matching_rows)
+        
         # Проверяем наличие столбцов для показов, кликов, охвата и бюджета с НДС
         required_columns = {
             "показы": r"\bпоказы?\b",

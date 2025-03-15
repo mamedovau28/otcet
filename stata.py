@@ -532,8 +532,8 @@ for i in range(1, 11):
             plt.legend()
             st.pyplot(plt)  # Отображаем график с кликами в Streamlit
             
-                if mp_df is not None:  # Если медиаплан был загружен
-                    match_message = check_matching_campaign(mp_df, custom_campaign_name)
-                    st.write(match_message)
+    if mp_df is not None:  # Если медиаплан был загружен
+        match_message = check_matching_campaign(mp_df, custom_campaign_name)
+        st.write(match_message)
     
     st.dataframe(df)

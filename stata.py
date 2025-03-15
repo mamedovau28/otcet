@@ -275,11 +275,11 @@ for i in range(1, 11):
 
             report_text = f"""
     {custom_campaign_name}
-    Период: {start_date}-{end_date}
-    Показы: {total_impressions:.0}
-    Клики: {total_clicks:.0}
+    Период: {start_date_str}-{end_date_str}
+    Показы: {total_impressions:.0f}
+    Клики: {total_clicks:.0f}
     CTR: {ctr_value:.2%}
-    Охват: {total_reach:.0}
+    Охват: {total_reach:.0f}
     Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
             """
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")

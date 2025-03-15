@@ -267,7 +267,7 @@ for i in range(1, 11):
         st.write(f"Название РК: {custom_campaign_name}")
 
         if "дата" in col_map:
-            st.write("Перед min_date:", df[[col_map["дата"]]].head())
+            st.write("col_map:", col_map)
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
             start_date, end_date = st.date_input("Выберите период", [min_date, max_date], key=f"date_input_{i}")

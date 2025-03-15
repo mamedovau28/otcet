@@ -452,6 +452,11 @@ for i in range(1, 11):
         custom_campaign_name = st.text_input(f"Введите название РК {i} (или оставьте по умолчанию)", value=campaign_name, key=f"campaign_name_{i}")
         st.write(f"Название РК: {custom_campaign_name}")
 
+        start_date, end_date = calculate_campaign_period(df)
+        if start_date is None or end_date is None:
+            st.error("Не удалось определить даты начала и конца кампании.")
+
+
         if mp_df is not None:  # Если медиаплан был загружен
             match_message = check_matching_campaign(mp_df, custom_campaign_name)
             result = analyze_campaign(mp_df, df, report_col_map)

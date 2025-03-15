@@ -222,12 +222,16 @@ def calculate_campaign_period(df):
     return start_date, end_date
 
 def calculate_campaign_days(start_date, end_date):
+    # Проверка на пустые или некорректные значения
+    if not start_date or not end_date:
+        raise ValueError("Даты не могут быть пустыми.")
+
     # Преобразуем строки в объекты типа datetime, если они еще не таковы
     start_date = pd.to_datetime(start_date, errors='coerce')  # Если ошибка, то вернется NaT
     end_date = pd.to_datetime(end_date, errors='coerce')  # Если ошибка, то вернется NaT
 
     if pd.isna(start_date) or pd.isna(end_date):
-        raise ValueError("Некорректные значения дат.")
+        raise ValueError(f"Некорректные значения дат: start_date = {start_date}, end_date = {end_date}")
 
     # Генерация диапазона дат
     campaign_days = pd.date_range(start=start_date, end=end_date, freq='D')

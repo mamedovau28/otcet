@@ -513,7 +513,7 @@ for i in range(1, 11):
         st.write(f"Название РК: {custom_campaign_name}")
 
         if mp_df is not None:  # Если медиаплан был загружен
-            match_message = (mp_df, custom_campaign_name, start_date, end_date)
+            match_message = (mp_df, custom_campaign_name)
             st.write(match_message)
 
         if "дата" in col_map:

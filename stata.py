@@ -272,12 +272,10 @@ for i in range(1, 11):
         st.write(f"Название РК: {custom_campaign_name}")
 
         if "дата" in col_map:
-            st.write("col_map:", col_map)
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
             start_date, end_date = st.date_input("Выберите период", [min_date, max_date], key=f"date_input_{i}")
 
-            # Фильтруем данные только для отчета
             df_filtered = df[
                 (df[col_map["дата"]].dt.date >= start_date) & 
                 (df[col_map["дата"]].dt.date <= end_date)
@@ -302,13 +300,7 @@ for i in range(1, 11):
     Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
             """
             st.subheader("Итоговый отчёт")
-            st.text_area(f"Отчет по {custom_campaign_name}", report_text, height=100)
-
-            # Добавляем данные в список только если в них есть нужные колонки
-            if all(k in col_map for k in ["дата", "показы", "охват"]):
-                df_graph = df[[col_map["дата"], col_map["показы"], col_map["охват"]]].copy()
-                df_graph.columns = ["Дата", "Показы", "Охват"]
-                data_frames.append(df_graph)
+            st.text_area(report_text, report_text, height=100)
 
 # === График распределения ===
 if data_frames:

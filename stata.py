@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import re
+import matplotlib.pyplot as plt
 
 # Словарь для сопоставления названий колонок в отчетах
 COLUMN_MAPPING = {

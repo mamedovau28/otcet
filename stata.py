@@ -226,7 +226,7 @@ def calculate_campaign_days(start_date, end_date):
     return (end_date - start_date).days + 1
 
 # Функция для проверки совпадений, игнорируя регистр и окончания
-def check_matching_campaign(mp_df, campaign_name, start_date, end_date):
+def check_matching_campaign(mp_df, campaign_name, start_date=None, end_date=None):
     # Приводим название РК к нижнему регистру
     campaign_name = campaign_name.strip().lower()
 

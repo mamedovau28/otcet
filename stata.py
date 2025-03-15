@@ -372,7 +372,7 @@ for i in range(1, 11):
 
         if mp_df is not None:  # Если медиаплан был загружен
             # Определяем даты начала и конца кампании
-            start_date, end_date = calculate_campaign_period(mp_df)
+            start_date, end_date = calculate_campaign_period(df)
 
             # Проверяем, успешно ли определены даты
             if start_date is None or end_date is None:

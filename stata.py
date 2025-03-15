@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import re
 import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 
 # Словарь для сопоставления названий колонок в отчетах
 COLUMN_MAPPING = {
@@ -213,6 +214,79 @@ def check_matching_campaign(mp_df, campaign_name):
         return match_message
     else:
         return "Совпадений по площадке не найдено."
+
+def calculate_campaign_period(df, col_map):
+    # Находим первую дату с показами больше 10
+    df_filtered = df[df[col_map["показы"]] > 10]
+    if not df_filtered.empty:
+        start_date = df_filtered[col_map["дата"]].min().date()
+    else:
+        st.error("Нет данных о показах больше 10.")
+        return None, None
+    
+    # Конец кампании по умолчанию - последний день месяца
+    end_date = datetime(start_date.year, start_date.month, 1) + timedelta(days=32)
+    end_date = end_date.replace(day=1) - timedelta(days=1)
+
+    return start_date, end_date
+
+def distribute_mp_data(mp_df, start_date, end_date, col_map):
+    # Вычисляем количество дней в рекламном периоде
+    num_days = (end_date - start_date).days + 1
+    
+    # Получаем сумму показов, кликов, охвата, расхода из медиаплана
+    total_impressions = mp_df[col_map["показы"]].sum()
+    total_clicks = mp_df[col_map["клики"]].sum()
+    total_reach = mp_df[col_map["охват"]].sum()
+    total_spend_nds = mp_df[col_map["бюджет с ндс"]].sum()
+    
+    # Равномерно распределяем данные по дням
+    daily_impressions = total_impressions / num_days
+    daily_clicks = total_clicks / num_days
+    daily_reach = total_reach / num_days
+    daily_spend = total_spend_nds / num_days
+
+    # Возвращаем среднее количество по дням
+    return daily_impressions, daily_clicks, daily_reach, daily_spend
+
+# Функция для анализа медиаплана
+def analyze_campaign(mp_df, df, col_map):
+    # Определяем даты начала и конца рекламной кампании
+    start_date, end_date = calculate_campaign_period(df, col_map)
+    if start_date is None or end_date is None:
+        return "Не удалось определить рекламный период."
+    
+    st.write(f"Дата начала рекламной кампании: {start_date}")
+    st.write(f"Дата окончания рекламной кампании: {end_date}")
+
+    # Равномерно распределяем данные из медиаплана по дням
+    daily_impressions, daily_clicks, daily_reach, daily_spend = distribute_mp_data(mp_df, start_date, end_date, col_map)
+
+    # Выводим средние значения для каждого дня
+    st.write(f"Среднее количество показов в день: {daily_impressions:.0f}")
+    st.write(f"Среднее количество кликов в день: {daily_clicks:.0f}")
+    st.write(f"Среднее количество охвата в день: {daily_reach:.0f}")
+    st.write(f"Средний расход с НДС в день: {daily_spend:.2f} руб.")
+
+    # Сравнение с текущими данными отчета
+    total_impressions_report = df[col_map["показы"]].sum()
+    total_clicks_report = df[col_map["клики"]].sum()
+    total_reach_report = df[col_map["охват"]].sum()
+    total_spend_report = df[col_map["расход с ндс"]].sum()
+
+    st.write("Итоговые данные по отчету:")
+    st.write(f"Показы: {total_impressions_report:.0f}")
+    st.write(f"Клики: {total_clicks_report:.0f}")
+    st.write(f"Охват: {total_reach_report:.0f}")
+    st.write(f"Расход с НДС: {total_spend_report:.2f} руб.")
+
+    # Сравниваем данные медиаплана и отчета
+    st.write("Сравнение данных медиаплана и отчета:")
+
+    st.write(f"Разница в показах: {total_impressions_report - daily_impressions * (end_date - start_date).days:.0f}")
+    st.write(f"Разница в кликах: {total_clicks_report - daily_clicks * (end_date - start_date).days:.0f}")
+    st.write(f"Разница в охвате: {total_reach_report - daily_reach * (end_date - start_date).days:.0f}")
+    st.write(f"Разница в расходе: {total_spend_report - daily_spend * (end_date - start_date).days:.2f} руб.")
         
 st.title("Анализ рекламных кампаний")
 

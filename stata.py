@@ -192,7 +192,8 @@ def check_matching_campaign(mp_df, campaign_name):
         required_columns = {
             "показы": r"\bпоказы?\b",
             "клики": r"\bклики?\b",
-            "охват": r"\bохват\b"
+            "охват": r"\bохват\b",
+            "бюджет с ндс": r"\b(ндс\s*и)\b"
         }
         
         found_columns = {}

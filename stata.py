@@ -394,29 +394,23 @@ for i in range(1, 11):
         df, col_map = process_data(df)
         custom_campaign_name = st.text_input(f"Введите название РК {i} (или оставьте по умолчанию)", value=campaign_name, key=f"campaign_name_{i}")
         st.write(f"Название РК: {custom_campaign_name}")
-
-        if mp_df is not None:  # Если медиаплан был загружен
-            # Определяем даты начала и конца кампании
-            start_date, end_date = calculate_campaign_period(df)
-
-            # Проверяем, успешно ли определены даты
-            if start_date is None or end_date is None:
-                st.error("Не удалось определить даты рекламной кампании.")
-            else:
-                st.write(f"Дата начала РК: {start_date}, Дата окончания РК: {end_date}")
+        start_date, end_date = calculate_campaign_period(df)
+        if start_date and end_date:
+            campaign_days = (end_date - start_date).days + 1
+            df = transfer_numeric_data(df, saved_matching_rows, campaign_days)
             
-            match_message, saved_matching_rows = check_matching_campaign(mp_df, custom_campaign_name)
+        match_message, saved_matching_rows = check_matching_campaign(mp_df, custom_campaign_name)
             
-            if saved_matching_rows is not None:  # Если есть совпадения
-                df = transfer_numeric_data(df, saved_matching_rows)  # Переносим данные в df
+        if saved_matching_rows is not None:  # Если есть совпадения
+            df = transfer_numeric_data(df, saved_matching_rows)  # Переносим данные в df
     
-            # Если есть совпадения по названию рекламной кампании
-            if isinstance(match_message, str):
-                st.write(match_message)  # Выводим сообщение о результате поиска
-            else:
-                st.write("Данные рекламной кампании:", match_message)  # Выводим сам DataFrame с результатами
-                st.write("Обновленная таблица с расчетами:")
-                st.write(saved_matching_rows)  # Выводим таблицу с разделением на дни
+        # Если есть совпадения по названию рекламной кампании
+        if isinstance(match_message, str):
+            st.write(match_message)  # Выводим сообщение о результате поиска
+        else:
+            st.write("Данные рекламной кампании:", match_message)  # Выводим сам DataFrame с результатами
+            st.write("Обновленная таблица с расчетами:")
+            st.write(saved_matching_rows)  # Выводим таблицу с разделением на дни
 
 
         if "дата" in col_map:

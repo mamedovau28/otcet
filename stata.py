@@ -232,6 +232,8 @@ def process_data(df):
             col_map["охват"] = col
     return df, col_map  # Перенес return за пределы цикла
 
+st.write("data_frames:", len(data_frames))
+
 # === Загрузка отчетов ===
 st.header("Загрузите данные (Excel или Google-таблицы)")
 

@@ -439,7 +439,7 @@ for i in range(1, 11):
         if mp_df is not None:  # Если медиаплан был загружен
             match_message = check_matching_campaign(mp_df, custom_campaign_name)
             # Анализируем кампанию
-            result = analyze_campaign(mp_df, custom_campaign_name)
+            result = analyze_campaign(mp_df, df, col_map)  # Используем данные для анализа кампании
             st.write(match_message)
             st.write(result)
             

@@ -335,7 +335,7 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
         df.loc[before_start_mask, col] = 0
 
         # Переименовываем столбцы в зависимости от их содержания
-        if "бюджет" in col.lower() and "ндс" in col.lower():
+        if "бюджет" in col.lower() and "стоимость" in col.lower():
             df.rename(columns={col: "бюджет план"}, inplace=True)
         elif "показы" in col.lower() and "план" in col.lower():
             df.rename(columns={col: "показы план"}, inplace=True)

@@ -405,6 +405,9 @@ for i in range(1, 11):
                 st.write(f"Дата начала РК: {start_date}, Дата окончания РК: {end_date}")
             
             match_message, saved_matching_rows = check_matching_campaign(mp_df, custom_campaign_name)
+            
+            if saved_matching_rows is not None:  # Если есть совпадения
+                df = transfer_numeric_data(df, saved_matching_rows)  # Переносим данные в df
     
             # Если есть совпадения по названию рекламной кампании
             if isinstance(match_message, str):

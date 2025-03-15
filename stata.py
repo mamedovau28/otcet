@@ -289,7 +289,6 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
     Переносим числовые данные из saved_matching_rows в df, начиная с start_date,
     разделяя значения на campaign_days. До start_date оставляем 0.
     Присваиваем столбцам новые имена в зависимости от их содержимого.
-    Добавляем расчет разницы и процентного отклонения между фактическими и плановыми показателями.
     """
     if saved_matching_rows is None or df is None or campaign_days <= 0 or start_date is None:
         return df  # Если нет данных или некорректное число дней, возвращаем df без изменений
@@ -318,14 +317,6 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
     # Маска для строк, где дата меньше start_date
     before_start_mask = df[date_col] < start_date
 
-    # Словарь для хранения соответствия плановых и фактических показателей
-    comparison_mapping = {
-        "показы план": "показы",
-        "клики план": "клики",
-        "охват план": "охват",
-        "бюджет план": "расход"
-    }
-
     # Для каждого числового столбца находим, как его назвать, и дублируем данные
     for col in numeric_cols:
         # Делим значения на campaign_days
@@ -343,17 +334,12 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
             df.rename(columns={col: "клики план"}, inplace=True)
         elif "охват" in col.lower():
             df.rename(columns={col: "охват план"}, inplace=True)
+        # Можно добавить дополнительные условия по другим столбцам, если нужно
 
-    # Рассчитываем разницу и процентное отклонение для показателей
-    for plan_col, fact_col in comparison_mapping.items():
-        if plan_col in df.columns and fact_col in df.columns:
-            df[f"разница {fact_col}"] = df[fact_col] - df[plan_col]
-            df[f"% отклонение {fact_col}"] = (df[f"разница {fact_col}"] / df[plan_col]) * 100
-            df[f"% отклонение {fact_col}"].replace([float("inf"), float("-inf"), None], 0, inplace=True)
-    
     return df
 
 
+    
 st.title("Анализ рекламных кампаний")
 
 # === Загрузка медиаплана ===
@@ -512,13 +498,8 @@ for i in range(1, 11):
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")
             st.text_area(report_text, report_text, height=100)
 
-            # Вывод предупреждений о расхождениях
-            for metric, (diff, percent_diff) in differences.items():
-                if abs(percent_diff) > 5:  # Порог для предупреждений
-                    st.warning(f"Внимание! Отклонение по {metric}: {diff:.0f} ({percent_diff:.2f}%)")
-
             # Исправлено: Приводим дату к строке для графиков
-            df_filtered["дата_график"] = df_filtered[col_map["дата"]].dt.strftime('%d-%m')
+            df_filtered["дата_график"] = df_filtered[col_map["дата"]].dt.strftime('%Y-%m-%d')
 
             # График показов и охвата
             plt.figure(figsize=(10, 6))

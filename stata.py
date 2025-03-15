@@ -185,7 +185,7 @@ def check_matching_campaign(mp_df, campaign_name):
         return "Не найден столбец с названием площадки в медиаплане."
 
     # Приводим название площадки к нижнему регистру
-    mp_df['pлощадка_lower'] = mp_df[match_column].str.strip().str.lower()
+    mp_df['площадка_lower'] = mp_df[match_column].str.strip().str.lower()
 
     # Поиск совпадений по названию РК
     matching_rows = mp_df[mp_df['площадка_lower'].str.contains(campaign_name, na=False)]

@@ -468,6 +468,12 @@ for i in range(1, 11):
         st.write(f"Название РК: {custom_campaign_name}")
 
         if mp_df is not None:  # Если медиаплан был загружен
+            daily_impressions, daily_clicks, daily_reach, daily_spend = distribute_mp_data(mp_df, start_date, end_date)
+            st.write(f"Среднее количество показов в день: {daily_impressions:.0f}")
+            st.write(f"Среднее количество кликов в день: {daily_clicks:.0f}")
+            st.write(f"Среднее количество охвата в день: {daily_reach:.0f}")
+            st.write(f"Средний расход с НДС в день: {daily_spend:.2f} руб.")
+
             match_message = check_matching_campaign(mp_df, custom_campaign_name)
             result = analyze_campaign(mp_df, df, report_col_map)
             st.write(match_message)

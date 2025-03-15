@@ -215,29 +215,6 @@ if mp_file:
 
         # Отображаем обработанный медиаплан
         st.dataframe(mp_df)
-            
-# === Объявляем глобальный список для хранения обработанных данных ===
-data_frames = []
-
-# === Функция обработки данных ===
-def process_data(df):
-    col_map = {}
-    for col in df.columns:
-        lower_col = col.lower()
-        if "дата" in lower_col:
-            col_map["дата"] = col
-            df[col] = pd.to_datetime(df[col])  # Преобразуем сразу в datetime
-        elif "показы" in lower_col:
-            col_map["показы"] = col
-        elif "охват" in lower_col:
-            col_map["охват"] = col
-        elif "клики" in lower_col:
-            col_map["клики"] = col
-        elif "расход" in lower_col:
-            col_map["расход с ндс"] = col
-    return df, col_map  
-
-st.write("data_frames:", len(data_frames))
 
 # === Загрузка отчетов ===
 st.header("Загрузите данные (Excel или Google-таблицы)")

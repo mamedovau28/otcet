@@ -226,10 +226,15 @@ def process_data(df):
         lower_col = col.lower()
         if "дата" in lower_col:
             col_map["дата"] = col
+            df[col] = pd.to_datetime(df[col])  # Преобразуем сразу в datetime
         elif "показы" in lower_col:
             col_map["показы"] = col
         elif "охват" in lower_col:
             col_map["охват"] = col
+        elif "клики" in lower_col:
+            col_map["клики"] = col
+        elif "расход" in lower_col:
+            col_map["расход с ндс"] = col
     return df, col_map  
 
 st.write("data_frames:", len(data_frames))
@@ -272,6 +277,7 @@ for i in range(1, 11):
             max_date = df[col_map["дата"]].max().date()
             start_date, end_date = st.date_input("Выберите период", [min_date, max_date], key=f"date_input_{i}")
 
+            # Фильтруем данные только для отчета
             df_filtered = df[
                 (df[col_map["дата"]].dt.date >= start_date) & 
                 (df[col_map["дата"]].dt.date <= end_date)
@@ -298,11 +304,11 @@ for i in range(1, 11):
             st.subheader("Итоговый отчёт")
             st.text_area(f"Отчет по {custom_campaign_name}", report_text, height=100)
 
-            if "дата" in col_map and "показы" in col_map and "охват" in col_map:
-                df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]])
-                df_filtered = df[[col_map["дата"], col_map["показы"], col_map["охват"]]].copy()
-                df_filtered.columns = ["Дата", "Показы", "Охват"]
-                data_frames.append(df_filtered)
+            # Добавляем данные в список только если в них есть нужные колонки
+            if all(k in col_map for k in ["дата", "показы", "охват"]):
+                df_graph = df[[col_map["дата"], col_map["показы"], col_map["охват"]]].copy()
+                df_graph.columns = ["Дата", "Показы", "Охват"]
+                data_frames.append(df_graph)
 
 # === График распределения ===
 if data_frames:
@@ -318,6 +324,5 @@ if data_frames:
     ax.legend()
     ax.grid()
     st.pyplot(fig)
-
 
     st.dataframe(df)

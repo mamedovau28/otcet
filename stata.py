@@ -283,6 +283,26 @@ def check_matching_campaign(mp_df, campaign_name):
         return match_message, saved_matching_rows
     else:
         return "Совпадений по площадке не найдено.", None
+
+def transfer_numeric_data(df, saved_matching_rows):
+    """
+    Переносим числовые данные из saved_matching_rows в df (продублировав их на все строки).
+    """
+    if saved_matching_rows is None or df is None:
+        return df  # Если нет данных, возвращаем df без изменений
+
+    # Находим все числовые столбцы в saved_matching_rows
+    numeric_cols = saved_matching_rows.select_dtypes(include=['number']).columns
+
+    if numeric_cols.empty:
+        print("Нет числовых столбцов для переноса.")
+        return df
+
+    # Берем первую строку и дублируем ее данные в df
+    for col in numeric_cols:
+        df[col] = saved_matching_rows[col].iloc[0]
+
+    return df
     
 st.title("Анализ рекламных кампаний")
 

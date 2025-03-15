@@ -293,8 +293,6 @@ for i in range(1, 11):
             plt.fill_between(df_filtered[col_map["дата"]], 0, df_filtered["охват"], color='g', alpha=0.2)
 
             plt.title(f"Показы и Охват по дням для {custom_campaign_name}")
-            plt.xlabel("Дата")
-            plt.ylabel("Значение")
             plt.xticks(rotation=45)
             plt.grid(True)
             plt.legend()

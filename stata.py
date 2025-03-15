@@ -503,40 +503,39 @@ for i in range(1, 11):
 
             # График показов и охвата
             plt.figure(figsize=(10, 6))
-
             # Линия для фактических показов
             plt.plot(df_filtered["дата_график"], df_filtered["показы"], marker='o', label="Показы", color='b')
-
             # Линия для охвата
             plt.plot(df_filtered["дата_график"], df_filtered["охват"], marker='o', label="Охват", color='g')
-
             # Условие для добавления линии показов по плану, если такой столбец существует
             if "показы план" in df_filtered.columns:
                 plt.plot(df_filtered["дата_график"], df_filtered["показы план"], linestyle='--', color='orange', linewidth=2, label="Показы по плану")
-
             # Заливка фона под линией охвата
             plt.fill_between(df_filtered["дата_график"], 0, df_filtered["охват"], color='g', alpha=0.2)
-
             # Заголовок и оформление графика
             plt.title(f"Показы и Охват по дням для {custom_campaign_name}")
             plt.xticks(rotation=45)
             plt.grid(True)
             plt.legend()
-
             # Отображаем график в Streamlit
             st.pyplot(plt)
-
             # Закрываем текущую фигуру, чтобы избежать лишних окон
             plt.close()
 
             # График кликов
             plt.figure(figsize=(10, 3))
+            # Столбцы для фактических кликов
             plt.bar(df_filtered["дата_график"], df_filtered["клики"], color='r', alpha=0.7, label="Клики")
+            # Условие для добавления столбцов кликов по плану, если такой столбец существует
+            if "клики план" in df_filtered.columns:
+                plt.bar(df_filtered["дата_график"], df_filtered["клики план"], color='orange', alpha=0.5, label="Клики по плану")
             plt.title(f"Клики по дням для {custom_campaign_name}")
             plt.xticks(rotation=45)
             plt.grid(True, axis='y')
             plt.legend()
+            # Отображаем график в Streamlit
             st.pyplot(plt)
+            # Закрываем текущую фигуру, чтобы избежать лишних окон
             plt.close()
 
     st.dataframe(df)

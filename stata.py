@@ -309,6 +309,9 @@ for i in range(1, 11):
             plt.grid(True)
             plt.legend()
             st.pyplot(plt)  # Отображаем график в Streamlit
+
+            # Закрываем текущую фигуру, чтобы избежать лишних окон
+            plt.close()
             
             # Новый график: столбчатая диаграмма для кликов
             plt.figure(figsize=(10, 3))
@@ -321,5 +324,8 @@ for i in range(1, 11):
             plt.grid(True, axis='y')
             plt.legend()
             st.pyplot(plt)  # Отображаем график с кликами в Streamlit
+
+            # Закрываем текущую фигуру, чтобы избежать лишних окон
+            plt.close()
     
     st.dataframe(df)

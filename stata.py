@@ -186,10 +186,33 @@ def check_matching_campaign(mp_df, campaign_name):
     if not matching_rows.empty:
         # Если найдено совпадение
         matched_campaign = matching_rows[match_column].iloc[0]
-        return f"Найдено совпадение по площадке: {matched_campaign}"
+        match_message = f"Найдено совпадение по площадке: {matched_campaign}"
+        
+        # Проверяем наличие столбцов для показов, кликов и охвата
+        required_columns = {
+            "показы": r"\bпоказы?\b",
+            "клики": r"\bклики?\b",
+            "охват": r"\bохват\b"
+        }
+        
+        found_columns = {}
+        for col, regex in required_columns.items():
+            # Ищем столбцы, которые соответствуют регулярному выражению
+            matching_columns = [column for column in mp_df.columns if re.search(regex, column, re.IGNORECASE)]
+            if matching_columns:
+                found_columns[col] = matching_columns
+        
+        # Печатаем результат по найденным столбцам
+        if found_columns:
+            for metric, columns in found_columns.items():
+                st.write(f"Для {metric} найден(ы) столбец(ы): {', '.join(columns)}")
+        else:
+            st.write("Не найдены столбцы с показателями 'показы', 'клики' или 'охват'.")
+        
+        return match_message
     else:
         return "Совпадений по площадке не найдено."
-    
+        
 st.title("Анализ рекламных кампаний")
 
 st.header("Загрузите медиаплан (МП) (только Excel)")

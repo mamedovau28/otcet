@@ -219,7 +219,7 @@ def check_matching_campaign(mp_df, campaign_name):
 st.title("Анализ рекламных кампаний")
 
 st.header("Загрузите медиаплан (МП) (только Excel)")
-mp_file = st.file_uploader("Выберите файл с медиапланом", type=["xlsx"], key="mp_uploader")
+mp_file = st.file_uploader("Загрузите медиаплан (МП)", type=["xlsx"], key="mp_uploader_unique")
 
 mp_df = None
 if mp_file:

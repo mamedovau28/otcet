@@ -219,7 +219,7 @@ def check_matching_campaign(mp_df, campaign_name):
 st.title("Анализ рекламных кампаний")
 
 st.header("Загрузите медиаплан (МП) (только Excel)")
-mp_file = st.file_uploader("Загрузите медиаплан (МП)", type=["xlsx"], key="mp_uploader_unique")
+mp_file = st.file_uploader("Загрузите медиаплан (МП)", type=["xlsx"], key="mp_uploader")
 
 mp_df = None
 if mp_file:
@@ -237,7 +237,7 @@ if mp_file:
 
     # Обработка медиаплана, включая фильтрацию столбцов
     mp_df, mp_col_map = process_mp(mp_df)  # Фильтрация теперь будет применяться здесь
-
+    
     if mp_df is not None:
         st.subheader("Обработанный медиаплан")
 
@@ -308,7 +308,7 @@ for i in range(1, 11):
         if mp_df is not None:  # Если медиаплан был загружен
             match_message = check_matching_campaign(mp_df, custom_campaign_name)
             st.write(match_message)
-
+            
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()

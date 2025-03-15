@@ -4,8 +4,7 @@ import re
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
-# Словарь для сопоставления названий колонок в отчетах
-COLUMN_MAPPING = {
+#COLUMN_MAPPING = {
     "дата": ["дата", "date"],
     "показы": ["показы", "импрессии", "impressions"],
     "клики": ["клики", "clicks"],
@@ -13,19 +12,13 @@ COLUMN_MAPPING = {
     "охват": ["охват", "reach"]
 }
 
-# Словарь для сопоставления названий колонок в МП (рекламные площадки)
 PLATFORM_MAPPING = {
     "площадка": ["площадка", "название сайта", "ресурс"]
 }
 
+
 def standardize_columns(df, mapping):
-    """
-    Приводит названия колонок к стандартному виду по переданному mapping.
-    Все имена столбцов приводятся к нижнему регистру и обрезаются пробелы.
-    Столбцы с заголовком 'nan' удаляются.
-    """
     df.columns = df.columns.astype(str).str.lower().str.strip()
-    # Удаляем столбцы с заголовком 'nan'
     df = df.loc[:, df.columns != 'nan']
     
     column_map = {}
@@ -36,26 +29,12 @@ def standardize_columns(df, mapping):
                 break
                 
     return df.rename(columns=column_map), column_map
-
 def filter_columns(df, is_mp=False):
-    """
-    Оставляет только нужные столбцы в определенном порядке.
-    Фильтрация применяется только к файлам медиаплана (если is_mp=True).
-    - дата (если есть)
-    - площадка (если есть)
-    - показы (если есть)
-    - клики (если есть)
-    - охват (если есть)
-    - расход (если есть)
-    - столбец, содержащий "с учетом НДС и АК" (если есть)
-    """
-    # Если это медиаплан, применяем фильтрацию
     if is_mp:
         required_columns = []
 
-        # Заменяем все символы "-" и значения NaN и None на 0
-        df.replace({"-": 0}, inplace=True)  # Заменяем "-" на 0
-        df.fillna(0, inplace=True)  # Заменяем NaN и None на 0
+        df.replace({"-": 0}, inplace=True)
+        df.fillna(0, inplace=True)
 
         for col in df.columns:
             col_lower = col.lower().strip()
@@ -75,28 +54,15 @@ def filter_columns(df, is_mp=False):
             elif re.search(r".* ндс и .*", col_lower):
                 required_columns.append(col)
                 
-        # Возвращаем DataFrame с колонками в нужном порядке
         return df[required_columns] if required_columns else df
-       
-    # Если это не медиаплан (например, отчет), возвращаем df без изменений
     return df
-    
-# Встраиваем в процесс обработки данных
 def process_data(df):
-    """
-    Обрабатывает загруженные данные (Excel или Google-таблицы):
-      - Стандартизирует имена колонок
-      - Преобразует дату, приводит числовые значения к нужному типу
-      - Рассчитывает расход с НДС и CTR
-      - Очищает ненужные столбцы
-    """
     df, col_map = standardize_columns(df, COLUMN_MAPPING)
     df.fillna(0, inplace=True)
 
     if "дата" in col_map:
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
-    # Приведение к числовому типу
     for key in ["показы", "клики", "охват", "расход"]:
         if key in col_map and not pd.api.types.is_numeric_dtype(df[col_map[key]]):
             df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True)
@@ -105,7 +71,6 @@ def process_data(df):
     if "расход" in col_map:
         df[col_map["расход"]] = df[col_map["расход"]] / 100
 
-    # Корректировка охвата
     if "охват" in col_map and "показы" in col_map:
         def adjust_coverage(row):
             coverage = row[col_map["охват"]]
@@ -115,22 +80,16 @@ def process_data(df):
             return round(coverage)
         df["охват"] = df.apply(adjust_coverage, axis=1)
 
-    # Расчет расхода с НДС и CTR
     if "расход" in col_map:
         df["расход с ндс"] = df[col_map["расход"]] * 1.2
     if "клики" in col_map and "показы" in col_map:
         df["ctr"] = df.apply(lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0, axis=1)
 
-    # Фильтрация нужных столбцов
     df = filter_columns(df)
 
     return df, col_map
-    
+
 def clean_mp(mp_df):
-    """
-    Ищет первую строку, содержащую слово "площадка", "название сайта" или "ресурс" (без учета регистра).
-    Считает эту строку заголовочной и возвращает таблицу, начиная с этой строки.
-    """
     for i, row in mp_df.iterrows():
         if row.astype(str).str.contains("площадка", case=False, na=False).any() or \
            row.astype(str).str.contains("название сайта", case=False, na=False).any() or \
@@ -140,6 +99,7 @@ def clean_mp(mp_df):
             mp_df = mp_df[1:].reset_index(drop=True)
             return mp_df
     return None
+
 
 def process_mp(mp_df):
     """
@@ -211,23 +171,18 @@ def distribute_mp_data(mp_df, start_date, end_date, col_map):
     return daily_impressions, daily_clicks, daily_reach, daily_spend
 
 def analyze_campaign(mp_df, df, col_map):
-    """
-    Анализируем данные медиаплана и отчета.
-    """
-    # Проверяем, были ли загружены оба файла (МП и отчет)
     if mp_df is None or df is None:
         st.error("Ошибка: не загружен один из файлов (МП или отчет).")
         return
 
-    # 1. Проверяем, совпали ли площадки
     matched_platform = False
-    mp_platform_column = find_column(mp_df, ["площадка", "название сайта", "ресурс"])  # Ищем столбцы по площадке
-    report_platform_column = find_column(df, ["площадка", "название сайта", "ресурс"])  # Ищем столбцы по площадке
+    mp_platform_column = find_column(mp_df, ["площадка", "название сайта", "ресурс"])
+    report_platform_column = find_column(df, ["площадка", "название сайта", "ресурс"])
 
     if mp_platform_column and report_platform_column:
         for mp_platform in mp_df[mp_platform_column[0]]:
             for report_platform in df[report_platform_column[0]]:
-                if mp_platform.lower() == report_platform.lower():  # Сравниваем игнорируя регистр
+                if mp_platform.lower() == report_platform.lower():
                     matched_platform = True
                     st.write(f"Найдено совпадение по площадке: {mp_platform}")
                     break
@@ -238,7 +193,6 @@ def analyze_campaign(mp_df, df, col_map):
         st.write("Не найдено совпадений по площадке.")
         return
     
-    # 2. Если совпали площадки, ищем столбцы с показами, кликами, охватом и бюджетом
     found_columns = find_column(mp_df, ["показы", "клики", "охват", "ндс"])
 
     if "показы" not in found_columns or "клики" not in found_columns or "охват" not in found_columns:
@@ -249,7 +203,6 @@ def analyze_campaign(mp_df, df, col_map):
         st.error("Не найден столбец с бюджетом с НДС.")
         return
 
-    # 3. Определяем даты старта и конца рекламной кампании
     start_date, end_date = calculate_campaign_period(df, col_map)
     if start_date is None or end_date is None:
         return
@@ -257,16 +210,13 @@ def analyze_campaign(mp_df, df, col_map):
     st.write(f"Дата начала рекламной кампании: {start_date}")
     st.write(f"Дата окончания рекламной кампании: {end_date}")
 
-    # 4. Равномерно распределяем данные по дням
     daily_impressions, daily_clicks, daily_reach, daily_spend = distribute_mp_data(mp_df, start_date, end_date, found_columns)
 
-    # 5. Выводим средние значения для каждого дня
     st.write(f"Среднее количество показов в день: {daily_impressions:.0f}")
     st.write(f"Среднее количество кликов в день: {daily_clicks:.0f}")
     st.write(f"Среднее количество охвата в день: {daily_reach:.0f}")
     st.write(f"Средний расход с НДС в день: {daily_spend:.2f} руб.")
 
-    # 6. Сравнение с текущими данными отчета
     total_impressions_report = df[col_map["показы"]].sum()
     total_clicks_report = df[col_map["клики"]].sum()
     total_reach_report = df[col_map["охват"]].sum()
@@ -278,13 +228,13 @@ def analyze_campaign(mp_df, df, col_map):
     st.write(f"Охват: {total_reach_report:.0f}")
     st.write(f"Расход с НДС: {total_spend_report:.2f} руб.")
 
-    # 7. Сравниваем данные медиаплана и отчета
     st.write("Сравнение данных медиаплана и отчета:")
 
     st.write(f"Разница в показах: {total_impressions_report - daily_impressions * (end_date - start_date).days:.0f}")
     st.write(f"Разница в кликах: {total_clicks_report - daily_clicks * (end_date - start_date).days:.0f}")
     st.write(f"Разница в охвате: {total_reach_report - daily_reach * (end_date - start_date).days:.0f}")
     st.write(f"Разница в расходе: {total_spend_report - daily_spend * (end_date - start_date).days:.2f} руб.")
+
         
 st.title("Анализ рекламных кампаний")
 

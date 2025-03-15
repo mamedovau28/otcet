@@ -160,60 +160,6 @@ def process_mp(mp_df):
 
     return mp_df, col_map
 
-# Функция для проверки совпадений, игнорируя регистр и окончания
-def check_matching_campaign(mp_df, campaign_name):
-    # Приводим название РК к нижнему регистру
-    campaign_name = campaign_name.strip().lower()
-
-    # Список возможных имен столбцов для площадки
-    possible_columns = ['площадка', 'название сайта', 'ресурс']
-    
-    # Ищем столбец, который может содержать название площадки
-    match_column = None
-    for col in possible_columns:
-        if col in mp_df.columns:
-            match_column = col
-            break  # Прерываем, как только нашли подходящий столбец
-
-    if match_column is None:
-        return "Не найден столбец с названием площадки в медиаплане."
-
-    # Приводим название площадки к нижнему регистру
-    mp_df['pлощадка_lower'] = mp_df[match_column].str.strip().str.lower()
-
-    # Поиск совпадений по названию РК
-    matching_rows = mp_df[mp_df['pлощадка_lower'].str.contains(campaign_name, na=False)]
-    
-    if not matching_rows.empty:
-        # Если найдено совпадение
-        matched_campaign = matching_rows[match_column].iloc[0]
-        match_message = f"Найдено совпадение по площадке: {matched_campaign}"
-        
-        # Проверяем наличие столбцов для показов, кликов и охвата
-        required_columns = {
-            "показы": r"\bпоказы?\b",
-            "клики": r"\bклики?\b",
-            "охват": r"\bохват\b",
-            "бюджет с ндс": r"\b(ндс\s*и)\b"
-        }
-        
-        found_columns = {}
-        for col, regex in required_columns.items():
-            # Ищем столбцы, которые соответствуют регулярному выражению
-            matching_columns = [column for column in mp_df.columns if re.search(regex, column, re.IGNORECASE)]
-            if matching_columns:
-                found_columns[col] = matching_columns
-        
-        # Печатаем результат по найденным столбцам
-        if found_columns:
-            for metric, columns in found_columns.items():
-                st.write(f"Для {metric} найден(ы) столбец(ы): {', '.join(columns)}")
-        else:
-            st.write("Не найдены столбцы с показателями 'показы', 'клики' или 'охват'.")
-        
-        return match_message
-    else:
-        return "Совпадений по площадке не найдено."
 ###
         
 st.title("Анализ рекламных кампаний")

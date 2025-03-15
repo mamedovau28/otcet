@@ -287,7 +287,7 @@ def check_matching_campaign(mp_df, campaign_name):
 def transfer_numeric_data(df, saved_matching_rows, campaign_days):
     """
     Переносим числовые данные из saved_matching_rows в df (продублировав их на все строки),
-    разделяя значения на campaign_days.
+    разделяя значения на campaign_days. Оставляем нулевые строки, если в начале кампании были пустые дни.
     """
     if saved_matching_rows is None or df is None or campaign_days <= 0:
         return df  # Если нет данных или некорректное число дней, возвращаем df без изменений
@@ -299,9 +299,13 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days):
         print("Нет числовых столбцов для переноса.")
         return df
 
-    # Берем первую строку, делим числовые значения на campaign_days и дублируем их в df
+    # Определяем строки, где все числовые данные изначально пустые (NaN или 0)
+    numeric_df = df[numeric_cols]
+    empty_rows_mask = (numeric_df.isna() | (numeric_df == 0)).all(axis=1)
+
+    # Берем первую строку из saved_matching_rows, делим числовые значения на campaign_days
     for col in numeric_cols:
-        df[col] = saved_matching_rows[col].iloc[0] / campaign_days
+        df.loc[~empty_rows_mask, col] = saved_matching_rows[col].iloc[0] / campaign_days
 
     return df
     

@@ -284,49 +284,7 @@ def check_matching_campaign(mp_df, campaign_name):
     else:
         return "Совпадений по площадке не найдено.", None
 
-def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
-    """
-    Переносим числовые данные из saved_matching_rows в df, начиная с start_date,
-    разделяя значения на campaign_days. До start_date оставляем 0.
-    Присваиваем столбцам новые имена в зависимости от их содержимого.
-    Добавляем расчет разницы и процентного отклонения между фактическими и плановыми показателями.
-    """
-    if saved_matching_rows is None or df is None or campaign_days <= 0 or start_date is None:
-        return df  # Если нет данных или некорректное число дней, возвращаем df без изменений
-
-    # Находим все числовые столбцы в saved_matching_rows
-    numeric_cols = saved_matching_rows.select_dtypes(include=['number']).columns
-
-    if numeric_cols.empty:
-        print("Нет числовых столбцов для переноса.")
-        return df
-
-    # Определяем столбец с датами в df (если он есть)
-    date_col = None
-    for col in df.columns:
-        if "дата" in col.lower():
-            date_col = col
-            break
-
-    if date_col is None:
-        print("Не найден столбец с датой в df.")
-        return df
-
-    # Преобразуем столбец даты в формат datetime
-    df[date_col] = pd.to_datetime(df[date_col])
-
-    # Маска для строк, где дата меньше start_date
-    before_start_mask = df[date_col] < start_date
-
-    # Словарь для хранения соответствия плановых и фактических показателей
-    plan_cols = {
-        "показы план": "показы",
-        "клики план": "клики",
-        "охват план": "охват",
-        "бюджет план": "расход с ндс"
-    }
-
-   def process_and_check_differences(df, saved_matching_rows, campaign_days, start_date, existing_cols, existing_plan_cols):
+def process_and_check_differences(df, saved_matching_rows, campaign_days, start_date, existing_cols, existing_plan_cols):
     """
     Обрабатываем данные и вычисляем расхождения между плановыми и фактическими показателями.
     Переносим числовые данные из saved_matching_rows в df, рассчитываем разницу и процентное отклонение.

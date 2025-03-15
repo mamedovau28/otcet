@@ -171,10 +171,14 @@ def find_column(df, keywords):
             found_columns[keyword] = column_matches[0]  # Сохраняем первый найденный столбец
     return found_columns
 
-def calculate_campaign_period(df, col_map):
+def calculate_campaign_period(df, col_map, mp_df=None):
     """
-    Определяем дату начала и конца рекламной кампании.
+    Определяем дату начала и конца рекламной кампании, если загружены и МП, и отчет.
     """
+    if mp_df is None or df is None:
+        st.error("Ошибка: не загружен один из файлов (МП или отчет).")
+        return None, None
+    
     # Находим первую дату с показами больше 10
     df_filtered = df[df[col_map["показы"]] > 10]
     if not df_filtered.empty:
@@ -212,7 +216,7 @@ def distribute_mp_data(mp_df, start_date, end_date, col_map):
 
 def analyze_campaign(mp_df, df, col_map):
     """
-    Анализируем данные медиаплана и отчета.
+    Анализируем данные медиаплана и отчета, если оба файла загружены.
     """
     # Проверяем, были ли загружены оба файла (МП и отчет)
     if mp_df is None or df is None:
@@ -250,7 +254,7 @@ def analyze_campaign(mp_df, df, col_map):
         return
 
     # 3. Определяем даты старта и конца рекламной кампании
-    start_date, end_date = calculate_campaign_period(df, col_map)
+    start_date, end_date = calculate_campaign_period(df, col_map, mp_df)
     if start_date is None or end_date is None:
         return
 
@@ -285,6 +289,7 @@ def analyze_campaign(mp_df, df, col_map):
     st.write(f"Разница в кликах: {total_clicks_report - daily_clicks * (end_date - start_date).days:.0f}")
     st.write(f"Разница в охвате: {total_reach_report - daily_reach * (end_date - start_date).days:.0f}")
     st.write(f"Разница в расходе: {total_spend_report - daily_spend * (end_date - start_date).days:.2f} руб.")
+
         
 st.title("Анализ рекламных кампаний")
 

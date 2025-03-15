@@ -278,7 +278,7 @@ def check_matching_campaign(mp_df, campaign_name):
             if matching_columns:
                 found_columns[col] = matching_columns
         
-        return match_message, saved_matching_rows
+        return saved_matching_rows
     else:
         return "Совпадений по площадке не найдено.", None
     

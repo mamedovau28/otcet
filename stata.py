@@ -278,13 +278,6 @@ def check_matching_campaign(mp_df, campaign_name):
             if matching_columns:
                 found_columns[col] = matching_columns
         
-        # Печатаем результат по найденным столбцам
-        if found_columns:
-            for metric, columns in found_columns.items():
-                st.write(f"Для {metric} найден(ы) столбец(ы): {', '.join(columns)}")
-        else:
-            st.write("Не найдены столбцы с показателями 'показы', 'клики', 'охват' или 'бюджет с НДС'.")
-        
         return match_message, saved_matching_rows
     else:
         return "Совпадений по площадке не найдено.", None

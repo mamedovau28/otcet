@@ -4,7 +4,7 @@ import re
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 
-#COLUMN_MAPPING = {
+COLUMN_MAPPING = {
     "дата": ["дата", "date"],
     "показы": ["показы", "импрессии", "impressions"],
     "клики": ["клики", "clicks"],

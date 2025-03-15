@@ -353,7 +353,40 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
     
     return df
 
+def check_for_differences(df_filtered_valid, existing_cols, existing_plan_cols):
+    warnings = []
+    plan_cols = {
+        "показы план": "показы",
+        "клики план": "клики",
+        "охват план": "охват",
+        "бюджет план": "расход с ндс"
+    }
 
+    for plan_col, fact_col in plan_cols.items():
+        if plan_col in existing_plan_cols and fact_col in existing_cols:
+            # Суммируем значения только там, где "показы" больше 10
+            fact_total = df_filtered_valid[fact_col].sum()
+            plan_total = df_filtered_valid[plan_col].sum()
+
+            if plan_total > 0:
+                diff = fact_total - plan_total
+                diff_percent = (diff / plan_total) * 100
+
+                if abs(diff_percent) > 5:
+                    warnings.append(f"⚠️ Разница по {fact_col}: {diff:+,.0f} ({diff_percent:+.2f}%)")
+
+    return warnings
+
+# Функция для расчета расхождений
+def calculate_differences(existing_cols, existing_plan_cols, summary_fact, summary_plan):
+    differences = {}
+    for fact_col, plan_col in zip(existing_cols, existing_plan_cols):
+        fact_value = summary_fact.get(fact_col, 0)
+        plan_value = summary_plan.get(plan_col, 0)
+        diff = fact_value - plan_value
+        percent_diff = (diff / plan_value * 100) if plan_value != 0 else 0
+        differences[fact_col] = (diff, percent_diff)
+    return differences
     
 st.title("Анализ рекламных кампаний")
 
@@ -445,7 +478,10 @@ for i in range(1, 11):
                 st.error(f"Ошибка при загрузке CSV: {e}")
 
     if df is not None:
+        # Обработка данных
         df, col_map = process_data(df)
+        
+        # Название РК
         custom_campaign_name = st.text_input(
             f"Введите название РК {i} (или оставьте по умолчанию)", 
             value=campaign_name, 
@@ -472,28 +508,35 @@ for i in range(1, 11):
             st.write("Обновленная таблица с расчетами:")
             st.write(saved_matching_rows)  
 
+        # Фильтрация по датам
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
 
-            # Исправлено: date_input возвращает список, его нужно распаковать
+            # Выбор периода
             start_date, end_date = st.date_input(
                 "Выберите период", [min_date, max_date], key=f"date_input_{i}"
             )
 
+            # Фильтрация данных по выбранному диапазону
             df_filtered = df[
                 (df[col_map["дата"]].dt.date >= start_date) & 
                 (df[col_map["дата"]].dt.date <= end_date)
             ]
 
-           # Вычисления итогов (только для строк, где показы > 10)
+            # Фильтрация строк с показами > 10
+            df_filtered_valid = df_filtered[df_filtered["показы"] > 10]
+
+            # Вычисления итогов
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]
             plan_cols = ["показы план", "клики план", "охват план", "бюджет план"]
-            existing_cols = [col for col in needed_cols if col in df_filtered.columns]
-            existing_plan_cols = [col for col in plan_cols if col in df_filtered.columns]
-            df_filtered_valid = df_filtered[df_filtered["показы"] > 10]  # Фильтр для строк с показами > 10
+            existing_cols = [col for col in needed_cols if col in df_filtered_valid.columns]
+            existing_plan_cols = [col for col in plan_cols if col in df_filtered_valid.columns]
+
+            # Суммируем значения
             summary_fact = df_filtered_valid[existing_cols].sum()
             summary_plan = df_filtered_valid[existing_plan_cols].sum()
+
             total_impressions = summary_fact.get("показы", 0)
             total_clicks = summary_fact.get("клики", 0)
             ctr_value = total_clicks / total_impressions if total_impressions > 0 else 0
@@ -501,47 +544,17 @@ for i in range(1, 11):
             total_spend_nds = summary_fact.get("расход с ндс", 0)
 
             # Считаем расхождения
-            differences = {}
-            for fact_col, plan_col in zip(existing_cols, existing_plan_cols):
-                fact_value = summary_fact.get(fact_col, 0)
-                plan_value = summary_plan.get(plan_col, 0)
-                diff = fact_value - plan_value
-                percent_diff = (diff / plan_value * 100) if plan_value != 0 else 0
-                differences[fact_col] = (diff, percent_diff)
+            differences = calculate_differences(existing_cols, existing_plan_cols, summary_fact, summary_plan)
 
             # Форматируем даты
             start_date_str = start_date.strftime("%d.%m.%Y")
             end_date_str = end_date.strftime("%d.%m.%Y")
 
-            # === Проверка расхождений по плану ===
-            plan_cols = {
-                "показы план": "показы",
-                "клики план": "клики",
-                "охват план": "охват",
-                "бюджет план": "расход с ндс"
-            }
-
-            warnings = []
-
-            for plan_col, fact_col in plan_cols.items():
-                if plan_col in existing_plan_cols and fact_col in existing_cols:  # Проверяем, есть ли оба столбца
-                    # Суммируем значения только там, где "показы" больше 10
-                    filtered_data = df_filtered[df_filtered["показы"] > 10]
-                    fact_total = filtered_data[fact_col].sum()
-                    plan_total = filtered_data[plan_col].sum()
-
-                    if plan_total > 0:  # Избегаем деления на 0
-                        diff = fact_total - plan_total
-                        diff_percent = (diff / plan_total) * 100
-
-                        # Если есть расхождение, добавляем предупреждение
-                        if abs(diff_percent) > 5:  # Можно настроить порог чувствительности
-                            warnings.append(f"⚠️ Разница по {fact_col}: {diff:+,.0f} ({diff_percent:+.2f}%)")
-
-            # Если есть предупреждения, выводим их
-            if warnings:
-                st.warning("⚠️ Обнаружены расхождения по данным:\n" + "\n".join(warnings))
-
+            # Вывод расхождений
+            if differences:
+                st.write("Расхождения:")
+                for col, (diff, percent) in differences.items():
+                    st.write(f"{col}: {diff:+,.0f} ({percent:+.2f}%)")
 
             report_text = f"""
     {custom_campaign_name}

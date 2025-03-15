@@ -269,13 +269,17 @@ for i in range(1, 11):
             total_reach = summary.get("охват", 0)
             total_spend_nds = summary.get("расход с ндс", 0)
 
+            # Форматируем даты в нужный формат
+            start_date_str = start_date.strftime("%d.%m.%Y")
+            end_date_str = end_date.strftime("%d.%m.%Y")
+
             report_text = f"""
     {custom_campaign_name}
-    Период: с {start_date} по {end_date}
-    Показы: {total_impressions:.0%}
-    Клики: {total_clicks:.0%}
+    Период: {start_date}-{end_date}
+    Показы: {total_impressions:.0}
+    Клики: {total_clicks:.0}
     CTR: {ctr_value:.2%}
-    Охват: {total_reach:.0%}
+    Охват: {total_reach:.0}
     Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
             """
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")

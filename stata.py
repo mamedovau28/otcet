@@ -221,9 +221,10 @@ def calculate_campaign_period(df):
 
     return start_date, end_date
 
-# Функция для расчета количества дней между датами
+# Функция для вычисления количества рекламных дней
 def calculate_campaign_days(start_date, end_date):
-    return (end_date - start_date).days + 1
+    campaign_days = pd.date_range(start=start_date, end=end_date, freq='D')
+    return len(campaign_days)
 
 # Функция для проверки совпадений, игнорируя регистр и окончания
 def check_matching_campaign(mp_df, campaign_name, start_date=None, end_date=None):

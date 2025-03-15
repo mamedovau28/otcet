@@ -209,19 +209,17 @@ def calculate_campaign_period(df):
         st.error("Нет данных о показах больше 10.")
         return None, None
 
-    # Определяем минимальную дату (она остается неизменной)
+    # Определяем минимальную и максимальную дату
     start_date = df_filtered[date_col].min()
-
     # Определяем последнюю дату с показами
     last_impression_date = df_filtered[date_col].max()
-
     # Определяем конец месяца для этой даты
     end_date = last_impression_date + MonthEnd(0)  # Переносим на конец месяца
 
-    # Рассчитываем количество дней рекламной кампании
+    # Рассчитываем количество дней между началом и концом кампании
     campaign_days = (end_date - start_date).days + 1  # +1, чтобы включить оба дня
 
-    st.write(f"Дата начала: {start_date}, Дата окончания (последний день месяца): {end_date}")
+    st.write(f"Дата начала: {start_date}, дата окончания: {end_date}")
 
     return start_date, end_date
     

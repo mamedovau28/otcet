@@ -220,7 +220,7 @@ def calculate_campaign_period(df):
     # Рассчитываем количество дней между началом и концом кампании
     campaign_days = (end_date - start_date).days + 1  # +1, чтобы включить оба дня
 
-    st.write(f"Дата начала: {start_date}, дата окончания: {end_date}")
+    st.write(campaign_days)
 
     return start_date, end_date
     

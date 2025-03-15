@@ -199,10 +199,6 @@ def calculate_campaign_period(df):
 
     st.write(f"Столбец с датой: {date_col}, Столбец с показами: {impressions_col}")
 
-    # Проверим, что данные в этих столбцах не пустые и имеют корректный тип
-    st.write("Первые строки данных с датами:", df[date_col].head())
-    st.write("Первые строки данных с показами:", df[impressions_col].head())
-
     # Преобразуем столбец с датами в формат datetime
     df[date_col] = pd.to_datetime(df[date_col], errors='coerce')  # Если ошибка, заменяется на NaT
 
@@ -216,6 +212,9 @@ def calculate_campaign_period(df):
     # Определяем минимальную и максимальную дату
     start_date = df_filtered[date_col].min()
     end_date = df_filtered[date_col].max()
+
+    # Рассчитываем количество дней между началом и концом кампании
+    campaign_days = (end_date - start_date).days + 1  # +1, чтобы включить оба дня
 
     st.write(f"Дата начала: {start_date}, дата окончания: {end_date}")
 
@@ -372,6 +371,15 @@ for i in range(1, 11):
         st.write(f"Название РК: {custom_campaign_name}")
 
         if mp_df is not None:  # Если медиаплан был загружен
+            # Определяем даты начала и конца кампании
+            start_date, end_date = calculate_campaign_period(mp_df)
+
+            # Проверяем, успешно ли определены даты
+            if start_date is None or end_date is None:
+                st.error("Не удалось определить даты рекламной кампании.")
+            else:
+                st.write(f"Дата начала РК: {start_date}, Дата окончания РК: {end_date}")
+            
             match_message, saved_matching_rows = check_matching_campaign(mp_df, custom_campaign_name)
     
             # Если есть совпадения по названию рекламной кампании

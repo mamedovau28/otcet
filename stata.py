@@ -345,8 +345,8 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
             df.rename(columns={col: "охват план"}, inplace=True)
 
     # Рассчитываем разницу и процентное отклонение для показателей
-    for plan_col, fact_col in comparison_mapping.items():
-        if plan_col in df.columns and fact_col in df.columns:
+    for plan_col, fact_col in plan_cols.items():
+        if plan_col in df_filtered.columns and fact_col in df_filtered.columns:
             df[f"разница {fact_col}"] = df[fact_col] - df[plan_col]
             df[f"% отклонение {fact_col}"] = (df[f"разница {fact_col}"] / df[plan_col]) * 100
             df[f"% отклонение {fact_col}"].replace([float("inf"), float("-inf"), None], 0, inplace=True)

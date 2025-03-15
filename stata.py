@@ -284,6 +284,74 @@ def check_matching_campaign(mp_df, campaign_name):
     else:
         return "Совпадений по площадке не найдено.", None
 
+def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
+    """
+    Переносим числовые данные из saved_matching_rows в df, начиная с start_date,
+    разделяя значения на campaign_days. До start_date оставляем 0.
+    Присваиваем столбцам новые имена в зависимости от их содержимого.
+    Добавляем расчет разницы и процентного отклонения между фактическими и плановыми показателями.
+    """
+    if saved_matching_rows is None or df is None or campaign_days <= 0 or start_date is None:
+        return df  # Если нет данных или некорректное число дней, возвращаем df без изменений
+
+    # Находим все числовые столбцы в saved_matching_rows
+    numeric_cols = saved_matching_rows.select_dtypes(include=['number']).columns
+
+    if numeric_cols.empty:
+        print("Нет числовых столбцов для переноса.")
+        return df
+
+    # Определяем столбец с датами в df (если он есть)
+    date_col = None
+    for col in df.columns:
+        if "дата" in col.lower():
+            date_col = col
+            break
+
+    if date_col is None:
+        print("Не найден столбец с датой в df.")
+        return df
+
+    # Преобразуем столбец даты в формат datetime
+    df[date_col] = pd.to_datetime(df[date_col])
+
+    # Маска для строк, где дата меньше start_date
+    before_start_mask = df[date_col] < start_date
+
+    # Словарь для хранения соответствия плановых и фактических показателей
+    comparison_mapping = {
+        "показы план": "показы",
+        "клики план": "клики",
+        "охват план": "охват",
+        "бюджет план": "расход"
+    }
+
+    # Для каждого числового столбца находим, как его назвать, и дублируем данные
+    for col in numeric_cols:
+        # Делим значения на campaign_days
+        df[col] = saved_matching_rows[col].iloc[0] / campaign_days
+        
+        # Применяем маску для строк до start_date, где значения будут равны 0
+        df.loc[before_start_mask, col] = 0
+
+        # Переименовываем столбцы в зависимости от их содержания
+        if "бюджет" in col.lower() and "ндс" in col.lower():
+            df.rename(columns={col: "бюджет план"}, inplace=True)
+        elif "показы" in col.lower() and "план" in col.lower():
+            df.rename(columns={col: "показы план"}, inplace=True)
+        elif "клики" in col.lower() and "план" in col.lower():
+            df.rename(columns={col: "клики план"}, inplace=True)
+        elif "охват" in col.lower():
+            df.rename(columns={col: "охват план"}, inplace=True)
+
+    # Рассчитываем разницу и процентное отклонение для показателей
+    for plan_col, fact_col in comparison_mapping.items():
+        if plan_col in df.columns and fact_col in df.columns:
+            df[f"разница {fact_col}"] = df[fact_col] - df[plan_col]
+            df[f"% отклонение {fact_col}"] = (df[f"разница {fact_col}"] / df[plan_col]) * 100
+            df[f"% отклонение {fact_col}"].replace([float("inf"), float("-inf"), None], 0, inplace=True)
+    
+    return df
 
 
 st.title("Анализ рекламных кампаний")

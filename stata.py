@@ -258,6 +258,17 @@ for i in range(1, 11):
                 (df[col_map["дата"]].dt.date <= end_date)
             ]
 
+            # Построим график по дням
+            plt.figure(figsize=(10, 6))
+            plt.plot(df_filtered[col_map["дата"]], df_filtered["показы"], marker='o', label="Показы")
+            plt.title(f"Показы по дням для {custom_campaign_name}")
+            plt.xlabel("Дата")
+            plt.ylabel("Показы")
+            plt.xticks(rotation=45)
+            plt.grid(True)
+            st.pyplot(plt)  # Отображаем график в Streamlit
+
+            # Результаты по выбранному периоду
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]
             existing_cols = [col for col in needed_cols if col in df_filtered.columns]
             summary = df_filtered[existing_cols].sum()

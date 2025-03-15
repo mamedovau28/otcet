@@ -380,15 +380,15 @@ for i in range(1, 11):
                 last_campaign_day = pd.to_datetime(f"{end_date.year}-{end_date.month}-01") + pd.DateOffset(months=1) - pd.DateOffset(days=1)
     
                 # Добавляем новые столбцы в таблицу
-                df['first_campaign_day'] = first_campaign_day
-                df['last_campaign_day'] = last_campaign_day
+                saved_matching_rows['first_campaign_day'] = first_campaign_day
+                saved_matching_rows['last_campaign_day'] = last_campaign_day
     
                 # Выводим таблицу с новыми столбцами
                 st.write("Таблица с добавленными датами:")
-                st.write(df)
+                st.write(saved_matching_rows)
     
                 # Сохраняем таблицу в новый файл
-                df.to_csv("updated_campaign_data.csv", index=False)
+                saved_matching_rows.to_csv("updated_campaign_data.csv", index=False)
                 st.write("Таблица успешно сохранена.")
             else:
                 st.write("Не удалось определить период РК.")

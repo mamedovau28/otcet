@@ -260,7 +260,7 @@ for i in range(1, 11):
 
             # Построим график по дням
             plt.figure(figsize=(10, 6))
-            
+
             # Линия для показов
             plt.plot(df_filtered[col_map["дата"]], df_filtered["показы"], marker='o', label="Показы", color='b')
 
@@ -270,7 +270,10 @@ for i in range(1, 11):
             # Заливка фона под линией охвата
             plt.fill_between(df_filtered[col_map["дата"]], 0, df_filtered["охват"], color='g', alpha=0.2)
 
-            plt.title(f"Показы и Охват по дням для {custom_campaign_name}")
+            # Столбики для кликов
+            plt.bar(df_filtered[col_map["дата"]], df_filtered["клики"], label="Клики", color='r', alpha=0.6)
+
+            plt.title(f"Показы, Охват и Клики по дням для {custom_campaign_name}")
             plt.xlabel("Дата")
             plt.ylabel("Значение")
             plt.xticks(rotation=45)

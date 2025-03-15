@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import re
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 
 # Словарь для сопоставления названий колонок в отчетах
 COLUMN_MAPPING = {

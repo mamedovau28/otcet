@@ -524,7 +524,7 @@ for i in range(1, 11):
             warnings = []
 
             for plan_col, fact_col in plan_cols.items():
-                if plan_col in df_filtered.columns and fact_col in df_filtered.columns:
+                if plan_col in existing_plan_cols and fact_col in existing_cols:  # Проверяем, есть ли оба столбца
                     # Суммируем значения только там, где "показы" больше 10
                     filtered_data = df_filtered[df_filtered["показы"] > 10]
                     fact_total = filtered_data[fact_col].sum()
@@ -541,6 +541,7 @@ for i in range(1, 11):
             # Если есть предупреждения, выводим их
             if warnings:
                 st.warning("⚠️ Обнаружены расхождения по данным:\n" + "\n".join(warnings))
+
 
             report_text = f"""
     {custom_campaign_name}

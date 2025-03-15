@@ -158,6 +158,25 @@ def process_mp(mp_df):
     mp_df = filter_columns(mp_df, is_mp=True)
 
     return mp_df, col_map
+
+# Функция для проверки совпадений, игнорируя регистр и окончания
+def check_matching_campaign(mp_df, campaign_name):
+    # Приводим названия к нижнему регистру и убираем окончания (например, пробелы, числа и прочее)
+    campaign_name = campaign_name.strip().lower()
+    
+    # Предположим, что в медиаплане есть столбец "площадка"
+    if 'площадка' in mp_df.columns:
+        mp_df['площадка_lower'] = mp_df['площадка'].str.strip().str.lower()  # Приводим к нижнему регистру
+        matching_rows = mp_df[mp_df['площадка_lower'].str.contains(campaign_name)]
+        
+        if not matching_rows.empty:
+            # Если найдено совпадение
+            matched_campaign = matching_rows['площадка'].iloc[0]
+            return f"Найдено совпадение по площадке: {matched_campaign}"
+        else:
+            return "Совпадений не найдено."
+    else:
+        return "Столбец 'площадка' не найден в медиаплане."
     
 st.title("Анализ рекламных кампаний")
 

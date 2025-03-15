@@ -320,6 +320,10 @@ for i in range(1, 11):
                 (df[col_map["дата"]].dt.date <= end_date)
             ]
 
+            if mp_df is not None:  # Если медиаплан был загружен
+                match_message = check_matching_campaign(mp_df, custom_campaign_name)
+                st.write(match_message)
+
             # Результаты по выбранному периоду
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]
             existing_cols = [col for col in needed_cols if col in df_filtered.columns]

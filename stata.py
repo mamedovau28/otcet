@@ -1,8 +1,6 @@
 import streamlit as st
 import pandas as pd
 import re
-import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
 
 # Словарь для сопоставления названий колонок в отчетах
 COLUMN_MAPPING = {
@@ -77,7 +75,13 @@ def filter_columns(df, is_mp=False):
                 
         # Возвращаем DataFrame с колонками в нужном порядке
         return df[required_columns] if required_columns else df
-       
+        
+        # Удаляем строки, где значение в столбце "показы" равно 0
+        if "показы" in df.columns:
+            df = df[df["показы"] != 0]
+
+        return df
+
     # Если это не медиаплан (например, отчет), возвращаем df без изменений
     return df
     
@@ -159,169 +163,9 @@ def process_mp(mp_df):
     mp_df = filter_columns(mp_df, is_mp=True)
 
     return mp_df, col_map
-
-###
-        
+    
 st.title("Анализ рекламных кампаний")
 
-st.header("Загрузите медиаплан (МП) (только Excel)")
-mp_file = st.file_uploader("Загрузите медиаплан (МП)", type=["xlsx"])
-
-mp_df = None
-if mp_file:
-    # Чтение Excel файла
-    xls = pd.ExcelFile(mp_file)
-    sheet_names = xls.sheet_names
-    if len(sheet_names) > 1:
-        sheet_name = st.selectbox("Выберите лист с медиапланом", sheet_names)
-    else:
-        sheet_name = sheet_names[0]
-    
-    # Загрузка данных с выбранного листа
-    mp_df = pd.read_excel(mp_file, sheet_name=sheet_name)
-    st.write("Медиаплан загружен:", sheet_name)
-
-    # Обработка медиаплана, включая фильтрацию столбцов
-    mp_df, mp_col_map = process_mp(mp_df)  # Фильтрация теперь будет применяться здесь
-    
-    if mp_df is not None:
-        st.subheader("Обработанный медиаплан")
-
-        # Убираем дубликаты столбцов
-        mp_df = mp_df.loc[:, ~mp_df.columns.duplicated()].copy()
-
-        # Фильтрация столбцов с нужным порядком и удаление строк с нулевыми показами
-        mp_df = filter_columns(mp_df, is_mp=True)  # Применяем фильтрацию для медиаплана
-
-        # Находим столбец, который содержит "показы" в своем названии
-        show_column = [col for col in mp_df.columns if "показы" in col.lower()]
-
-        if show_column:
-            # Преобразуем столбец в числовой тип
-            mp_df[show_column[0]] = pd.to_numeric(mp_df[show_column[0]], errors="coerce")  # Преобразуем в числовой тип, NaN для ошибок
-
-            # Удаляем строки, где показы = 0 или NaN
-            mp_df = mp_df[mp_df[show_column[0]] > 0]  # Оставляем только строки с показами больше 0
-
-        # Ищем столбец, который содержит "НДС"
-        ndc_column = [col for col in mp_df.columns if "ндс" in col.lower()]
-
-        # Если такой столбец найден, приводим его к числовому типу и удаляем строки с нулями
-        if ndc_column:
-            ndc_column_name = ndc_column[0]  # Получаем имя столбца
-            mp_df[ndc_column_name] = pd.to_numeric(mp_df[ndc_column_name], errors="coerce")  # Преобразуем в числовой тип, NaN для ошибок
-            # Удаляем строки, где значение в столбце НДС = 0 или NaN
-            mp_df = mp_df[mp_df[ndc_column_name] > 0]  # Оставляем только строки с показателями больше 0
-
-        # Оставляем только те столбцы, где количество ненулевых значений больше 1
-        mp_df = mp_df.loc[:, (mp_df != 0).sum(axis=0) > 1]
-
-        # Отображаем обработанный медиаплан
-        st.dataframe(mp_df)
-
-# === Загрузка отчетов ===
-st.header("Загрузите данные (Excel или Google-таблицы)")
-
-for i in range(1, 11):
-    upload_option = st.selectbox(f"Способ загрузки файла {i}", ["Не выбрано", "Загрузить Excel-файл", "Ссылка на Google-таблицу"], key=f"upload_option_{i}")
-
-    df = None
-    campaign_name = None
-
-    if upload_option == "Загрузить Excel-файл":
-        uploaded_file = st.file_uploader(f"Загрузите Excel-файл {i}", type=["xlsx"], key=f"file_uploader_{i}")
-        if uploaded_file:
-            df = pd.read_excel(uploaded_file)
-            campaign_name = uploaded_file.name.split(".")[0]
-
-    elif upload_option == "Ссылка на Google-таблицу":
-        google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")
-        if google_sheet_url:
-            try:
-                sheet_id = google_sheet_url.split("/d/")[1].split("/")[0]
-                gid = google_sheet_url.split("gid=")[1].split("&")[0] if "gid=" in google_sheet_url else "0"
-                csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
-                df = pd.read_csv(csv_url)
-                campaign_name = f"Загрузка {i}"
-            except Exception as e:
-                st.error(f"Ошибка при загрузке CSV: {e}")
-
-    if df is not None:
-        df, col_map = process_data(df)
-        custom_campaign_name = st.text_input(f"Введите название РК {i} (или оставьте по умолчанию)", value=campaign_name, key=f"campaign_name_{i}")
-        st.write(f"Название РК: {custom_campaign_name}")
-
-        if mp_df is not None:  # Если медиаплан был загружен
-            match_message = check_matching_campaign(mp_df, custom_campaign_name)
-            st.write(match_message)
-            
-        if "дата" in col_map:
-            min_date = df[col_map["дата"]].min().date()
-            max_date = df[col_map["дата"]].max().date()
-            start_date, end_date = st.date_input("Выберите период", [min_date, max_date], key=f"date_input_{i}")
-
-            df_filtered = df[
-                (df[col_map["дата"]].dt.date >= start_date) & 
-                (df[col_map["дата"]].dt.date <= end_date)
-            ]
-
-            # Результаты по выбранному периоду
-            needed_cols = ["показы", "клики", "охват", "расход с ндс"]
-            existing_cols = [col for col in needed_cols if col in df_filtered.columns]
-            summary = df_filtered[existing_cols].sum()
-
-            total_impressions = summary.get("показы", 0)
-            total_clicks = summary.get("клики", 0)
-            ctr_value = total_clicks / total_impressions if total_impressions > 0 else 0
-            total_reach = summary.get("охват", 0)
-            total_spend_nds = summary.get("расход с ндс", 0)
-
-            # Форматируем даты в нужный формат
-            start_date_str = start_date.strftime("%d.%m.%Y")
-            end_date_str = end_date.strftime("%d.%m.%Y")
-
-            report_text = f"""
-    {custom_campaign_name}
-    Период: {start_date_str}-{end_date_str}
-    Показы: {total_impressions:.0f}
-    Клики: {total_clicks:.0f}
-    CTR: {ctr_value:.2%}
-    Охват: {total_reach:.0f}
-    Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
-            """
-            st.subheader(f"Итоговый отчёт {custom_campaign_name}")
-            st.text_area(report_text, report_text, height=100)
-            
-            # Построим график по дням
-            plt.figure(figsize=(10, 6))
-            
-            # Линия для показов
-            plt.plot(df_filtered[col_map["дата"]], df_filtered["показы"], marker='o', label="Показы", color='b')
-
-            # Линия для охвата
-            plt.plot(df_filtered[col_map["дата"]], df_filtered["охват"], marker='o', label="Охват", color='g')
-
-            # Заливка фона под линией охвата
-            plt.fill_between(df_filtered[col_map["дата"]], 0, df_filtered["охват"], color='g', alpha=0.2)
-
-            plt.title(f"Показы и Охват по дням для {custom_campaign_name}")
-            plt.xticks(rotation=45)
-            plt.grid(True)
-            plt.legend()
-            st.pyplot(plt)  # Отображаем график в Streamlit
-            
-            # Новый график: столбчатая диаграмма для кликов
-            plt.figure(figsize=(10, 3))
-
-            # Столбцы для кликов
-            plt.bar(df_filtered[col_map["дата"]], df_filtered["клики"], color='r', alpha=0.7, label="Клики")
-
-            plt.title(f"Клики по дням для {custom_campaign_name}")
-            plt.xticks(rotation=45)
-            plt.grid(True, axis='y')
-            plt.legend()
-            st.pyplot(plt)  # Отображаем график с кликами в Streamlit
-        
 st.header("Загрузите медиаплан (МП) (только Excel)")
 mp_file = st.file_uploader("Выберите файл с медиапланом", type=["xlsx"], key="mp_uploader")
 
@@ -351,31 +195,24 @@ if mp_file:
         # Фильтрация столбцов с нужным порядком и удаление строк с нулевыми показами
         mp_df = filter_columns(mp_df, is_mp=True)  # Применяем фильтрацию для медиаплана
 
-        # Находим столбец, который содержит "показы" в своем названии
-        show_column = [col for col in mp_df.columns if "показы" in col.lower()]
+        # Приводим столбец "показы" к числовому типу, если это нужно
+        if "показы" in mp_df.columns:
+            mp_df["показы"] = pd.to_numeric(mp_df["показы"], errors="coerce")  # Преобразуем в числовой тип, NaN для ошибок
 
-        if show_column:
-            # Преобразуем столбец в числовой тип
-            mp_df[show_column[0]] = pd.to_numeric(mp_df[show_column[0]], errors="coerce")  # Преобразуем в числовой тип, NaN для ошибок
-
-            # Удаляем строки, где показы = 0 или NaN
-            mp_df = mp_df[mp_df[show_column[0]] > 0]  # Оставляем только строки с показами больше 0
-
-        # Ищем столбец, который содержит "НДС"
-        ndc_column = [col for col in mp_df.columns if "ндс" in col.lower()]
-
-        # Если такой столбец найден, приводим его к числовому типу и удаляем строки с нулями
-        if ndc_column:
-            ndc_column_name = ndc_column[0]  # Получаем имя столбца
-            mp_df[ndc_column_name] = pd.to_numeric(mp_df[ndc_column_name], errors="coerce")  # Преобразуем в числовой тип, NaN для ошибок
-            # Удаляем строки, где значение в столбце НДС = 0 или NaN
-            mp_df = mp_df[mp_df[ndc_column_name] > 0]  # Оставляем только строки с показателями больше 0
-
-        # Оставляем только те столбцы, где количество ненулевых значений больше 1
-        mp_df = mp_df.loc[:, (mp_df != 0).sum(axis=0) > 1]
+            # Удаляем строки, где показы = 0
+            mp_df = mp_df[mp_df["показы"] != 0]
 
         # Отображаем обработанный медиаплан
         st.dataframe(mp_df)
+
+        # Извлечение рекламных площадок
+        if "площадка" in mp_col_map:
+            platforms = mp_df[mp_col_map["площадка"]].dropna().unique()
+            st.subheader("Найденные рекламные площадки:")
+            st.write(platforms)
+        else:
+            st.error("Не найден столбец с рекламными площадками.")
+
 
 # === Загрузка отчетов ===
 st.header("Загрузите данные (Excel или Google-таблицы)")
@@ -419,7 +256,6 @@ for i in range(1, 11):
                 (df[col_map["дата"]].dt.date <= end_date)
             ]
 
-            # Результаты по выбранному периоду
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]
             existing_cols = [col for col in needed_cols if col in df_filtered.columns]
             summary = df_filtered[existing_cols].sum()
@@ -430,50 +266,15 @@ for i in range(1, 11):
             total_reach = summary.get("охват", 0)
             total_spend_nds = summary.get("расход с ндс", 0)
 
-            # Форматируем даты в нужный формат
-            start_date_str = start_date.strftime("%d.%m.%Y")
-            end_date_str = end_date.strftime("%d.%m.%Y")
-
             report_text = f"""
-    {custom_campaign_name}
-    Период: {start_date_str}-{end_date_str}
-    Показы: {total_impressions:.0f}
-    Клики: {total_clicks:.0f}
-    CTR: {ctr_value:.2%}
-    Охват: {total_reach:.0f}
-    Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
+            {custom_campaign_name}
+        Показы: {format(total_impressions, ",.0f").replace(",", " ")}
+        Клики: {format(total_clicks, ",.0f").replace(",", " ")}
+        CTR: {ctr_value:.2%}
+        Охват: {format(total_reach, ",.0f").replace(",", " ")}
+        Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
             """
-            st.subheader(f"Итоговый отчёт {custom_campaign_name}")
+            st.subheader("Итоговый отчёт")
             st.text_area(report_text, report_text, height=100)
-            
-            # Построим график по дням
-            plt.figure(figsize=(10, 6))
-            
-            # Линия для показов
-            plt.plot(df_filtered[col_map["дата"]], df_filtered["показы"], marker='o', label="Показы", color='b')
 
-            # Линия для охвата
-            plt.plot(df_filtered[col_map["дата"]], df_filtered["охват"], marker='o', label="Охват", color='g')
-
-            # Заливка фона под линией охвата
-            plt.fill_between(df_filtered[col_map["дата"]], 0, df_filtered["охват"], color='g', alpha=0.2)
-
-            plt.title(f"Показы и Охват по дням для {custom_campaign_name}")
-            plt.xticks(rotation=45)
-            plt.grid(True)
-            plt.legend()
-            st.pyplot(plt)  # Отображаем график в Streamlit
-            
-            # Новый график: столбчатая диаграмма для кликов
-            plt.figure(figsize=(10, 3))
-
-            # Столбцы для кликов
-            plt.bar(df_filtered[col_map["дата"]], df_filtered["клики"], color='r', alpha=0.7, label="Клики")
-
-            plt.title(f"Клики по дням для {custom_campaign_name}")
-            plt.xticks(rotation=45)
-            plt.grid(True, axis='y')
-            plt.legend()
-            st.pyplot(plt)  # Отображаем график с кликами в Streamlit
-    
-    st.dataframe(df)
+        st.dataframe(df)

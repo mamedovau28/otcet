@@ -376,7 +376,6 @@ for i in range(1, 11):
             plt.legend()
             st.pyplot(plt)  # Отображаем график с кликами в Streamlit
         
-st.title("Анализ рекламных кампаний")
 st.header("Загрузите медиаплан (МП) (только Excel)")
 mp_file = st.file_uploader("Выберите файл с медиапланом", type=["xlsx"], key="mp_uploader")
 
@@ -473,10 +472,6 @@ for i in range(1, 11):
                 (df[col_map["дата"]].dt.date >= start_date) & 
                 (df[col_map["дата"]].dt.date <= end_date)
             ]
-
-            if mp_df is not None:  # Если медиаплан был загружен
-                match_message = check_matching_campaign(mp_df, custom_campaign_name)
-                st.write(match_message)
 
             # Результаты по выбранному периоду
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]

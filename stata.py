@@ -3,6 +3,7 @@ import pandas as pd
 import re
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+from pandas.tseries.offsets import MonthEnd
 
 # Словарь для сопоставления названий колонок в отчетах
 COLUMN_MAPPING = {

@@ -230,7 +230,7 @@ def process_data(df):
             col_map["показы"] = col
         elif "охват" in lower_col:
             col_map["охват"] = col
-    return df, col_map  # Перенес return за пределы цикла
+    return df, col_map  
 
 st.write("data_frames:", len(data_frames))
 

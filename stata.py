@@ -276,12 +276,6 @@ def analyze_campaign(mp_df, df):
     total_reach_report = df_filtered[reach_col].sum() if reach_col else 0
     total_spend_report = df_filtered[spend_col].sum() if spend_col else 0
 
-    st.write("Итоговые данные по отчету:")
-    st.write(f"- Показы: {total_impressions_report:.0f}")
-    st.write(f"- Клики: {total_clicks_report:.0f}")
-    st.write(f"- Охват: {total_reach_report:.0f}")
-    st.write(f"- Расход с НДС: {total_spend_report:.2f} руб.")
-
     # Сравнение данных
     total_days = (end_date - start_date).days + 1
 
@@ -512,4 +506,11 @@ for i in range(1, 11):
 
             # Закрываем текущую фигуру после отображения
             plt.close()
+
+    st.write("Итоговые данные по отчету:")
+    st.write(f"- Показы: {total_impressions_report:.0f}")
+    st.write(f"- Клики: {total_clicks_report:.0f}")
+    st.write(f"- Охват: {total_reach_report:.0f}")
+    st.write(f"- Расход с НДС: {total_spend_report:.2f} руб.")
+    
     st.dataframe(df)

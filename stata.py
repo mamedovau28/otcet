@@ -513,6 +513,35 @@ for i in range(1, 11):
             start_date_str = start_date.strftime("%d.%m.%Y")
             end_date_str = end_date.strftime("%d.%m.%Y")
 
+            # === Проверка расхождений по плану ===
+            plan_cols = {
+                "показы план": "показы",
+                "клики план": "клики",
+                "охват план": "охват",
+                "бюджет план": "расход с ндс"
+            }
+
+            warnings = []
+
+            for plan_col, fact_col in plan_cols.items():
+                if plan_col in df_filtered.columns and fact_col in df_filtered.columns:
+                    # Суммируем значения только там, где "показы" больше 10
+                    filtered_data = df_filtered[df_filtered["показы"] > 10]
+                    fact_total = filtered_data[fact_col].sum()
+                    plan_total = filtered_data[plan_col].sum()
+
+                    if plan_total > 0:  # Избегаем деления на 0
+                        diff = fact_total - plan_total
+                        diff_percent = (diff / plan_total) * 100
+
+                        # Если есть расхождение, добавляем предупреждение
+                        if abs(diff_percent) > 5:  # Можно настроить порог чувствительности
+                            warnings.append(f"⚠️ Разница по {fact_col}: {diff:+,.0f} ({diff_percent:+.2f}%)")
+
+            # Если есть предупреждения, выводим их
+            if warnings:
+            st.warning("⚠️ Обнаружены расхождения по данным:\n" + "\n".join(warnings))
+
             report_text = f"""
     {custom_campaign_name}
     Период: {start_date_str}-{end_date_str}

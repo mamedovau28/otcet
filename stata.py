@@ -465,10 +465,6 @@ for i in range(1, 11):
         custom_campaign_name = st.text_input(f"Введите название РК {i} (или оставьте по умолчанию)", value=campaign_name, key=f"campaign_name_{i}")
         st.write(f"Название РК: {custom_campaign_name}")
 
-        if mp_df is not None:  # Если медиаплан был загружен
-            match_message = check_matching_campaign(mp_df, custom_campaign_name)
-            st.write(match_message)
-
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
@@ -535,5 +531,9 @@ for i in range(1, 11):
             plt.grid(True, axis='y')
             plt.legend()
             st.pyplot(plt)  # Отображаем график с кликами в Streamlit
+            
+            if mp_df is not None:  # Если медиаплан был загружен
+                match_message = check_matching_campaign(mp_df, custom_campaign_name)
+                st.write(match_message)
     
     st.dataframe(df)

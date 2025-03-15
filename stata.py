@@ -270,14 +270,15 @@ for i in range(1, 11):
             total_spend_nds = summary.get("расход с ндс", 0)
 
             report_text = f"""
+    {df_filtered}
     {custom_campaign_name}
-    Показы: {total_impressions}
-    Клики: {total_clicks}
+    Показы: {total_impressions:.0%}
+    Клики: {total_clicks:.0%}
     CTR: {ctr_value:.2%}
-    Охват: {total_reach}
+    Охват: {total_reach:.0%}
     Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
             """
-            st.subheader("Итоговый отчёт")
+            st.subheader("Итоговый отчёт "{custom_campaign_name})
             st.text_area(report_text, report_text, height=100)
             
             # Построим график по дням

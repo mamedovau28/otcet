@@ -319,7 +319,47 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
     before_start_mask = df[date_col] < start_date
 
     # Словарь для хранения соответствия плановых и фактических показателей
-    comparison_mapping = {
+    plan_cols = {
+        "показы план": "показы",
+        "клики план": "клики",
+        "охват план": "охват",
+        "бюджет план": "расход с ндс"
+    }
+
+   def process_and_check_differences(df, saved_matching_rows, campaign_days, start_date, existing_cols, existing_plan_cols):
+    """
+    Обрабатываем данные и вычисляем расхождения между плановыми и фактическими показателями.
+    Переносим числовые данные из saved_matching_rows в df, рассчитываем разницу и процентное отклонение.
+    """
+    if saved_matching_rows is None or df is None or campaign_days <= 0 or start_date is None:
+        return df, []  # Если нет данных или некорректное число дней, возвращаем df без изменений и пустой список предупреждений
+
+    # Находим все числовые столбцы в saved_matching_rows
+    numeric_cols = saved_matching_rows.select_dtypes(include=['number']).columns
+
+    if numeric_cols.empty:
+        print("Нет числовых столбцов для переноса.")
+        return df, []
+
+    # Определяем столбец с датами в df (если он есть)
+    date_col = None
+    for col in df.columns:
+        if "дата" in col.lower():
+            date_col = col
+            break
+
+    if date_col is None:
+        print("Не найден столбец с датой в df.")
+        return df, []
+
+    # Преобразуем столбец даты в формат datetime
+    df[date_col] = pd.to_datetime(df[date_col])
+
+    # Маска для строк, где дата меньше start_date
+    before_start_mask = df[date_col] < start_date
+
+    # Словарь для хранения соответствия плановых и фактических показателей
+    plan_cols = {
         "показы план": "показы",
         "клики план": "клики",
         "охват план": "охват",
@@ -345,26 +385,11 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
             df.rename(columns={col: "охват план"}, inplace=True)
 
     # Рассчитываем разницу и процентное отклонение для показателей
-    for plan_col, fact_col in plan_cols.items():
-        if plan_col in df_filtered.columns and fact_col in df_filtered.columns:
-            df[f"разница {fact_col}"] = df[fact_col] - df[plan_col]
-            df[f"% отклонение {fact_col}"] = (df[f"разница {fact_col}"] / df[plan_col]) * 100
-            df[f"% отклонение {fact_col}"].replace([float("inf"), float("-inf"), None], 0, inplace=True)
-    
-    return df
-
-def check_for_differences(df_filtered_valid, existing_cols, existing_plan_cols):
     warnings = []
-    plan_cols = {
-        "показы план": "показы",
-        "клики план": "клики",
-        "охват план": "охват",
-        "бюджет план": "расход с ндс"
-    }
-
     for plan_col, fact_col in plan_cols.items():
         if plan_col in existing_plan_cols and fact_col in existing_cols:
             # Суммируем значения только там, где "показы" больше 10
+            df_filtered_valid = df[df["показы"] > 10]
             fact_total = df_filtered_valid[fact_col].sum()
             plan_total = df_filtered_valid[plan_col].sum()
 
@@ -375,7 +400,8 @@ def check_for_differences(df_filtered_valid, existing_cols, existing_plan_cols):
                 if abs(diff_percent) > 5:
                     warnings.append(f"⚠️ Разница по {fact_col}: {diff:+,.0f} ({diff_percent:+.2f}%)")
 
-    return warnings
+    return df, warnings
+
 
 # Функция для расчета расхождений
 def calculate_differences(existing_cols, existing_plan_cols, summary_fact, summary_plan):

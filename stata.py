@@ -278,7 +278,7 @@ for i in range(1, 11):
     Охват: {total_reach:.0%}
     Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
             """
-            st.subheader("Итоговый отчёт "{custom_campaign_name})
+            st.subheader(f"Итоговый отчёт {custom_campaign_name}")
             st.text_area(report_text, report_text, height=100)
             
             # Построим график по дням

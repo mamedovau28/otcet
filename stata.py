@@ -220,9 +220,21 @@ def calculate_campaign_period(df):
     st.write(f"Дата начала: {start_date}, дата окончания: {end_date}")
 
     return start_date, end_date
+
+# Функция для вычисления количества рекламных дней
+def calculate_campaign_days(start_date, end_date):
+    campaign_days = pd.date_range(start=start_date, end=end_date, freq='D')
+    return len(campaign_days)
     
+# Функция для поиска столбцов по ключевым словам
+def find_column_by_keywords(df, keywords):
+    for col in df.columns:
+        if any(re.search(keyword, col, re.IGNORECASE) for keyword in keywords):
+            return col
+    return None
+
 # Функция для проверки совпадений, игнорируя регистр и окончания
-def check_matching_campaign(mp_df, campaign_name):
+def check_matching_campaign(mp_df, campaign_name, start_date, end_date):
     # Приводим название РК к нижнему регистру
     campaign_name = campaign_name.strip().lower()
 
@@ -254,7 +266,7 @@ def check_matching_campaign(mp_df, campaign_name):
         saved_matching_rows = matching_rows.copy()
         saved_matching_rows['площадка_lower'] = saved_matching_rows[match_column].str.strip().str.lower()
 
-        # Сохраняем таблицу как CSV (по желанию можно заменить на Excel или другой формат)
+        # Сохраняем таблицу как CSV
         saved_matching_rows.to_csv("saved_matching_rows.csv", index=False)
         
         st.write("Таблица с найденными данными сохранена в файл 'saved_matching_rows.csv'.")
@@ -274,9 +286,141 @@ def check_matching_campaign(mp_df, campaign_name):
             if matching_columns:
                 found_columns[col] = matching_columns
         
+        # 1. Посчитаем количество рекламных дней
+        total_campaign_days = calculate_campaign_days(start_date, end_date)
+        
+        # 2. Ищем столбцы для показов, кликов, охвата и бюджета с использованием ключевых слов
+        impressions_col = find_column_by_keywords(mp_df, ['показ', 'impression'])
+        clicks_col = find_column_by_keywords(mp_df, ['клик', 'click'])
+        reach_col = find_column_by_keywords(mp_df, ['охват', 'reach'])
+        budget_col = find_column_by_keywords(mp_df, ['бюджет', 'budget'])
+
+        # Проверяем, что столбцы найдены
+        if not impressions_col or not clicks_col or not reach_col or not budget_col:
+            st.error("Не найдены столбцы 'показы', 'клики', 'охват' или 'бюджет'.")
+            return None
+
+        # 3. Получаем суммы показов, кликов, охвата и бюджета
+        total_impressions = saved_matching_rows[impressions_col].sum()
+        total_clicks = saved_matching_rows[clicks_col].sum()
+        total_reach = saved_matching_rows[reach_col].sum()
+        total_budget = saved_matching_rows[budget_col].sum()
+
+        # 4. Делим на количество рекламных дней
+        daily_impressions = total_impressions / total_campaign_days
+        daily_clicks = total_clicks / total_campaign_days
+        daily_reach = total_reach / total_campaign_days
+        daily_budget = total_budget / total_campaign_days
+
+        # 5. Добавляем новые столбцы в таблицу
+        saved_matching_rows['показы_план'] = daily_impressions
+        saved_matching_rows['клики_план'] = daily_clicks
+        saved_matching_rows['охват_план'] = daily_reach
+        saved_matching_rows['бюджет_план'] = daily_budget
+
+        # Выводим обновленную таблицу
+        st.write("Обновленная таблица с расчетами:")
+        st.write(saved_matching_rows)
+
+        # Сохраняем обновленную таблицу в файл
+        saved_matching_rows.to_csv("updated_campaign_data.csv", index=False)
+        st.write("Таблица успешно сохранена в файл 'updated_campaign_data.csv'.")
+        
         return saved_matching_rows
     else:
         return "Совпадений по площадке не найдено.", None
+
+# Основной код для обработки данных и расчетов
+def process_campaign_data(mp_df, start_date, end_date):
+    if start_date and end_date:
+        # 1. Посчитаем количество рекламных дней
+        total_campaign_days = calculate_campaign_days(start_date, end_date)
+
+        # 2. Находим общие значения по показам, кликам, охвату и бюджету
+        impressions_col = next((col for col in mp_df.columns if "показ" in col.lower()), None)
+        clicks_col = next((col for col in mp_df.columns if "клик" in col.lower()), None)
+        reach_col = next((col for col in mp_df.columns if "охват" in col.lower()), None)
+        budget_col = next((col for col in mp_df.columns if "бюджет" in col.lower()), None)
+
+        # Проверяем, что столбцы найдены
+        if not impressions_col or not clicks_col or not reach_col or not budget_col:
+            st.error("Не найдены столбцы 'показы', 'клики', 'охват' или 'бюджет'.")
+            return None
+
+        # 3. Получаем суммы показов, кликов, охвата и бюджета
+        total_impressions = mp_df[impressions_col].sum()
+        total_clicks = mp_df[clicks_col].sum()
+        total_reach = mp_df[reach_col].sum()
+        total_budget = mp_df[budget_col].sum()
+
+        # 4. Делим на количество рекламных дней
+        daily_impressions = total_impressions / total_campaign_days
+        daily_clicks = total_clicks / total_campaign_days
+        daily_reach = total_reach / total_campaign_days
+        daily_budget = total_budget / total_campaign_days
+
+        # 5. Добавляем новые столбцы в таблицу
+        mp_df['показы_план'] = daily_impressions
+        mp_df['клики_план'] = daily_clicks
+        mp_df['охват_план'] = daily_reach
+        mp_df['бюджет_план'] = daily_budget
+
+        # Выводим обновленную таблицу
+        st.write("Обновленная таблица с расчетами:")
+        st.write(mp_df)
+
+        # Сохраняем обновленную таблицу в файл
+        mp_df.to_csv("updated_campaign_data.csv", index=False)
+        st.write("Таблица успешно сохранена в файл 'updated_campaign_data.csv'.")
+    else:
+        st.write("Не удалось определить период РК.")
+
+
+# Основной код
+def process_campaign_data(mp_df, start_date, end_date):
+    if start_date and end_date:
+        # 1. Посчитаем количество рекламных дней
+        total_campaign_days = calculate_campaign_days(start_date, end_date)
+
+        # 2. Находим общие значения по показам, кликам, охвату и бюджету
+        impressions_col = next((col for col in mp_df.columns if "показ" in col.lower()), None)
+        clicks_col = next((col for col in mp_df.columns if "клик" in col.lower()), None)
+        reach_col = next((col for col in mp_df.columns if "охват" in col.lower()), None)
+        budget_col = next((col for col in mp_df.columns if "бюджет" in col.lower()), None)
+
+        # Проверяем, что столбцы найдены
+        if not impressions_col or not clicks_col or not reach_col or not budget_col:
+            st.error("Не найдены столбцы 'показы', 'клики', 'охват' или 'бюджет'.")
+            return None
+
+        # 3. Получаем суммы показов, кликов, охвата и бюджета
+        total_impressions = mp_df[impressions_col].sum()
+        total_clicks = mp_df[clicks_col].sum()
+        total_reach = mp_df[reach_col].sum()
+        total_budget = mp_df[budget_col].sum()
+
+        # 4. Делим на количество рекламных дней
+        daily_impressions = total_impressions / total_campaign_days
+        daily_clicks = total_clicks / total_campaign_days
+        daily_reach = total_reach / total_campaign_days
+        daily_budget = total_budget / total_campaign_days
+
+        # 5. Добавляем новые столбцы в таблицу
+        mp_df['показы_план'] = daily_impressions
+        mp_df['клики_план'] = daily_clicks
+        mp_df['охват_план'] = daily_reach
+        mp_df['бюджет_план'] = daily_budget
+
+        # Выводим обновленную таблицу
+        st.write("Обновленная таблица с расчетами:")
+        st.write(mp_df)
+
+        # Сохраняем обновленную таблицу в файл
+        mp_df.to_csv("updated_campaign_data.csv", index=False)
+        st.write("Таблица успешно сохранена в файл 'updated_campaign_data.csv'.")
+    else:
+        st.write("Не удалось определить период РК.")
+
     
 st.title("Анализ рекламных кампаний")
 

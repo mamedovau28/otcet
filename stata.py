@@ -486,16 +486,28 @@ for i in range(1, 11):
                 (df[col_map["дата"]].dt.date <= end_date)
             ]
 
-            # Вычисления итогов
+           # Вычисления итогов (только для строк, где показы > 10)
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]
+            plan_cols = ["показы план", "клики план", "охват план", "бюджет план"]
             existing_cols = [col for col in needed_cols if col in df_filtered.columns]
-            summary = df_filtered[existing_cols].sum()
-
-            total_impressions = summary.get("показы", 0)
-            total_clicks = summary.get("клики", 0)
+            existing_plan_cols = [col for col in plan_cols if col in df_filtered.columns]
+            df_filtered_valid = df_filtered[df_filtered["показы"] > 10]  # Фильтр для строк с показами > 10
+            summary_fact = df_filtered_valid[existing_cols].sum()
+            summary_plan = df_filtered_valid[existing_plan_cols].sum()
+            total_impressions = summary_fact.get("показы", 0)
+            total_clicks = summary_fact.get("клики", 0)
             ctr_value = total_clicks / total_impressions if total_impressions > 0 else 0
-            total_reach = summary.get("охват", 0)
-            total_spend_nds = summary.get("расход с ндс", 0)
+            total_reach = summary_fact.get("охват", 0)
+            total_spend_nds = summary_fact.get("расход с ндс", 0)
+
+            # Считаем расхождения
+            differences = {}
+            for fact_col, plan_col in zip(existing_cols, existing_plan_cols):
+                fact_value = summary_fact.get(fact_col, 0)
+                plan_value = summary_plan.get(plan_col, 0)
+                diff = fact_value - plan_value
+                percent_diff = (diff / plan_value * 100) if plan_value != 0 else 0
+                differences[fact_col] = (diff, percent_diff)
 
             # Форматируем даты
             start_date_str = start_date.strftime("%d.%m.%Y")
@@ -512,6 +524,11 @@ for i in range(1, 11):
             """
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")
             st.text_area(report_text, report_text, height=100)
+
+            # Вывод предупреждений о расхождениях
+            for metric, (diff, percent_diff) in differences.items():
+                if abs(percent_diff) > 5:  # Порог для предупреждений
+                    st.warning(f"Внимание! Отклонение по {metric}: {diff:.0f} ({percent_diff:.2f}%)")
 
             # Исправлено: Приводим дату к строке для графиков
             df_filtered["дата_график"] = df_filtered[col_map["дата"]].dt.strftime('%d-%m')

@@ -431,7 +431,7 @@ for i in range(1, 11):
             campaign_days = (end_date - start_date).days + 1
 
             if saved_matching_rows is not None:  # Если есть совпадения
-                df = transfer_numeric_data(df, saved_matching_rows, campaign_days)  # Переносим данные в df
+                df = transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date)  # Переносим данные в df
         
         # Вывод сообщений о совпадениях
         if isinstance(match_message, str):

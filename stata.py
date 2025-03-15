@@ -227,7 +227,7 @@ if mp_file:
     xls = pd.ExcelFile(mp_file)
     sheet_names = xls.sheet_names
     if len(sheet_names) > 1:
-        sheet_name = st.selectbox("Выберите лист с медиапланом", sheet_names, key="mp_sheet_select")
+        sheet_name = st.selectbox("Выберите лист с медиапланом", sheet_names)
     else:
         sheet_name = sheet_names[0]
     

@@ -259,27 +259,37 @@ for i in range(1, 11):
             ]
 
             # Построим график по дням
-            plt.figure(figsize=(10, 6))
+            fig, ax1 = plt.subplots(figsize=(10, 6))
 
             # Линия для показов
-            plt.plot(df_filtered[col_map["дата"]], df_filtered["показы"], marker='o', label="Показы", color='b')
+            ax1.plot(df_filtered[col_map["дата"]], df_filtered["показы"], marker='o', label="Показы", color='b')
+            ax1.set_xlabel("Дата")
+            ax1.set_ylabel("Показы / Охват", color='b')
+            ax1.tick_params(axis='y', labelcolor='b')
 
             # Линия для охвата
-            plt.plot(df_filtered[col_map["дата"]], df_filtered["охват"], marker='o', label="Охват", color='g')
+            ax1.plot(df_filtered[col_map["дата"]], df_filtered["охват"], marker='o', label="Охват", color='g')
 
             # Заливка фона под линией охвата
-            plt.fill_between(df_filtered[col_map["дата"]], 0, df_filtered["охват"], color='g', alpha=0.2)
+            ax1.fill_between(df_filtered[col_map["дата"]], 0, df_filtered["охват"], color='g', alpha=0.2)
 
-            # Столбики для кликов
-            plt.bar(df_filtered[col_map["дата"]], df_filtered["клики"], label="Клики", color='r', alpha=0.6)
+            # Вторичная ось для кликов
+            ax2 = ax1.twinx()  # Создаем вторичную ось
+            ax2.bar(df_filtered[col_map["дата"]], df_filtered["клики"], label="Клики", color='r', alpha=0.6)
+            ax2.set_ylabel("Клики", color='r')
+            ax2.tick_params(axis='y', labelcolor='r')
 
-            plt.title(f"Показы, Охват и Клики по дням для {custom_campaign_name}")
-            plt.xlabel("Дата")
-            plt.ylabel("Значение")
-            plt.xticks(rotation=45)
+            # Настроим отображение
+            ax1.set_title(f"Показы, Охват и Клики по дням для {custom_campaign_name}")
+            ax1.set_xlabel("Дата")
+            ax1.set_ylabel("Показы / Охват", color='b')
+            ax1.tick_params(axis='y', labelcolor='b')
+            ax2.set_ylabel("Клики", color='r')
+            ax2.tick_params(axis='y', labelcolor='r')
+
+            fig.tight_layout()  # Для лучшего размещения элементов
             plt.grid(True)
-            plt.legend()
-            st.pyplot(plt)  # Отображаем график в Streamlit
+            st.pyplot(fig)  # Отображаем график в Streamlit
 
             # Результаты по выбранному периоду
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]

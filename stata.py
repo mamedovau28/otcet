@@ -189,6 +189,7 @@ def calculate_campaign_period(df):
     """
     Определяем дату начала и конца рекламной кампании.
     """
+    # Ищем столбцы "дата" и "показ" независимо от регистра
     date_col = next((col for col in df.columns if "дата" in col.lower()), None)
     impressions_col = next((col for col in df.columns if "показ" in col.lower()), None)
 
@@ -196,16 +197,30 @@ def calculate_campaign_period(df):
         st.error("Не найдены столбцы 'дата' или 'показы'.")
         return None, None
 
+    st.write(f"Столбец с датой: {date_col}, Столбец с показами: {impressions_col}")
+
+    # Проверим, что данные в этих столбцах не пустые и имеют корректный тип
+    st.write("Первые строки данных с датами:", df[date_col].head())
+    st.write("Первые строки данных с показами:", df[impressions_col].head())
+
+    # Преобразуем столбец с датами в формат datetime
+    df[date_col] = pd.to_datetime(df[date_col], errors='coerce')  # Если ошибка, заменяется на NaT
+
+    # Фильтруем только те строки, где показы больше 10
     df_filtered = df[df[impressions_col] > 10]
 
     if df_filtered.empty:
         st.error("Нет данных о показах больше 10.")
         return None, None
 
+    # Определяем минимальную и максимальную дату
     start_date = df_filtered[date_col].min()
     end_date = df_filtered[date_col].max()
 
+    st.write(f"Дата начала: {start_date}, дата окончания: {end_date}")
+
     return start_date, end_date
+
 
 def distribute_mp_data(mp_df, start_date, end_date):
     """

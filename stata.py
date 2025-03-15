@@ -289,6 +289,7 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
     Переносим числовые данные из saved_matching_rows в df, начиная с start_date,
     разделяя значения на campaign_days. До start_date оставляем 0.
     Присваиваем столбцам новые имена в зависимости от их содержимого.
+    Добавляем расчет разницы и процентного отклонения между фактическими и плановыми показателями.
     """
     if saved_matching_rows is None or df is None or campaign_days <= 0 or start_date is None:
         return df  # Если нет данных или некорректное число дней, возвращаем df без изменений
@@ -317,6 +318,14 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
     # Маска для строк, где дата меньше start_date
     before_start_mask = df[date_col] < start_date
 
+    # Словарь для хранения соответствия плановых и фактических показателей
+    plan_cols = {
+        "показы план": "показы",
+        "клики план": "клики",
+        "охват план": "охват",
+        "бюджет план": "расход с ндс"
+    }
+
     # Для каждого числового столбца находим, как его назвать, и дублируем данные
     for col in numeric_cols:
         # Делим значения на campaign_days
@@ -335,6 +344,27 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
         elif "охват" in col.lower():
             df.rename(columns={col: "охват план"}, inplace=True)
         # Можно добавить дополнительные условия по другим столбцам, если нужно
+
+    # Теперь нужно вычислить расхождения между фактическими и плановыми показателями
+    warnings = []
+
+    # Рассчитываем разницу и процентное отклонение для показателей
+    for plan_col, fact_col in plan_cols.items():
+        if plan_col in df.columns and fact_col in df.columns:
+            fact_total = df[fact_col].sum()
+            plan_total = df[plan_col].sum()
+
+            if plan_total > 0:
+                diff = fact_total - plan_total
+                diff_percent = (diff / plan_total) * 100
+
+                # Выводим расхождения, если процентное отклонение больше 3%
+                if abs(diff_percent) > 3:
+                    warnings.append(f"⚠️ Разница по {fact_col}: {diff:+,.0f} ({diff_percent:+.2f}%)")
+
+    if warnings:
+        for warning in warnings:
+            print(warning)  # Или используйте st.warning(warning) для отображения на веб-интерфейсе
 
     return df
 

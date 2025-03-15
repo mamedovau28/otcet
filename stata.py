@@ -371,6 +371,27 @@ for i in range(1, 11):
         if mp_df is not None:  # Если медиаплан был загружен
             match_message = check_matching_campaign(mp_df, custom_campaign_name)
             st.write(match_message)
+            # Используем функцию для получения дат
+            start_date, end_date = calculate_campaign_period(df)
+
+            if start_date and end_date:
+                # Определяем первый день РК (start_date) и последний день месяца из даты окончания
+                first_campaign_day = start_date
+                last_campaign_day = pd.to_datetime(f"{end_date.year}-{end_date.month}-01") + pd.DateOffset(months=1) - pd.DateOffset(days=1)
+    
+                # Добавляем новые столбцы в таблицу
+                df['first_campaign_day'] = first_campaign_day
+                df['last_campaign_day'] = last_campaign_day
+    
+                # Выводим таблицу с новыми столбцами
+                st.write("Таблица с добавленными датами:")
+                st.write(df)
+    
+                # Сохраняем таблицу в новый файл
+                df.to_csv("updated_campaign_data.csv", index=False)
+                st.write("Таблица успешно сохранена.")
+            else:
+                st.write("Не удалось определить период РК.")
             
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()

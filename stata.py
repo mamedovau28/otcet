@@ -294,7 +294,7 @@ for i in range(1, 11):
             
             # Построим график по дням
             plt.figure(figsize=(10, 6))
-            
+
             # Линия для показов
             plt.plot(df_filtered[col_map["дата"]], df_filtered["показы"], marker='o', label="Показы", color='b')
 
@@ -312,7 +312,7 @@ for i in range(1, 11):
 
             # Закрываем текущую фигуру, чтобы избежать лишних окон
             plt.close()
-            
+
             # Новый график: столбчатая диаграмма для кликов
             plt.figure(figsize=(10, 3))
 
@@ -325,7 +325,7 @@ for i in range(1, 11):
             plt.legend()
             st.pyplot(plt)  # Отображаем график с кликами в Streamlit
 
-            # Закрываем текущую фигуру, чтобы избежать лишних окон
+            # Закрываем текущую фигуру после отображения
             plt.close()
     
     st.dataframe(df)

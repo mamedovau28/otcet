@@ -303,6 +303,9 @@ for i in range(1, 11):
             plt.legend()
             st.pyplot(plt)  # Отображаем график в Streamlit
             
+            # Новый график: столбчатая диаграмма для кликов
+            plt.figure(figsize=(10, 6))
+
             # Столбцы для кликов
             plt.bar(df_filtered[col_map["дата"]], df_filtered["клики"], color='r', alpha=0.7, label="Клики")
 

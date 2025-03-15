@@ -540,7 +540,7 @@ for i in range(1, 11):
 
             # Если есть предупреждения, выводим их
             if warnings:
-            st.warning("⚠️ Обнаружены расхождения по данным:\n" + "\n".join(warnings))
+                st.warning("⚠️ Обнаружены расхождения по данным:\n" + "\n".join(warnings))
 
             report_text = f"""
     {custom_campaign_name}

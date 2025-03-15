@@ -374,25 +374,6 @@ for i in range(1, 11):
             # Используем функцию для получения дат
             start_date, end_date = calculate_campaign_period(df)
 
-            if start_date and end_date:
-                # Определяем первый день РК (start_date) и последний день месяца из даты окончания
-                first_campaign_day = start_date
-                last_campaign_day = pd.to_datetime(f"{end_date.year}-{end_date.month}-01") + pd.DateOffset(months=1) - pd.DateOffset(days=1)
-    
-                # Добавляем новые столбцы в таблицу
-                saved_matching_rows['first_campaign_day'] = first_campaign_day
-                saved_matching_rows['last_campaign_day'] = last_campaign_day
-    
-                # Выводим таблицу с новыми столбцами
-                st.write("Таблица с добавленными датами:")
-                st.write(saved_matching_rows)
-    
-                # Сохраняем таблицу в новый файл
-                saved_matching_rows.to_csv("updated_campaign_data.csv", index=False)
-                st.write("Таблица успешно сохранена.")
-            else:
-                st.write("Не удалось определить период РК.")
-            
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()

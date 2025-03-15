@@ -221,11 +221,18 @@ def calculate_campaign_period(df):
 
     return start_date, end_date
 
-# Функция для вычисления количества рекламных дней
 def calculate_campaign_days(start_date, end_date):
+    # Преобразуем строки в объекты типа datetime, если они еще не таковы
+    start_date = pd.to_datetime(start_date, errors='coerce')  # Если ошибка, то вернется NaT
+    end_date = pd.to_datetime(end_date, errors='coerce')  # Если ошибка, то вернется NaT
+
+    if pd.isna(start_date) or pd.isna(end_date):
+        raise ValueError("Некорректные значения дат.")
+
+    # Генерация диапазона дат
     campaign_days = pd.date_range(start=start_date, end=end_date, freq='D')
     return len(campaign_days)
-
+    
 # Функция для проверки совпадений, игнорируя регистр и окончания
 def check_matching_campaign(mp_df, campaign_name, start_date=None, end_date=None):
     # Приводим название РК к нижнему регистру

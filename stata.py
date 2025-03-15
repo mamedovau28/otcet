@@ -279,10 +279,10 @@ for i in range(1, 11):
             st.text_area(report_text, report_text, height=100)
 
             if "дата" in col_map and "показы" in col_map and "охват" in col_map:
-            df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]])
-            df_filtered = df[[col_map["дата"], col_map["показы"], col_map["охват"]]].copy()
-            df_filtered.columns = ["Дата", "Показы", "Охват"]
-            data_frames.append(df_filtered)
+                df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]])
+                df_filtered = df[[col_map["дата"], col_map["показы"], col_map["охват"]]].copy()
+                df_filtered.columns = ["Дата", "Показы", "Охват"]
+                data_frames.append(df_filtered)
 
 def process_data(df):
     col_map = {}

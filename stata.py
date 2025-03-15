@@ -218,26 +218,12 @@ if mp_file:
 # === Загрузка отчетов ===
 st.header("Загрузите данные (Excel или Google-таблицы)")
 
-def process_data(df):
-    col_map = {}
-    for col in df.columns:
-        lower_col = col.lower()
-        if "дата" in lower_col:
-            col_map["дата"] = col
-        elif "показы" in lower_col:
-            col_map["показы"] = col
-        elif "охват" in lower_col:
-            col_map["охват"] = col
-    return df, col_map
-
-data_frames = []
-
 for i in range(1, 11):
     upload_option = st.selectbox(f"Способ загрузки файла {i}", ["Не выбрано", "Загрузить Excel-файл", "Ссылка на Google-таблицу"], key=f"upload_option_{i}")
-    
+
     df = None
     campaign_name = None
-    
+
     if upload_option == "Загрузить Excel-файл":
         uploaded_file = st.file_uploader(f"Загрузите Excel-файл {i}", type=["xlsx"], key=f"file_uploader_{i}")
         if uploaded_file:
@@ -258,27 +244,59 @@ for i in range(1, 11):
 
     if df is not None:
         df, col_map = process_data(df)
-        
-        if "дата" in col_map and "показы" in col_map and "охват" in col_map:
+        custom_campaign_name = st.text_input(f"Введите название РК {i} (или оставьте по умолчанию)", value=campaign_name, key=f"campaign_name_{i}")
+        st.write(f"Название РК: {custom_campaign_name}")
+
+        if "дата" in col_map:
+            min_date = df[col_map["дата"]].min().date()
+            max_date = df[col_map["дата"]].max().date()
+            start_date, end_date = st.date_input("Выберите период", [min_date, max_date], key=f"date_input_{i}")
+
+            df_filtered = df[
+                (df[col_map["дата"]].dt.date >= start_date) & 
+                (df[col_map["дата"]].dt.date <= end_date)
+            ]
+
+            needed_cols = ["показы", "клики", "охват", "расход с ндс"]
+            existing_cols = [col for col in needed_cols if col in df_filtered.columns]
+            summary = df_filtered[existing_cols].sum()
+
+            total_impressions = summary.get("показы", 0)
+            total_clicks = summary.get("клики", 0)
+            ctr_value = total_clicks / total_impressions if total_impressions > 0 else 0
+            total_reach = summary.get("охват", 0)
+            total_spend_nds = summary.get("расход с ндс", 0)
+
+            report_text = f"""
+            {custom_campaign_name}
+    Показы: {total_impressions}
+    Клики: {total_clicks}
+    CTR: {ctr_value:.2%}
+    Охват: {total_reach}
+    Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
+            """
+            st.subheader("Итоговый отчёт")
+            st.text_area(report_text, report_text, height=100)
+
+            if "дата" in col_map and "показы" in col_map and "охват" in col_map:
             df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]])
             df_filtered = df[[col_map["дата"], col_map["показы"], col_map["охват"]]].copy()
             df_filtered.columns = ["Дата", "Показы", "Охват"]
             data_frames.append(df_filtered)
 
-if data_frames:
-    combined_df = pd.concat(data_frames)
-    combined_df = combined_df.groupby("Дата").sum().reset_index()
-    
-    st.subheader("Распределение показов и охватов по дням")
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(combined_df["Дата"], combined_df["Показы"], label="Показы", marker='o')
-    ax.plot(combined_df["Дата"], combined_df["Охват"], label="Охват", marker='s')
-    ax.set_xlabel("Дата")
-    ax.set_ylabel("Количество")
-    ax.legend()
-    ax.grid()
-    st.pyplot(fig)
-else:
-    st.error("Не найдены необходимые столбцы (дата, показы, охват)")
+def process_data(df):
+    col_map = {}
+    for col in df.columns:
+        lower_col = col.lower()
+        if "дата" in lower_col:
+            col_map["дата"] = col
+        elif "показы" in lower_col:
+            col_map["показы"] = col
+        elif "охват" in lower_col:
+            col_map["охват"] = col
+    return df, col_map
+
+data_frames = []
+
 
     st.dataframe(df)

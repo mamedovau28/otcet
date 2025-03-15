@@ -436,6 +436,11 @@ for i in range(1, 11):
         custom_campaign_name = st.text_input(f"Введите название РК {i} (или оставьте по умолчанию)", value=campaign_name, key=f"campaign_name_{i}")
         st.write(f"Название РК: {custom_campaign_name}")
 
+        # Проверяем, что все переменные корректны
+        st.write(f"mp_df: {mp_df.head() if mp_df is not None else 'None'}")
+        st.write(f"df: {df.head() if df is not None else 'None'}")
+        st.write(f"col_map: {col_map if col_map is not None else 'None'}")
+
         if mp_df is not None:  # Если медиаплан был загружен
             match_message = check_matching_campaign(mp_df, custom_campaign_name)
             # Анализируем кампанию

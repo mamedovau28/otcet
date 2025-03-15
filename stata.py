@@ -258,39 +258,6 @@ for i in range(1, 11):
                 (df[col_map["дата"]].dt.date <= end_date)
             ]
 
-            # Построим график по дням
-            fig, ax1 = plt.subplots(figsize=(10, 6))
-
-            # Линия для показов
-            ax1.plot(df_filtered[col_map["дата"]], df_filtered["показы"], marker='o', label="Показы", color='b')
-            ax1.set_xlabel("Дата")
-            ax1.set_ylabel("Показы / Охват", color='b')
-            ax1.tick_params(axis='y', labelcolor='b')
-
-            # Линия для охвата
-            ax1.plot(df_filtered[col_map["дата"]], df_filtered["охват"], marker='o', label="Охват", color='g')
-
-            # Заливка фона под линией охвата
-            ax1.fill_between(df_filtered[col_map["дата"]], 0, df_filtered["охват"], color='g', alpha=0.2)
-
-            # Вторичная ось для кликов
-            ax2 = ax1.twinx()  # Создаем вторичную ось
-            ax2.bar(df_filtered[col_map["дата"]], df_filtered["клики"], label="Клики", color='r', alpha=0.6)
-            ax2.set_ylabel("Клики", color='r')
-            ax2.tick_params(axis='y', labelcolor='r')
-
-            # Настроим отображение
-            ax1.set_title(f"Показы, Охват и Клики по дням для {custom_campaign_name}")
-            ax1.set_xlabel("Дата")
-            ax1.set_ylabel("Показы / Охват", color='b')
-            ax1.tick_params(axis='y', labelcolor='b')
-            ax2.set_ylabel("Клики", color='r')
-            ax2.tick_params(axis='y', labelcolor='r')
-
-            fig.tight_layout()  # Для лучшего размещения элементов
-            plt.grid(True)
-            st.pyplot(fig)  # Отображаем график в Streamlit
-
             # Результаты по выбранному периоду
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]
             existing_cols = [col for col in needed_cols if col in df_filtered.columns]
@@ -312,5 +279,26 @@ for i in range(1, 11):
             """
             st.subheader("Итоговый отчёт")
             st.text_area(report_text, report_text, height=100)
+            
+            # Построим график по дням
+            plt.figure(figsize=(10, 6))
+            
+            # Линия для показов
+            plt.plot(df_filtered[col_map["дата"]], df_filtered["показы"], marker='o', label="Показы", color='b')
 
+            # Линия для охвата
+            plt.plot(df_filtered[col_map["дата"]], df_filtered["охват"], marker='o', label="Охват", color='g')
+
+            # Заливка фона под линией охвата
+            plt.fill_between(df_filtered[col_map["дата"]], 0, df_filtered["охват"], color='g', alpha=0.2)
+
+            plt.title(f"Показы и Охват по дням для {custom_campaign_name}")
+            plt.xlabel("Дата")
+            plt.ylabel("Значение")
+            plt.xticks(rotation=45)
+            plt.grid(True)
+            plt.legend()
+            st.pyplot(plt)  # Отображаем график в Streamlit
+
+    
     st.dataframe(df)

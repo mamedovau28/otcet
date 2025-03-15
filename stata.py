@@ -237,18 +237,6 @@ def calculate_campaign_days(start_date, end_date):
     campaign_days = pd.date_range(start=start_date, end=end_date, freq='D')
     return len(campaign_days)
     
-# Функция для расчета количества дней между датами
-def calculate_campaign_days(start_date, end_date):
-    try:
-        start_date = pd.to_datetime(start_date)
-        end_date = pd.to_datetime(end_date)
-        if start_date > end_date:
-            raise ValueError("Дата начала не может быть позже даты окончания.")
-        campaign_days = pd.date_range(start=start_date, end=end_date, freq='D')
-        return len(campaign_days)
-    except Exception as e:
-        raise ValueError("Некорректные значения дат.") from e
-
 # Основная функция для проверки совпадений
 def check_matching_campaign(mp_df, campaign_name, start_date=None, end_date=None):
     # Проверка на пустые значения start_date и end_date

@@ -499,7 +499,7 @@ for i in range(1, 11):
             st.text_area(report_text, report_text, height=100)
 
             # Исправлено: Приводим дату к строке для графиков
-            df_filtered["дата_график"] = df_filtered[col_map["дата"]].dt.strftime('%Y-%m-%d')
+            df_filtered["дата_график"] = df_filtered[col_map["дата"]].dt.strftime('%d-%m')
 
             # График показов и охвата
             plt.figure(figsize=(10, 6))

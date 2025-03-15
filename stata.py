@@ -221,17 +221,9 @@ def calculate_campaign_period(df):
 
     return start_date, end_date
 
-# Функция для вычисления количества рекламных дней
+# Функция для расчета количества дней между датами
 def calculate_campaign_days(start_date, end_date):
-    campaign_days = pd.date_range(start=start_date, end=end_date, freq='D')
-    return len(campaign_days)
-    
-# Функция для поиска столбцов по ключевым словам
-def find_column_by_keywords(df, keywords):
-    for col in df.columns:
-        if any(re.search(keyword, col, re.IGNORECASE) for keyword in keywords):
-            return col
-    return None
+    return (end_date - start_date).days + 1
 
 # Функция для проверки совпадений, игнорируя регистр и окончания
 def check_matching_campaign(mp_df, campaign_name, start_date, end_date):
@@ -286,21 +278,21 @@ def check_matching_campaign(mp_df, campaign_name, start_date, end_date):
             if matching_columns:
                 found_columns[col] = matching_columns
         
-        # 1. Посчитаем количество рекламных дней
+        # Рассчитываем количество дней рекламной кампании
         total_campaign_days = calculate_campaign_days(start_date, end_date)
         
-        # 2. Ищем столбцы для показов, кликов, охвата и бюджета с использованием ключевых слов
-        impressions_col = find_column_by_keywords(mp_df, ['показ', 'impression'])
-        clicks_col = find_column_by_keywords(mp_df, ['клик', 'click'])
-        reach_col = find_column_by_keywords(mp_df, ['охват', 'reach'])
-        budget_col = find_column_by_keywords(mp_df, ['бюджет', 'budget'])
+        # Ищем столбцы для показов, кликов, охвата и бюджета с использованием ключевых слов
+        impressions_col = found_columns.get("показы", [None])[0]
+        clicks_col = found_columns.get("клики", [None])[0]
+        reach_col = found_columns.get("охват", [None])[0]
+        budget_col = found_columns.get("бюджет с ндс", [None])[0]
 
         # Проверяем, что столбцы найдены
         if not impressions_col or not clicks_col or not reach_col or not budget_col:
             st.error("Не найдены столбцы 'показы', 'клики', 'охват' или 'бюджет'.")
             return None
 
-        # 3. Получаем суммы показов, кликов, охвата и бюджета
+        # 3. Получаем суммы показов, кликов, охвата и бюджета для найденных данных
         total_impressions = saved_matching_rows[impressions_col].sum()
         total_clicks = saved_matching_rows[clicks_col].sum()
         total_reach = saved_matching_rows[reach_col].sum()

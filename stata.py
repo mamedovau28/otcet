@@ -160,60 +160,149 @@ def process_mp(mp_df):
 
     return mp_df, col_map
 
-# Функция для проверки совпадений, игнорируя регистр и окончания
-def check_matching_campaign(mp_df, campaign_name):
-    # Приводим название РК к нижнему регистру
-    campaign_name = campaign_name.strip().lower()
+def find_column(df, keywords):
+    """
+    Функция для поиска столбцов, содержащих ключевые слова.
+    """
+    found_columns = {}
+    for keyword in keywords:
+        column_matches = [col for col in df.columns if re.search(keyword, col, re.IGNORECASE)]
+        if column_matches:
+            found_columns[keyword] = column_matches[0]  # Сохраняем первый найденный столбец
+    return found_columns
 
-    # Список возможных имен столбцов для площадки
-    possible_columns = ['площадка', 'название сайта', 'ресурс']
-    
-    # Ищем столбец, который может содержать название площадки
-    match_column = None
-    for col in possible_columns:
-        if col in mp_df.columns:
-            match_column = col
-            break  # Прерываем, как только нашли подходящий столбец
-
-    if match_column is None:
-        return "Не найден столбец с названием площадки в медиаплане."
-
-    # Приводим название площадки к нижнему регистру
-    mp_df['pлощадка_lower'] = mp_df[match_column].str.strip().str.lower()
-
-    # Поиск совпадений по названию РК
-    matching_rows = mp_df[mp_df['pлощадка_lower'].str.contains(campaign_name, na=False)]
-    
-    if not matching_rows.empty:
-        # Если найдено совпадение
-        matched_campaign = matching_rows[match_column].iloc[0]
-        match_message = f"Найдено совпадение по площадке: {matched_campaign}"
-        
-        # Проверяем наличие столбцов для показов, кликов и охвата
-        required_columns = {
-            "показы": r"\bпоказы?\b",
-            "клики": r"\bклики?\b",
-            "охват": r"\bохват\b",
-            "бюджет с ндс": r"\b(ндс\s*и)\b"
-        }
-        
-        found_columns = {}
-        for col, regex in required_columns.items():
-            # Ищем столбцы, которые соответствуют регулярному выражению
-            matching_columns = [column for column in mp_df.columns if re.search(regex, column, re.IGNORECASE)]
-            if matching_columns:
-                found_columns[col] = matching_columns
-        
-        # Печатаем результат по найденным столбцам
-        if found_columns:
-            for metric, columns in found_columns.items():
-                st.write(f"Для {metric} найден(ы) столбец(ы): {', '.join(columns)}")
-        else:
-            st.write("Не найдены столбцы с показателями 'показы', 'клики' или 'охват'.")
-        
-        return match_message
+def calculate_campaign_period(df, col_map):
+    """
+    Определяем дату начала и конца рекламной кампании.
+    """
+    # Находим первую дату с показами больше 10
+    df_filtered = df[df[col_map["показы"]] > 10]
+    if not df_filtered.empty:
+        start_date = df_filtered[col_map["дата"]].min().date()
     else:
-        return "Совпадений по площадке не найдено."
+        st.error("Нет данных о показах больше 10.")
+        return None, None
+    
+    # Конец кампании по умолчанию - последний день месяца
+    end_date = datetime(start_date.year, start_date.month, 1) + timedelta(days=32)
+    end_date = end_date.replace(day=1) - timedelta(days=1)
+
+    return start_date, end_date
+
+def distribute_mp_data(mp_df, start_date, end_date, col_map):
+    """
+    Равномерно распределяем данные по дням и возвращаем средние значения.
+    """
+    # Вычисляем количество дней в рекламном периоде
+    num_days = (end_date - start_date).days + 1
+    
+    # Получаем сумму показов, кликов, охвата, расхода из медиаплана
+    total_impressions = mp_df[col_map["показы"]].sum()
+    total_clicks = mp_df[col_map["клики"]].sum()
+    total_reach = mp_df[col_map["охват"]].sum()
+    total_spend_nds = mp_df[col_map["бюджет с ндс"]].sum()
+    
+    # Равномерно распределяем данные по дням
+    daily_impressions = total_impressions / num_days
+    daily_clicks = total_clicks / num_days
+    daily_reach = total_reach / num_days
+    daily_spend = total_spend_nds / num_days
+
+    return daily_impressions, daily_clicks, daily_reach, daily_spend
+
+def calculate_daily_avg(mp_df, col_map):
+    """
+    Рассчитывает среднее распределение показов, кликов и бюджета по дням.
+    """
+    # Проверяем, есть ли столбцы для показов, кликов и бюджета
+    required_columns = ['показы', 'клики', 'расход']
+    
+    daily_avg = {}
+    
+    for metric in required_columns:
+        if metric in col_map:
+            daily_avg[metric] = mp_df[col_map[metric]].mean()  # Среднее по столбцу
+            
+    # Добавляем столбцы с расчетом среднего для каждого дня
+    if 'показы' in col_map:
+        mp_df['среднее показы'] = daily_avg['показы']
+    if 'клики' in col_map:
+        mp_df['среднее клики'] = daily_avg['клики']
+    if 'расход' in col_map:
+        mp_df['среднее расход'] = daily_avg['расход']
+
+    return mp_df, daily_avg
+
+def analyze_campaign(mp_df, df, col_map):
+    """
+    Анализируем данные медиаплана и отчета.
+    """
+    # 1. Проверяем, совпали ли площадки
+    matched_platform = False
+    mp_platform_column = find_column(mp_df, ["площадка", "название сайта", "ресурс"])  # Ищем столбцы по площадке
+    report_platform_column = find_column(df, ["площадка", "название сайта", "ресурс"])  # Ищем столбцы по площадке
+
+    if mp_platform_column and report_platform_column:
+        for mp_platform in mp_df[mp_platform_column[0]]:
+            for report_platform in df[report_platform_column[0]]:
+                if mp_platform.lower() == report_platform.lower():  # Сравниваем игнорируя регистр
+                    matched_platform = True
+                    st.write(f"Найдено совпадение по площадке: {mp_platform}")
+                    break
+            if matched_platform:
+                break
+
+    if not matched_platform:
+        st.write("Не найдено совпадений по площадке.")
+        return
+    
+    # 2. Если совпали площадки, ищем столбцы с показами, кликами, охватом и бюджетом
+    found_columns = find_column(mp_df, ["показы", "клики", "охват", "ндс"])
+
+    if "показы" not in found_columns or "клики" not in found_columns or "охват" not in found_columns:
+        st.error("Не все необходимые столбцы (показы, клики, охват) найдены.")
+        return
+    
+    if "ндс" not in found_columns:
+        st.error("Не найден столбец с бюджетом с НДС.")
+        return
+
+    # 3. Определяем даты старта и конца рекламной кампании
+    start_date, end_date = calculate_campaign_period(df, col_map)
+    if start_date is None or end_date is None:
+        return
+
+    st.write(f"Дата начала рекламной кампании: {start_date}")
+    st.write(f"Дата окончания рекламной кампании: {end_date}")
+
+    # 4. Равномерно распределяем данные по дням
+    daily_impressions, daily_clicks, daily_reach, daily_spend = distribute_mp_data(mp_df, start_date, end_date, found_columns)
+
+    # 5. Выводим средние значения для каждого дня
+    st.write(f"Среднее количество показов в день: {daily_impressions:.0f}")
+    st.write(f"Среднее количество кликов в день: {daily_clicks:.0f}")
+    st.write(f"Среднее количество охвата в день: {daily_reach:.0f}")
+    st.write(f"Средний расход с НДС в день: {daily_spend:.2f} руб.")
+
+    # 6. Сравнение с текущими данными отчета
+    total_impressions_report = df[col_map["показы"]].sum()
+    total_clicks_report = df[col_map["клики"]].sum()
+    total_reach_report = df[col_map["охват"]].sum()
+    total_spend_report = df[col_map["расход с ндс"]].sum()
+
+    st.write("Итоговые данные по отчету:")
+    st.write(f"Показы: {total_impressions_report:.0f}")
+    st.write(f"Клики: {total_clicks_report:.0f}")
+    st.write(f"Охват: {total_reach_report:.0f}")
+    st.write(f"Расход с НДС: {total_spend_report:.2f} руб.")
+
+    # 7. Сравниваем данные медиаплана и отчета
+    st.write("Сравнение данных медиаплана и отчета:")
+
+    st.write(f"Разница в показах: {total_impressions_report - daily_impressions * (end_date - start_date).days:.0f}")
+    st.write(f"Разница в кликах: {total_clicks_report - daily_clicks * (end_date - start_date).days:.0f}")
+    st.write(f"Разница в охвате: {total_reach_report - daily_reach * (end_date - start_date).days:.0f}")
+    st.write(f"Разница в расходе: {total_spend_report - daily_spend * (end_date - start_date).days:.2f} руб.")
         
 st.title("Анализ рекламных кампаний")
 

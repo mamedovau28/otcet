@@ -237,8 +237,24 @@ def calculate_campaign_days(start_date, end_date):
     campaign_days = pd.date_range(start=start_date, end=end_date, freq='D')
     return len(campaign_days)
     
-# Функция для проверки совпадений, игнорируя регистр и окончания
+# Функция для расчета количества дней между датами
+def calculate_campaign_days(start_date, end_date):
+    try:
+        start_date = pd.to_datetime(start_date)
+        end_date = pd.to_datetime(end_date)
+        if start_date > end_date:
+            raise ValueError("Дата начала не может быть позже даты окончания.")
+        campaign_days = pd.date_range(start=start_date, end=end_date, freq='D')
+        return len(campaign_days)
+    except Exception as e:
+        raise ValueError("Некорректные значения дат.") from e
+
+# Основная функция для проверки совпадений
 def check_matching_campaign(mp_df, campaign_name, start_date=None, end_date=None):
+    # Проверка на пустые значения start_date и end_date
+    if not start_date or not end_date:
+        return "Даты не могут быть пустыми.", None
+
     # Приводим название РК к нижнему регистру
     campaign_name = campaign_name.strip().lower()
 
@@ -253,28 +269,30 @@ def check_matching_campaign(mp_df, campaign_name, start_date=None, end_date=None
             break  # Прерываем, как только нашли подходящий столбец
 
     if match_column is None:
-        return "Не найден столбец с названием площадки в медиаплане."
+        return "Не найден столбец с названием площадки в медиаплане.", None
 
     # Приводим название площадки к нижнему регистру
     mp_df['площадка_lower'] = mp_df[match_column].str.strip().str.lower()
 
     # Поиск совпадений по названию РК
     matching_rows = mp_df[mp_df['площадка_lower'].str.contains(campaign_name, na=False)]
-    
+
     if not matching_rows.empty:
         # Если найдено совпадение
         matched_campaign = matching_rows[match_column].iloc[0]
         match_message = f"Найдено совпадение по площадке: {matched_campaign}"
 
+        # Фильтрация по датам, если они предоставлены
+        try:
+            total_campaign_days = calculate_campaign_days(start_date, end_date)
+            match_message += f" (период с {start_date} по {end_date}, {total_campaign_days} дней)"
+        except ValueError as e:
+            return str(e), None
+
         # Сохраняем найденные строки как отдельную таблицу (DataFrame)
         saved_matching_rows = matching_rows.copy()
         saved_matching_rows['площадка_lower'] = saved_matching_rows[match_column].str.strip().str.lower()
 
-        # Сохраняем таблицу как CSV
-        saved_matching_rows.to_csv("saved_matching_rows.csv", index=False)
-        
-        st.write("Таблица с найденными данными сохранена в файл 'saved_matching_rows.csv'.")
-        
         # Проверяем наличие столбцов для показов, кликов, охвата и бюджета с НДС
         required_columns = {
             "показы": r"\bпоказы?\b",
@@ -285,38 +303,33 @@ def check_matching_campaign(mp_df, campaign_name, start_date=None, end_date=None
         
         found_columns = {}
         for col, regex in required_columns.items():
-            # Ищем столбцы, которые соответствуют регулярному выражению
             matching_columns = [column for column in mp_df.columns if re.search(regex, column, re.IGNORECASE)]
             if matching_columns:
                 found_columns[col] = matching_columns
         
-        # Рассчитываем количество дней рекламной кампании
-        total_campaign_days = calculate_campaign_days(start_date, end_date)
-        
-        # Ищем столбцы для показов, кликов, охвата и бюджета с использованием ключевых слов
+        # Проверяем, что все необходимые столбцы найдены
         impressions_col = found_columns.get("показы", [None])[0]
         clicks_col = found_columns.get("клики", [None])[0]
         reach_col = found_columns.get("охват", [None])[0]
         budget_col = found_columns.get("бюджет с ндс", [None])[0]
 
-        # Проверяем, что столбцы найдены
         if not impressions_col or not clicks_col or not reach_col or not budget_col:
             st.error("Не найдены столбцы 'показы', 'клики', 'охват' или 'бюджет'.")
             return None
 
-        # 3. Получаем суммы показов, кликов, охвата и бюджета для найденных данных
+        # Получаем суммы показов, кликов, охвата и бюджета для найденных данных
         total_impressions = saved_matching_rows[impressions_col].sum()
         total_clicks = saved_matching_rows[clicks_col].sum()
         total_reach = saved_matching_rows[reach_col].sum()
         total_budget = saved_matching_rows[budget_col].sum()
 
-        # 4. Делим на количество рекламных дней
+        # Делим на количество рекламных дней
         daily_impressions = total_impressions / total_campaign_days
         daily_clicks = total_clicks / total_campaign_days
         daily_reach = total_reach / total_campaign_days
         daily_budget = total_budget / total_campaign_days
 
-        # 5. Добавляем новые столбцы в таблицу
+        # Добавляем новые столбцы в таблицу
         saved_matching_rows['показы_план'] = daily_impressions
         saved_matching_rows['клики_план'] = daily_clicks
         saved_matching_rows['охват_план'] = daily_reach
@@ -330,7 +343,7 @@ def check_matching_campaign(mp_df, campaign_name, start_date=None, end_date=None
         saved_matching_rows.to_csv("updated_campaign_data.csv", index=False)
         st.write("Таблица успешно сохранена в файл 'updated_campaign_data.csv'.")
         
-        return saved_matching_rows
+        return match_message, saved_matching_rows
     else:
         return "Совпадений по площадке не найдено.", None
     

@@ -291,10 +291,7 @@ for i in range(1, 11):
             """
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")
             st.text_area(report_text, report_text, height=100)
-            
-            # Обертка для очищающего контейнера
-            plot_container = st.empty()
-
+           
             # Построим график по дням
             plt.figure(figsize=(10, 6))
 
@@ -311,7 +308,9 @@ for i in range(1, 11):
             plt.xticks(rotation=45)
             plt.grid(True)
             plt.legend()
-            plot_container.pyplot(plt)  # Отображаем график внутри контейнера
+            st.pyplot(plt)  # Отображаем график в Streamlit
+
+            # Закрываем текущую фигуру, чтобы избежать лишних окон
             plt.close()
 
             # Новый график: столбчатая диаграмма для кликов
@@ -324,7 +323,8 @@ for i in range(1, 11):
             plt.xticks(rotation=45)
             plt.grid(True, axis='y')
             plt.legend()
-            plot_container.pyplot(plt)  # Отображаем график с кликами в Streamlit
-            plt.close()
+            st.pyplot(plt)  # Отображаем график с кликами в Streamlit
 
+            # Закрываем текущую фигуру после отображения
+            plt.close()
     st.dataframe(df)

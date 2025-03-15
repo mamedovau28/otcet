@@ -434,12 +434,6 @@ for i in range(1, 11):
             match_message = check_matching_campaign(mp_df, custom_campaign_name)
             st.write(match_message)
             
-            st.write("Итоговые данные по отчету:")
-            st.write(f"- Показы: {total_impressions_report:.0f}")
-            st.write(f"- Клики: {total_clicks_report:.0f}")
-            st.write(f"- Охват: {total_reach_report:.0f}")
-            st.write(f"- Расход с НДС: {total_spend_report:.2f} руб.")
-            
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()

@@ -367,7 +367,11 @@ if mp_file:
 st.header("Загрузите данные (Excel или Google-таблицы)")
 
 for i in range(1, 11):
-    upload_option = st.selectbox(f"Способ загрузки файла {i}", ["Не выбрано", "Загрузить Excel-файл", "Ссылка на Google-таблицу"], key=f"upload_option_{i}")
+    upload_option = st.selectbox(
+        f"Способ загрузки файла {i}", 
+        ["Не выбрано", "Загрузить Excel-файл", "Ссылка на Google-таблицу"], 
+        key=f"upload_option_{i}"
+    )
 
     df = None
     campaign_name = None
@@ -392,38 +396,47 @@ for i in range(1, 11):
 
     if df is not None:
         df, col_map = process_data(df)
-        custom_campaign_name = st.text_input(f"Введите название РК {i} (или оставьте по умолчанию)", value=campaign_name, key=f"campaign_name_{i}")
+        custom_campaign_name = st.text_input(
+            f"Введите название РК {i} (или оставьте по умолчанию)", 
+            value=campaign_name, 
+            key=f"campaign_name_{i}"
+        )
         st.write(f"Название РК: {custom_campaign_name}")
+
+        # Проверка совпадений перед обработкой данных
+        match_message, saved_matching_rows = check_matching_campaign(mp_df, custom_campaign_name)
+
+        # Определяем период кампании
         start_date, end_date = calculate_campaign_period(df)
         if start_date and end_date:
             campaign_days = (end_date - start_date).days + 1
-            df = transfer_numeric_data(df, saved_matching_rows, campaign_days)
-            
-        match_message, saved_matching_rows = check_matching_campaign(mp_df, custom_campaign_name)
-            
-        if saved_matching_rows is not None:  # Если есть совпадения
-            df = transfer_numeric_data(df, saved_matching_rows)  # Переносим данные в df
-    
-        # Если есть совпадения по названию рекламной кампании
-        if isinstance(match_message, str):
-            st.write(match_message)  # Выводим сообщение о результате поиска
-        else:
-            st.write("Данные рекламной кампании:", match_message)  # Выводим сам DataFrame с результатами
-            st.write("Обновленная таблица с расчетами:")
-            st.write(saved_matching_rows)  # Выводим таблицу с разделением на дни
 
+            if saved_matching_rows is not None:  # Если есть совпадения
+                df = transfer_numeric_data(df, saved_matching_rows, campaign_days)  # Переносим данные в df
+        
+        # Вывод сообщений о совпадениях
+        if isinstance(match_message, str):
+            st.write(match_message)  
+        else:
+            st.write("Данные рекламной кампании:", match_message)  
+            st.write("Обновленная таблица с расчетами:")
+            st.write(saved_matching_rows)  
 
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
-            start_date, end_date = st.date_input("Выберите период", [min_date, max_date], key=f"date_input_{i}")
+
+            # Исправлено: date_input возвращает список, его нужно распаковать
+            start_date, end_date = st.date_input(
+                "Выберите период", [min_date, max_date], key=f"date_input_{i}"
+            )
 
             df_filtered = df[
                 (df[col_map["дата"]].dt.date >= start_date) & 
                 (df[col_map["дата"]].dt.date <= end_date)
             ]
 
-            # Результаты по выбранному периоду
+            # Вычисления итогов
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]
             existing_cols = [col for col in needed_cols if col in df_filtered.columns]
             summary = df_filtered[existing_cols].sum()
@@ -434,7 +447,7 @@ for i in range(1, 11):
             total_reach = summary.get("охват", 0)
             total_spend_nds = summary.get("расход с ндс", 0)
 
-            # Форматируем даты в нужный формат
+            # Форматируем даты
             start_date_str = start_date.strftime("%d.%m.%Y")
             end_date_str = end_date.strftime("%d.%m.%Y")
 
@@ -449,41 +462,30 @@ for i in range(1, 11):
             """
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")
             st.text_area(report_text, report_text, height=100)
-           
-            # Построим график по дням
+
+            # Исправлено: Приводим дату к строке для графиков
+            df_filtered["дата_график"] = df_filtered[col_map["дата"]].dt.strftime('%Y-%m-%d')
+
+            # График показов и охвата
             plt.figure(figsize=(10, 6))
-
-            # Линия для показов
-            plt.plot(df_filtered[col_map["дата"]], df_filtered["показы"], marker='o', label="Показы", color='b')
-
-            # Линия для охвата
-            plt.plot(df_filtered[col_map["дата"]], df_filtered["охват"], marker='o', label="Охват", color='g')
-
-            # Заливка фона под линией охвата
-            plt.fill_between(df_filtered[col_map["дата"]], 0, df_filtered["охват"], color='g', alpha=0.2)
-
+            plt.plot(df_filtered["дата_график"], df_filtered["показы"], marker='o', label="Показы", color='b')
+            plt.plot(df_filtered["дата_график"], df_filtered["охват"], marker='o', label="Охват", color='g')
+            plt.fill_between(df_filtered["дата_график"], 0, df_filtered["охват"], color='g', alpha=0.2)
             plt.title(f"Показы и Охват по дням для {custom_campaign_name}")
             plt.xticks(rotation=45)
             plt.grid(True)
             plt.legend()
-            st.pyplot(plt)  # Отображаем график в Streamlit
-
-            # Закрываем текущую фигуру, чтобы избежать лишних окон
+            st.pyplot(plt)
             plt.close()
 
-            # Новый график: столбчатая диаграмма для кликов
+            # График кликов
             plt.figure(figsize=(10, 3))
-
-            # Столбцы для кликов
-            plt.bar(df_filtered[col_map["дата"]], df_filtered["клики"], color='r', alpha=0.7, label="Клики")
-
+            plt.bar(df_filtered["дата_график"], df_filtered["клики"], color='r', alpha=0.7, label="Клики")
             plt.title(f"Клики по дням для {custom_campaign_name}")
             plt.xticks(rotation=45)
             plt.grid(True, axis='y')
             plt.legend()
-            st.pyplot(plt)  # Отображаем график с кликами в Streamlit
-
-            # Закрываем текущую фигуру после отображения
+            st.pyplot(plt)
             plt.close()
 
     st.dataframe(df)

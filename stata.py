@@ -349,12 +349,17 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
 
 def check_for_differences(df_filtered, existing_cols, plan_cols):
     warnings = []
+    
     # Проверка на наличие столбцов
     for plan_col, fact_col in zip(plan_cols, existing_cols):
         if plan_col in df_filtered.columns and fact_col in df_filtered.columns:
-            # Суммируем значения только там, где "показы" больше 10
-            fact_total = df_filtered[fact_col].sum()
-            plan_total = df_filtered[plan_col].sum()
+            
+            # Фильтруем строки, где показы больше 0
+            df_filtered_valid = df_filtered[df_filtered[fact_col] > 10]
+
+            # Суммируем значения только там, где показы больше 0
+            fact_total = df_filtered_valid[fact_col].sum()
+            plan_total = df_filtered_valid[plan_col].sum()
 
             if plan_total > 0:
                 diff = fact_total - plan_total

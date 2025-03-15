@@ -253,6 +253,15 @@ def check_matching_campaign(mp_df, campaign_name):
         # Печатаем найденные строки
         st.write("Найденные строки по площадке:")
         st.write(matching_rows)
+
+        # Сохраняем найденные строки как отдельную таблицу (DataFrame)
+        saved_matching_rows = matching_rows.copy()
+        saved_matching_rows['площадка_lower'] = saved_matching_rows[match_column].str.strip().str.lower()
+
+        # Сохраняем таблицу как CSV (по желанию можно заменить на Excel или другой формат)
+        saved_matching_rows.to_csv("saved_matching_rows.csv", index=False)
+        
+        st.write("Таблица с найденными данными сохранена в файл 'saved_matching_rows.csv'.")
         
         # Проверяем наличие столбцов для показов, кликов, охвата и бюджета с НДС
         required_columns = {
@@ -276,9 +285,9 @@ def check_matching_campaign(mp_df, campaign_name):
         else:
             st.write("Не найдены столбцы с показателями 'показы', 'клики', 'охват' или 'бюджет с НДС'.")
         
-        return match_message
+        return match_message, saved_matching_rows
     else:
-        return "Совпадений по площадке не найдено."
+        return "Совпадений по площадке не найдено.", None
     
 st.title("Анализ рекламных кампаний")
 

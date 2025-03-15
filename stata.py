@@ -226,7 +226,7 @@ def distribute_mp_data(mp_df, start_date, end_date):
     """
     Равномерно распределяем данные по дням.
     """
-    num_days = (end_date - start_date).days + 1
+    num_days = (end_date - start_date).days + 1  # Количество дней кампании
 
     # Получаем названия столбцов
     impressions_col = next((col for col in mp_df.columns if "показ" in col.lower()), None)
@@ -234,12 +234,23 @@ def distribute_mp_data(mp_df, start_date, end_date):
     reach_col = next((col for col in mp_df.columns if "охват" in col.lower()), None)
     spend_col = next((col for col in mp_df.columns if "ндс" in col.lower()), None)
 
+    if not impressions_col or not clicks_col or not reach_col or not spend_col:
+        st.error("Не найдены необходимые столбцы в медиаплане.")
+        return 0, 0, 0, 0  # Возвращаем нули в случае ошибки
+
     total_impressions = mp_df[impressions_col].sum() if impressions_col else 0
     total_clicks = mp_df[clicks_col].sum() if clicks_col else 0
     total_reach = mp_df[reach_col].sum() if reach_col else 0
     total_spend = mp_df[spend_col].sum() if spend_col else 0
 
-    return total_impressions / num_days, total_clicks / num_days, total_reach / num_days, total_spend / num_days
+    # Равномерно распределяем данные по дням
+    daily_impressions = total_impressions / num_days
+    daily_clicks = total_clicks / num_days
+    daily_reach = total_reach / num_days
+    daily_spend = total_spend / num_days
+
+    return daily_impressions, daily_clicks, daily_reach, daily_spend
+
 
 def analyze_campaign(mp_df, df, report_col_map):
     """

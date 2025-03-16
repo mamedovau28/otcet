@@ -515,10 +515,6 @@ for i in range(1, num_uploads + 1):
     # Применяем CSS для изменения фона и уменьшения ширины
     st.markdown("""
         <style>
-            /* Изменяем стиль для полей загрузки файлов */
-            .stFileUploader div {
-                background-color: #f0f8e0;  /* светло-салатовый цвет */
-            }
         
             /* Изменяем стиль для текстового ввода для Google-таблиц */
             .stTextInput input {

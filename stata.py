@@ -130,19 +130,24 @@ def process_data(df):
                 coverage = row[col_map["охват"]]
                 impressions = row[col_map["показы"]]
 
-                # Проверяем, является ли значение числом
-                if pd.isna(coverage) or not isinstance(coverage, (int, float)):
-                    return 0  # Если NaN или строка — заменяем на 0
+                # Преобразуем к числу, если это строка
+                if isinstance(coverage, str):
+                    coverage = coverage.replace(",", ".")  # Исправляем возможную запятую
+                    coverage = pd.to_numeric(coverage, errors="coerce")
 
-                if coverage > 0 and coverage < 1:
-                    coverage *= 100  # Исправляем процентную интерпретацию
+                # Проверяем, что coverage — это число
+                if pd.isna(coverage):
+                    return 0  # Если NaN — заменяем на 0
+
+                # Исправляем интерпретацию процентов
+                if 0 < coverage < 1:
+                    coverage *= 100  
 
                 if coverage > 0 and impressions > 0 and impressions / coverage > 10:
                     return impressions * coverage
                 return round(coverage)
 
             df["охват"] = df.apply(adjust_coverage, axis=1)
-
 
     # Расчет расхода с НДС
     if "расход" in col_map and "расход с ндс" not in df.columns:

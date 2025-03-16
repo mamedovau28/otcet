@@ -9,7 +9,6 @@ from pandas.tseries.offsets import MonthEnd
 st.markdown("""
     <style>
         /* Применяем стили ко всем полям ввода, включая date_input */
-        .stNumberInput input,
         .stTextInput input,
         .stTextArea textarea,
         .stSelectbox select,

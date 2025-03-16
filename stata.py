@@ -389,7 +389,7 @@ def check_for_differences(df_filtered, existing_cols, plan_cols):
                 diff = fact_total - plan_total
                 diff_percent = (diff / plan_total) * 100
 
-                if abs(diff_percent) > 1:
+                if abs(diff_percent) > 2:
                     warnings.append(f"⚠️ Разница по {fact_col}: {diff:+,.0f} ({diff_percent:+.2f}%)")
 
     return warnings

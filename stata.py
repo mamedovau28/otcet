@@ -29,6 +29,11 @@ st.markdown("""
         .stDateInput input {
             background-color: #f0f8e0 !important;  /* Применяем светло-салатовый цвет */
         }
+        /* Для Selectbox */
+        .stSelectbox select {
+            background-color: #f0f8e0 !important;  /* Применяем светло-салатовый цвет */
+        }
+        
     </style>
 """, unsafe_allow_html=True)
 

@@ -440,15 +440,20 @@ for i in range(1, 11):
     campaign_name = None
 
     if upload_option == "Загрузить Excel-файл":
-        uploaded_file = st.file_uploader(f"Загрузите Excel-файл {i}", type=["xlsx"], key=f"file_uploader_{i}")
-        if uploaded_file:
-            df = pd.read_excel(uploaded_file)
-            campaign_name = uploaded_file.name.split(".")[0]
-            sheet_names_otchet = xls.sheet_names_otchet
-            if len(sheet_names_otchet) > 1:
-                sheet_names_otchet = st.selectbox("Выберите лист со статистикой", sheet_names_otchet, key="sheet_names_otchet{i}")
-            else:
-                sheet_names_otchet = sheet_names_otchet[0]
+    uploaded_file = st.file_uploader(f"Загрузите Excel-файл {i}", type=["xlsx"], key=f"file_uploader_{i}")
+    
+    if uploaded_file:
+        xls = pd.ExcelFile(uploaded_file)  # Загружаем файл в объект ExcelFile
+        sheet_names_otchet = xls.sheet_names  # Получаем список всех листов
+        # Проверяем, есть ли несколько листов, и предлагаем выбрать нужный
+        if len(sheet_names_otchet) > 1:
+            selected_sheet = st.selectbox("Выберите лист со статистикой", sheet_names_otchet, key=f"sheet_names_otchet_{i}")
+        else:
+            selected_sheet = sheet_names_otchet[0]
+        # Читаем данные с выбранного листа
+        df = pd.read_excel(xls, sheet_name=selected_sheet)
+        campaign_name = uploaded_file.name.split(".")[0]
+
 
     elif upload_option == "Ссылка на Google-таблицу":
         google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")

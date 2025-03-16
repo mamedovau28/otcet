@@ -371,7 +371,7 @@ def check_for_differences(df_filtered, existing_cols, plan_cols):
 st.title("Анализ рекламных кампаний")
 
 # === Загрузка медиаплана ===
-st.header("Загрузите медиаплан (МП) (только Excel)")
+st.header("Загрузите медиаплан")
 mp_file = st.file_uploader("Выберите файл с медиапланом", type=["xlsx"], key="mp_uploader")
 
 mp_df = None
@@ -427,7 +427,7 @@ if mp_file:
         st.dataframe(mp_df)
 
 # === Загрузка отчетов ===
-st.header("Загрузите данные (Excel или Google-таблицы)")
+st.header("Загрузите статискику РК")
 
 for i in range(1, 11):
     upload_option = st.selectbox(

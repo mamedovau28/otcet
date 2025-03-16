@@ -518,7 +518,6 @@ for i in range(1, num_uploads + 1):
             /* Изменяем стиль для полей загрузки файлов */
             .stFileUploader div {
                 background-color: #f0f8e0;  /* светло-салатовый цвет */
-                padding: 5px;
             }
         
             /* Изменяем стиль для текстового ввода для Google-таблиц */
@@ -533,8 +532,6 @@ for i in range(1, num_uploads + 1):
             .stSelectbox select,
             .stTextArea textarea {
                 background-color: #f0f8e0;  /* светло-салатовый цвет */
-                margin: 10px 0;
-                padding: 5px;
             }
         </style>
     """, unsafe_allow_html=True)

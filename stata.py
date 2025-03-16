@@ -450,6 +450,10 @@ if mp_file:
         # Отображаем обработанный медиаплан
         st.dataframe(mp_df)
 
+import pandas as pd
+import streamlit as st
+import matplotlib.pyplot as plt
+
 # Заголовок страницы
 st.header("Загрузите статистику РК")
 
@@ -458,21 +462,23 @@ num_uploads = st.number_input("Выберите количество файло�
 
 # Цикл для создания соответствующего числа загрузок
 for i in range(1, num_uploads + 1):
+    # Создание селектора для способа загрузки
     upload_option = st.selectbox(
         f"Способ загрузки статистики площадки {i}", 
         ["Не выбрано", "Загрузить Excel-файл", "Ссылка на Google-таблицу"], 
         key=f"upload_option_{i}"
     )
-    
+
+    # Инициализация переменных внутри цикла
     df = None
     campaign_name = None
 
+    # Логика загрузки Excel
     if upload_option == "Загрузить Excel-файл":
         uploaded_file = st.file_uploader(f"Загрузите Excel-файл {i}", type=["xlsx"], key=f"file_uploader_{i}")
         if uploaded_file:
             xls = pd.ExcelFile(uploaded_file)  # Загружаем файл в объект ExcelFile
             sheet_names_otchet = xls.sheet_names  # Получаем список всех листов
-            # Проверяем, есть ли несколько листов, и предлагаем выбрать нужный
             if len(sheet_names_otchet) > 1:
                 selected_sheet = st.selectbox("Выберите лист со статистикой", sheet_names_otchet, key=f"sheet_names_otchet_{i}")
             else:
@@ -481,7 +487,7 @@ for i in range(1, num_uploads + 1):
             df = pd.read_excel(xls, sheet_name=selected_sheet)
             campaign_name = uploaded_file.name.split(".")[0]
 
-
+    # Логика загрузки из Google Sheets
     elif upload_option == "Ссылка на Google-таблицу":
         google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")
         if google_sheet_url:
@@ -494,6 +500,7 @@ for i in range(1, num_uploads + 1):
             except Exception as e:
                 st.error(f"Ошибка при загрузке CSV: {e}")
 
+    # Если файл загружен и df не пустой
     if df is not None:
         df, col_map = process_data(df)
         custom_campaign_name = st.text_input(
@@ -503,7 +510,7 @@ for i in range(1, num_uploads + 1):
         )
         st.write(f"Название РК: {custom_campaign_name}")
 
-        # Проверка совпадений перед обработкой данных
+        # Проверка совпадений
         match_message, saved_matching_rows = check_matching_campaign(mp_df, custom_campaign_name)
 
         # Определяем период кампании
@@ -522,11 +529,12 @@ for i in range(1, num_uploads + 1):
             st.write("Обновленная таблица с расчетами:")
             st.write(saved_matching_rows)  
 
+        # Выбор периода
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
 
-            # Исправлено: date_input возвращает список, его нужно распаковать
+            # Выбор периода
             start_date, end_date = st.date_input(
                 "Выберите период", [min_date, max_date], key=f"date_input_{i}"
             )
@@ -536,7 +544,7 @@ for i in range(1, num_uploads + 1):
                 (df[col_map["дата"]].dt.date <= end_date)
             ]
 
-            # Вычисления итогов
+            # Итоги
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]
             existing_cols = [col for col in needed_cols if col in df_filtered.columns]
             summary = df_filtered[existing_cols].sum()
@@ -547,66 +555,46 @@ for i in range(1, num_uploads + 1):
             total_reach = summary.get("охват", 0)
             total_spend_nds = summary.get("расход с ндс", 0)
 
-            # Форматируем даты
+            # Форматируем дату
             start_date_str = start_date.strftime("%d.%m.%Y")
             end_date_str = end_date.strftime("%d.%m.%Y")
 
             report_text = f"""
-    {custom_campaign_name}
-    Период: {start_date_str}-{end_date_str}
-    Показы: {total_impressions:.0f}
-    Клики: {total_clicks:.0f}
-    CTR: {ctr_value:.2%}
-    Охват: {total_reach:.0f}
-    Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
+{custom_campaign_name}
+Период: {start_date_str}-{end_date_str}
+Показы: {total_impressions:.0f}
+Клики: {total_clicks:.0f}
+CTR: {ctr_value:.2%}
+Охват: {total_reach:.0f}
+Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
             """
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")
             st.text_area(report_text, report_text, height=100)
 
-            # Проверка расхождений и вывод предупреждений
-            warnings = check_for_differences(df_filtered, existing_cols, ["показы план", "клики план", "охват план", "бюджет план"])
-            if warnings:
-                for warning in warnings:
-                    st.warning(warning)
-
-            # Исправлено: Приводим дату к строке для графиков
+            # Вывод графиков
             df_filtered["дата_график"] = df_filtered[col_map["дата"]].dt.strftime('%d-%m')
 
             # График показов и охвата
             plt.figure(figsize=(10, 6))
-            # Линия для фактических показов
             plt.plot(df_filtered["дата_график"], df_filtered["показы"], marker='o', label="Показы", color='b')
-            # Линия для охвата
             plt.plot(df_filtered["дата_график"], df_filtered["охват"], marker='o', label="Охват", color='g')
-            # Условие для добавления линии показов по плану, если такой столбец существует
-            if "показы план" in df_filtered.columns:
-                plt.plot(df_filtered["дата_график"], df_filtered["показы план"], linestyle='--', color='orange', linewidth=2, label="Показы по плану")
-            # Заливка фона под линией охвата
             plt.fill_between(df_filtered["дата_график"], 0, df_filtered["охват"], color='g', alpha=0.2)
-            # Заголовок и оформление графика
             plt.title(f"Показы и Охват по дням для {custom_campaign_name}")
             plt.xticks(rotation=45)
             plt.grid(True)
             plt.legend()
-            # Отображаем график в Streamlit
             st.pyplot(plt)
-            # Закрываем текущую фигуру, чтобы избежать лишних окон
             plt.close()
 
             # График кликов
             plt.figure(figsize=(10, 3))
-            # Столбцы для фактических кликов
             plt.bar(df_filtered["дата_график"], df_filtered["клики"], color='r', alpha=0.7, label="Клики")
-            # Условие для добавления столбцов кликов по плану, если такой столбец существует
-            if "клики план" in df_filtered.columns:
-                plt.bar(df_filtered["дата_график"], df_filtered["клики план"], color='orange', alpha=0.5, label="Клики по плану")
             plt.title(f"Клики по дням для {custom_campaign_name}")
             plt.xticks(rotation=45)
             plt.grid(True, axis='y')
             plt.legend()
-            # Отображаем график в Streamlit
             st.pyplot(plt)
-            # Закрываем текущую фигуру, чтобы избежать лишних окон
             plt.close()
 
-    st.dataframe(df)
+    st.dataframe(df)  # Отображаем данные таблицы
+

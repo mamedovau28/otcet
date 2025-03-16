@@ -450,16 +450,20 @@ if mp_file:
         # Отображаем обработанный медиаплан
         st.dataframe(mp_df)
 
-# === Загрузка отчетов ===
-st.header("Загрузите статискику РК")
+# Заголовок страницы
+st.header("Загрузите статистику РК")
 
-for i in range(1, 11):
+# Число загрузок, которое будет определять количество файлов
+num_uploads = st.number_input("Выберите количество файлов для загрузки", min_value=1, max_value=20, value=1)
+
+# Цикл для создания соответствующего числа загрузок
+for i in range(1, num_uploads + 1):
     upload_option = st.selectbox(
         f"Способ загрузки статистики площадки {i}", 
         ["Не выбрано", "Загрузить Excel-файл", "Ссылка на Google-таблицу"], 
         key=f"upload_option_{i}"
     )
-
+    
     df = None
     campaign_name = None
 

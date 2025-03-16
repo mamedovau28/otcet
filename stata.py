@@ -489,7 +489,7 @@ if mp_file:
 # Заголовок страницы
 st.header("Загрузите статистику РК")
 
-# Применяем CSS для изменения фона и уменьшения ширины
+# Применяем CSS для изменения фона
 st.markdown("""
     <style>
         .stNumberInput input {
@@ -526,6 +526,14 @@ for i in range(1, num_uploads + 1):
             df = pd.read_excel(xls, sheet_name=selected_sheet)
             campaign_name = uploaded_file.name.split(".")[0]
 
+    # Применяем CSS для изменения фона
+    st.markdown("""
+        <style>
+            .stNumberInput input {
+                background-color: #f0f8e0;  /* светло-салатовый цвет */
+            }
+        </style>
+    """, unsafe_allow_html=True)
 
     elif upload_option == "Ссылка на Google-таблицу":
         google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")

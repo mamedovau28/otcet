@@ -129,12 +129,18 @@ def process_data(df):
             def adjust_coverage(row):
                 coverage = row[col_map["охват"]]
                 impressions = row[col_map["показы"]]
-                # Проверяем, не слишком ли мал охват (например, если он интерпретировался как 0.002 вместо 0.2)
+
+                # Проверяем, является ли значение числом
+                if pd.isna(coverage) or not isinstance(coverage, (int, float)):
+                    return 0  # Если NaN или строка — заменяем на 0
+
                 if coverage > 0 and coverage < 1:
-                    coverage *= 100  # Умножаем на 100, если число слишком маленькое
+                    coverage *= 100  # Исправляем процентную интерпретацию
+
                 if coverage > 0 and impressions > 0 and impressions / coverage > 10:
                     return impressions * coverage
                 return round(coverage)
+
             df["охват"] = df.apply(adjust_coverage, axis=1)
 
 

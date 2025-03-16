@@ -417,10 +417,10 @@ def check_for_differences(df_filtered, existing_cols, plan_cols):
                 })
                 warnings.append(f"✅ Нет данных по {fact_col} для расхождения.")
     
-    # Если есть расхождения, создаем таблицу
-    diff_df = pd.DataFrame(differences)
-    st.write("Таблица расхождений:")
-    st.dataframe(diff_df)  # Отображаем таблицу расхождений
+                # Если есть расхождения, создаем таблицу
+                diff_df = pd.DataFrame(differences)
+                st.write("Таблица расхождений:")
+                st.dataframe(diff_df)  # Отображаем таблицу расхождений
 
     return warnings
 

@@ -246,8 +246,10 @@ def calculate_campaign_period(df):
 
     return start_date, end_date
     
-# Основная функция для проверки совпадений
-def check_matching_campaign(mp_df, campaign_name):
+def check_matching_campaign(mp_df, df, campaign_name):
+    # Проверка на наличие данных в mp_df и отчете
+    if mp_df is None or df is None:
+        return "Медиаплан или отчет не загружены. Проверьте загрузку данных.", None
 
     # Приводим название РК к нижнему регистру
     campaign_name = campaign_name.strip().lower()
@@ -304,6 +306,7 @@ def check_matching_campaign(mp_df, campaign_name):
         return match_message, saved_matching_rows
     else:
         return "Совпадений по площадке не найдено.", None
+
 
 def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
     """

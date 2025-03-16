@@ -8,15 +8,26 @@ from pandas.tseries.offsets import MonthEnd
 # Применяем CSS для изменения фона и уменьшения ширины
 st.markdown("""
     <style>
-        /* Применяем стили ко всем полям ввода, выбору загрузки и кнопкам */
+        /* Применяем стили ко всем полям ввода, включая date_input */
         .stNumberInput input,
         .stTextInput input,
         .stTextArea textarea,
         .stSelectbox select,
         .stFileUploader div,
         .stButton button,
-        .stSelectbox > div {
+        .stSelectbox > div,
+        .stDateInput input {
             background-color: #f0f8e0;  /* светло-салатовый цвет */
+        }
+
+        /* Для кнопок, если их фон не меняется */
+        .stButton button {
+            background-color: #f0f8e0 !important;
+        }
+
+        /* Для DateInput */
+        .stDateInput input {
+            background-color: #f0f8e0 !important;  /* Применяем светло-салатовый цвет */
         }
     </style>
 """, unsafe_allow_html=True)

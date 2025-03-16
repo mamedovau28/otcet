@@ -96,7 +96,8 @@ def filter_columns(df, is_mp=False):
     # Если это не медиаплан (например, отчет), возвращаем df без изменений
     return df
     
-# Встраиваем в процесс обработки данных
+import pandas as pd
+
 def process_data(df):
     """
     Обрабатывает загруженные данные (Excel или Google-таблицы):
@@ -108,16 +109,20 @@ def process_data(df):
     df, col_map = standardize_columns(df, COLUMN_MAPPING)
     df.fillna(0, inplace=True)
 
+    # Преобразуем дату в формат datetime
     if "дата" in col_map:
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
-    # Приведение к числовому типу
+    # Приведение к числовому типу (только если тип данных не numeric)
     for key in ["показы", "клики", "охват", "расход"]:
         if key in col_map and not pd.api.types.is_numeric_dtype(df[col_map[key]]):
-            df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True)
-            df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)
+            df[col_map[key]] = pd.to_numeric(
+                df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True),
+                errors='coerce'
+            ).fillna(0)
 
-    if "расход" in col_map:
+    # Корректировка расходов (делим на 100, если не делили ранее)
+    if "расход" in col_map and df[col_map["расход"]].max() > 1000:  # Предполагаем, что цифры в копейках
         df[col_map["расход"]] = df[col_map["расход"]] / 100
 
     # Корректировка охвата
@@ -128,13 +133,19 @@ def process_data(df):
             if coverage > 0 and impressions > 0 and impressions / coverage > 10:
                 return impressions * coverage / 100
             return round(coverage)
+
         df["охват"] = df.apply(adjust_coverage, axis=1)
 
-    # Расчет расхода с НДС и CTR
-    if "расход" in col_map:
+    # Расчет расхода с НДС
+    if "расход" in col_map and "расход с ндс" not in df.columns:
         df["расход с ндс"] = df[col_map["расход"]] * 1.2
-    if "клики" in col_map and "показы" in col_map:
-        df["ctr"] = df.apply(lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0, axis=1)
+
+    # Расчет CTR
+    if "клики" in col_map and "показы" in col_map and "ctr" not in df.columns:
+        df["ctr"] = df.apply(
+            lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0,
+            axis=1
+        )
 
     # Фильтрация нужных столбцов
     df = filter_columns(df)

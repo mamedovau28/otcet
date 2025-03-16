@@ -514,7 +514,7 @@ for i in range(1, num_uploads + 1):
         st.write(f"Название РК: {custom_campaign_name}")
 
         # Проверка совпадений
-        match_message, saved_matching_rows = check_matching_campaign(mp_df, custom_campaign_name)
+        match_message, saved_matching_rows = check_matching_campaign(mp_df, df, custom_campaign_name)
 
         # Определяем период кампании
         start_date, end_date = calculate_campaign_period(df)

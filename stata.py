@@ -12,7 +12,8 @@ st.markdown("""
         .stNumberInput input,
         .stTextInput input,
         .stSelectbox select,
-        .stTextArea textarea {
+        .stTextArea textarea,
+        .stButton button{
             background-color: #f0f8e0;  /* светло-салатовый цвет */
         }
     </style>

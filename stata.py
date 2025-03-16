@@ -425,6 +425,48 @@ def check_for_differences(df_filtered, existing_cols, plan_cols):
 
     return warnings
 
+def check_data_loaded(mp_df, df, col_map, start_date, end_date):
+    """Проверка, что и медиаплан, и отчет загружены, и что есть столбцы для расчета."""
+    if mp_df is not None and df is not None:
+        if 'дата' in col_map and col_map["дата"] in df.columns:
+            min_date = df[col_map["дата"]].min().date()
+            max_date = df[col_map["дата"]].max().date()
+
+            # Фильтрация данных по выбранным датам
+            df_filtered = df[
+                (df[col_map["дата"]].dt.date >= start_date) & 
+                (df[col_map["дата"]].dt.date <= end_date)
+            ]
+            
+            if not df_filtered.empty:
+                return df_filtered
+            else:
+                return None  # Данные за выбранный период отсутствуют
+        else:
+            return None  # В загруженном отчете нет столбца с датами
+    else:
+        return None  # Не загружен медиаплан или отчет
+
+def process_data(mp_df, df, col_map, start_date, end_date, saved_matching_rows, campaign_days):
+    """Обрабатываем данные, проверяя расхождения и переносим числовые данные из saved_matching_rows."""
+    df_filtered = check_data_loaded(mp_df, df, col_map, start_date, end_date)
+    
+    if df_filtered is None:
+        # Если данные не загружены или не соответствуют условиям
+        warnings = ["❗ Не загружен медиаплан или данные за выбранный период отсутствуют."]
+        return warnings, df
+
+    # Проверка на наличие столбцов для вычислений
+    existing_cols = ["показы", "клики", "охват", "расход с ндс"]
+    plan_cols = ["показы план", "клики план", "охват план", "бюджет план"]
+
+    warnings = check_for_differences(df_filtered, existing_cols, plan_cols)
+
+    # Перенос числовых данных из saved_matching_rows в df
+    df = transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date)
+
+    return warnings, df
+
     
 st.title("Анализ рекламных кампаний")
 
@@ -603,32 +645,7 @@ for i in range(1, num_uploads + 1):
 
             # Проверка, что и медиаплан, и отчет загружены
             if mp_df is not None and df is not None:
-                # Обработка данных только если оба файла загружены
-                # Проверка наличия столбцов для расчета
-                if 'дата' in col_map and col_map["дата"] in df.columns:
-                    min_date = df[col_map["дата"]].min().date()
-                    max_date = df[col_map["дата"]].max().date()
-
-                    # Фильтрация данных по выбранным датам
-                    df_filtered = df[
-                        (df[col_map["дата"]].dt.date >= start_date) & 
-                        (df[col_map["дата"]].dt.date <= end_date)
-                    ]
-        
-                    # Проверка на наличие необходимых столбцов для вычислений
-                    existing_cols = ["показы", "клики", "охват", "расход с ндс"]  # пример столбцов
-                    plan_cols = ["показы план", "клики план", "охват план", "бюджет план"]
-
-                    # Если df_filtered не пустой, вызываем функцию для проверки расхождений
-                    if not df_filtered.empty:
-                        warnings = check_for_differences(df_filtered, existing_cols, plan_cols)
-                    else:
-                        warnings = ["❗ Данные за выбранный период отсутствуют."]
-                else:
-                    warnings = ["❗ В загруженном отчете нет столбца с датами."]
-            else:
-                warnings = ["❗ Не загружен медиаплан или отчет."]
-
+               
             # Вывод предупреждений, если они есть
             for warning in warnings:
                 st.warning(warning)

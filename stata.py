@@ -119,7 +119,7 @@ def process_data(df):
     for key in ["показы", "клики", "охват", "расход"]:
         if key in col_map and not pd.api.types.is_numeric_dtype(df[col_map[key]]):
             df[col_map[key]] = df[col_map[key]].astype(str) \
-                .str.replace(r"[^\d,]", "", regex=True) \  # Удаляем всё, кроме цифр и запятой
+                .str.replace(r"[^\d,]", "", regex=True) \
                 .str.replace(",", ".")  # Заменяем запятые на точки для корректного float
 
             df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)

@@ -124,16 +124,19 @@ def process_data(df):
 
             df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)
 
-    # Корректировка охвата
-    if "охват" in col_map and "показы" in col_map:
-        def adjust_coverage(row):
-            coverage = row[col_map["охват"]]
-            impressions = row[col_map["показы"]]
-            if coverage > 0 and impressions > 0 and impressions / coverage > 10:
-                return impressions * coverage
-            return round(coverage)
+        # Корректировка охвата
+        if "охват" in col_map and "показы" in col_map:
+            def adjust_coverage(row):
+                coverage = row[col_map["охват"]]
+                impressions = row[col_map["показы"]]
+                # Проверяем, не слишком ли мал охват (например, если он интерпретировался как 0.002 вместо 0.2)
+                if coverage > 0 and coverage < 1:
+                    coverage *= 100  # Умножаем на 100, если число слишком маленькое
+                if coverage > 0 and impressions > 0 and impressions / coverage > 10:
+                    return impressions * coverage
+                return round(coverage)
+            df["охват"] = df.apply(adjust_coverage, axis=1)
 
-        df["охват"] = df.apply(adjust_coverage, axis=1)
 
     # Расчет расхода с НДС
     if "расход" in col_map and "расход с ндс" not in df.columns:

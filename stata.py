@@ -390,26 +390,38 @@ def check_for_differences(df_filtered, existing_cols, plan_cols):
                 diff = fact_total - plan_total
                 diff_percent = (diff / plan_total) * 100
 
+                # Добавляем информацию о расхождении в таблицу
+                differences.append({
+                    'Столбец факта': fact_col,
+                    'Столбец плана': plan_col,
+                    'Фактическое значение': fact_total,
+                    'Плановое значение': plan_total,
+                    'Разница': diff,
+                    'Процентное расхождение': f"{diff_percent:+.2f}%" if abs(diff_percent) > 1 else "0.00%"
+                })
+
                 if abs(diff_percent) > 1:
                     warnings.append(f"⚠️ Разница по {fact_col}: {diff:+,.0f} ({diff_percent:+.2f}%)")
-                    # Добавляем информацию о расхождении в таблицу
-                    differences.append({
-                        'Столбец факта': fact_col,
-                        'Столбец плана': plan_col,
-                        'Фактическое значение': fact_total,
-                        'Плановое значение': plan_total,
-                        'Разница': diff,
-                        'Процентное расхождение': f"{diff_percent:+.2f}%"
-                    })
-
+                else:
+                    warnings.append(f"✅ Нет значительных расхождений по {fact_col}.")
+            else:
+                # Если плановое значение равно нулю, считаем, что расхождения нет
+                differences.append({
+                    'Столбец факта': fact_col,
+                    'Столбец плана': plan_col,
+                    'Фактическое значение': fact_total,
+                    'Плановое значение': plan_total,
+                    'Разница': 0,
+                    'Процентное расхождение': "0.00%"
+                })
+                warnings.append(f"✅ Нет данных по {fact_col} для расхождения.")
+    
     # Если есть расхождения, создаем таблицу
-    if differences:
-        diff_df = pd.DataFrame(differences)
-        st.write("Таблица расхождений:")
-        st.dataframe(diff_df)  # Отображаем таблицу расхождений
+    diff_df = pd.DataFrame(differences)
+    st.write("Таблица расхождений:")
+    st.dataframe(diff_df)  # Отображаем таблицу расхождений
 
     return warnings
-
 
     
 st.title("Анализ рекламных кампаний")

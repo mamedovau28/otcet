@@ -559,13 +559,13 @@ for i in range(1, num_uploads + 1):
             end_date_str = end_date.strftime("%d.%m.%Y")
 
             report_text = f"""
-{custom_campaign_name}
-Период: {start_date_str}-{end_date_str}
-Показы: {total_impressions:.0f}
-Клики: {total_clicks:.0f}
-CTR: {ctr_value:.2%}
-Охват: {total_reach:.0f}
-Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
+    {custom_campaign_name}
+    Период: {start_date_str}-{end_date_str}
+    Показы: {total_impressions:.0f}
+    Клики: {total_clicks:.0f}
+    CTR: {ctr_value:.2%}
+    Охват: {total_reach:.0f}
+    Расход с НДС: {format(total_spend_nds, ",.2f").replace(",", " ")} руб.
             """
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")
             st.text_area(report_text, report_text, height=100)

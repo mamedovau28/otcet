@@ -570,6 +570,12 @@ CTR: {ctr_value:.2%}
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")
             st.text_area(report_text, report_text, height=100)
 
+            # Проверка расхождений и вывод предупреждений
+            warnings = check_for_differences(df_filtered, existing_cols, ["показы план", "клики план", "охват план", "бюджет план"])
+            if warnings:
+                for warning in warnings:
+                    st.warning(warning)
+
             # Вывод графиков
             df_filtered["дата_график"] = df_filtered[col_map["дата"]].dt.strftime('%d-%m')
 

@@ -603,11 +603,39 @@ for i in range(1, num_uploads + 1):
 
             # Проверка, что и медиаплан, и отчет загружены
             if mp_df is not None and df is not None:
-                # Вызываем функцию проверки расхождений только если оба файла загружены
-                warnings = check_for_differences(df_filtered, existing_cols, plan_cols)
-            else:
-                # Если хотя бы один файл не загружен, не выполняем добавление расхождений
-                warnings = []
+                # Обработка данных только если оба файла загружены
+                # Проверка наличия столбцов для расчета
+                if 'дата' in col_map and col_map["дата"] in df.columns:
+                    min_date = df[col_map["дата"]].min().date()
+                    max_date = df[col_map["дата"]].max().date()
+
+                    start_date, end_date = st.date_input(
+                        "Выберите период", [min_date, max_date], key="date_input"
+                    )
+
+                    # Фильтрация данных по выбранным датам
+                    df_filtered = df[
+                        (df[col_map["дата"]].dt.date >= start_date) & 
+                        (df[col_map["дата"]].dt.date <= end_date)
+                    ]
+        
+                    # Проверка на наличие необходимых столбцов для вычислений
+                    existing_cols = ["показы", "клики", "охват", "расход с ндс"]  # пример столбцов
+                    plan_cols = ["показы план", "клики план", "охват план", "бюджет план"]
+
+                    # Если df_filtered не пустой, вызываем функцию для проверки расхождений
+                    if not df_filtered.empty:
+                        warnings = check_for_differences(df_filtered, existing_cols, plan_cols)
+                    else:
+                        warnings = ["❗ Данные за выбранный период отсутствуют."]
+                    else:
+                        warnings = ["❗ В загруженном отчете нет столбца с датами."]
+                else:
+                    warnings = ["❗ Не загружен медиаплан или отчет."]
+
+                # Вывод предупреждений, если они есть
+                for warning in warnings:
+                    st.warning(warning)
 
             # Проверка расхождений и вывод предупреждений
             warnings = check_for_differences(df_filtered, existing_cols, ["показы план", "клики план", "охват план", "бюджет план"])

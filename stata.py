@@ -489,8 +489,11 @@ if mp_file:
 # Заголовок страницы
 st.header("Загрузите статистику РК")
 
-# Число загрузок, которое будет определять количество файлов
-num_uploads = st.number_input("Выберите количество файлов для загрузки", min_value=1, max_value=20, value=1, key="num_uploads")
+# Контейнер с заданной шириной
+container = st.container()
+
+with container:
+    num_uploads = st.number_input("Выберите количество файлов для загрузки", min_value=1, max_value=20, value=1, key="num_uploads")
 
 # Цикл для создания соответствующего числа загрузок
 for i in range(1, num_uploads + 1):

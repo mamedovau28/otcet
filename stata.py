@@ -5,31 +5,6 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from pandas.tseries.offsets import MonthEnd
 
-# Применение стилей для всех полей ввода в Streamlit
-st.markdown("""
-    <style>
-        /* Стили для всех элементов ввода (числовые поля, текстовые поля и загрузки) */
-        .stNumberInput input,
-        .stTextInput input,
-        .stFileUploader div,
-        .stSelectbox select,
-        .stTextArea textarea {
-            background-color: #f0f8e0;  /* светло-салатовый цвет */
-            width: 50%;  /* уменьшаем ширину */
-            margin: 10px 0;
-            padding: 5px;
-        }
-        /* Дополнительно можно сделать четные и нечетные элементы с разными фонами */
-        .stNumberInput:nth-child(odd) input,
-        .stTextInput:nth-child(odd) input,
-        .stFileUploader:nth-child(odd) div,
-        .stSelectbox:nth-child(odd) select,
-        .stTextArea:nth-child(odd) textarea {
-            background-color: #f8f8f8;  /* серый цвет */
-        }
-    </style>
-""", unsafe_allow_html=True)
-
 # Словарь для сопоставления названий колонок в отчетах
 COLUMN_MAPPING = {
     "дата": ["дата", "date"],
@@ -513,6 +488,16 @@ if mp_file:
 # === Загрузка отчетов ===
 # Заголовок страницы
 st.header("Загрузите статистику РК")
+
+# Применяем CSS для изменения фона и уменьшения ширины
+st.markdown("""
+    <style>
+        .stNumberInput input {
+            background-color: #f0f8e0;  /* светло-салатовый цвет */
+            width: 50%;  /* Уменьшаем ширину в два раза */
+        }
+    </style>
+""", unsafe_allow_html=True)
 
 num_uploads = st.number_input("Выберите количество файлов для загрузки", min_value=1, max_value=20, value=1, key="num_uploads")
 

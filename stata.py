@@ -494,7 +494,6 @@ st.markdown("""
     <style>
         .stNumberInput input {
             background-color: #f0f8e0;  /* светло-салатовый цвет */
-            width: 50%;  /* Уменьшаем ширину в два раза */
         }
     </style>
 """, unsafe_allow_html=True)

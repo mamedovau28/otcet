@@ -5,6 +5,21 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from pandas.tseries.offsets import MonthEnd
 
+# Применяем CSS для изменения фона и уменьшения ширины
+st.markdown("""
+    <style>
+
+        /* Применяем стили ко всем полям ввода (как для числовых, так и для текстовых) */
+        .stNumberInput input,
+        .stTextInput input,
+        .stFileUploader div,
+        .stSelectbox select,
+        .stTextArea textarea {
+            background-color: #f0f8e0;  /* светло-салатовый цвет */
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # Словарь для сопоставления названий колонок в отчетах
 COLUMN_MAPPING = {
     "дата": ["дата", "date"],
@@ -502,21 +517,6 @@ for i in range(1, num_uploads + 1):
 
     df = None
     campaign_name = None
-
-    # Применяем CSS для изменения фона и уменьшения ширины
-    st.markdown("""
-        <style>
-
-            /* Применяем стили ко всем полям ввода (как для числовых, так и для текстовых) */
-            .stNumberInput input,
-            .stTextInput input,
-            .stFileUploader div,
-            .stSelectbox select,
-            .stTextArea textarea {
-                background-color: #f0f8e0;  /* светло-салатовый цвет */
-            }
-        </style>
-    """, unsafe_allow_html=True)
 
 
     if upload_option == "Загрузить Excel-файл":

@@ -13,7 +13,6 @@ st.markdown("""
         .stTextInput input,
         .stTextArea textarea,
         .stSelectbox select,
-        .stFileUploader div,
         .stButton button,
         .stSelectbox > div,
         .stDateInput input {

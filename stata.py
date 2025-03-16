@@ -111,12 +111,13 @@ def process_data(df):
     if "дата" in col_map:
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
-    # Приведение к числовому типу (сохраняем запятые)
+    # Приведение к числовому типу (исключаем повторное умножение)
     for key in ["показы", "клики", "охват", "расход"]:
         if key in col_map:
-            df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d,]", "", regex=True)
-            df[col_map[key]] = df[col_map[key]].str.replace(",", ".")  # Заменяем запятые на точки для float
-            df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)
+            if not pd.api.types.is_numeric_dtype(df[col_map[key]]):  # Только если не число
+                df[col_map[key]] = df[col_map[key]].astype(str).str.replace(r"[^\d,]", "", regex=True)
+                df[col_map[key]] = df[col_map[key]].str.replace(",", ".")  
+                df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)
 
     # Корректировка охвата
     if "охват" in col_map and "показы" in col_map:
@@ -124,22 +125,22 @@ def process_data(df):
             coverage = row[col_map["охват"]]
             impressions = row[col_map["показы"]]
 
-            # Проверяем, если coverage - строка
+            # Убеждаемся, что coverage — это число
             if isinstance(coverage, str):
-                coverage = coverage.replace(",", ".")  
+                coverage = coverage.replace(",", ".")
                 coverage = pd.to_numeric(coverage, errors="coerce")
 
-            # Проверяем, что coverage — это число
             if pd.isna(coverage) or coverage == 0:
                 return 0  
 
-            # Исправляем интерпретацию процентов
-            if 0 < coverage < 1:
+            # Проверяем, является ли coverage долей (0.1, 0.2) или реальным числом
+            if 0 < coverage < 10:  # Например, 0.2 → 20%
                 coverage *= 100  
 
+            # Коррекция данных (если покрытие не должно быть в 10 раз меньше показов)
             if coverage > 0 and impressions > 0 and impressions / coverage > 10:
                 return impressions * (coverage / 100)
-            
+
             return round(coverage)
 
         df["охват"] = df.apply(adjust_coverage, axis=1)
@@ -160,22 +161,6 @@ def process_data(df):
 
     return df, col_map
 
-
-    # Расчет расхода с НДС
-    if "расход" in col_map and "расход с ндс" not in df.columns:
-        df["расход с ндс"] = df[col_map["расход"]] * 1.2
-
-    # Расчет CTR
-    if "клики" in col_map and "показы" in col_map and "ctr" not in df.columns:
-        df["ctr"] = df.apply(
-            lambda row: row[col_map["клики"]] / row[col_map["показы"]] if row[col_map["показы"]] > 0 else 0,
-            axis=1
-        )
-
-    # Фильтрация нужных столбцов
-    df = filter_columns(df)
-
-    return df, col_map
     
 def clean_mp(mp_df):
     """

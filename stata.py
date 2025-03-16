@@ -98,6 +98,8 @@ def filter_columns(df, is_mp=False):
     
 import pandas as pd
 
+import pandas as pd
+
 def process_data(df):
     """
     Обрабатывает загруженные данные (Excel или Google-таблицы):
@@ -113,16 +115,17 @@ def process_data(df):
     if "дата" in col_map:
         df[col_map["дата"]] = pd.to_datetime(df[col_map["дата"]], format="%d.%m.%Y", errors="coerce")
 
-    # Приведение к числовому типу (только если тип данных не numeric)
+    # Приведение к числовому типу (сохраняем запятые)
     for key in ["показы", "клики", "охват", "расход"]:
         if key in col_map and not pd.api.types.is_numeric_dtype(df[col_map[key]]):
-            df[col_map[key]] = pd.to_numeric(
-                df[col_map[key]].astype(str).str.replace(r"[^\d]", "", regex=True),
-                errors='coerce'
-            ).fillna(0)
+            df[col_map[key]] = df[col_map[key]].astype(str) \
+                .str.replace(r"[^\d,]", "", regex=True) \  # Удаляем всё, кроме цифр и запятой
+                .str.replace(",", ".")  # Заменяем запятые на точки для корректного float
 
-    # Корректировка расходов (делим на 100, если не делили ранее)
-    if "расход" in col_map and df[col_map["расход"]].max() > 1000:  # Предполагаем, что цифры в копейках
+            df[col_map[key]] = pd.to_numeric(df[col_map[key]], errors='coerce').fillna(0)
+
+    # Корректировка расходов (делим на 100, если значения слишком большие)
+    if "расход" in col_map and df[col_map["расход"]].max() > 1000:
         df[col_map["расход"]] = df[col_map["расход"]] / 100
 
     # Корректировка охвата

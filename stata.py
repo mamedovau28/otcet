@@ -133,9 +133,12 @@ def process_data(df):
             if pd.isna(coverage) or coverage == 0:
                 return 0  
 
-            # Проверяем, является ли coverage долей (0.1, 0.2) или реальным числом
-            if 0 < coverage < 10:  # Например, 0.2 → 20%
-                coverage *= 100  
+            # Проверяем, является ли coverage долей (например, 0.2) и содержатся ли нули после запятой
+            if 0 < coverage < 1:  # Проверяем, что число меньше 1 (например, 0.2)
+                str_coverage = str(coverage)
+                # Если число имеет два нуля после запятой (например, 0.002), считаем это процентом
+                if len(str_coverage.split('.')[1]) > 2:
+                    coverage *= 100  # Умножаем на 100, если это процент
 
             # Коррекция данных (если покрытие не должно быть в 10 раз меньше показов)
             if coverage > 0 and impressions > 0 and impressions / coverage > 10:

@@ -371,6 +371,7 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
 
     return df
 
+# Функция проверки расхождений
 def check_for_differences(df_filtered, existing_cols, plan_cols):
     warnings = []
     differences = []  # Список для хранения расхождений в суммах
@@ -405,7 +406,7 @@ def check_for_differences(df_filtered, existing_cols, plan_cols):
                 else:
                     warnings.append(f"✅ Нет значительных расхождений по {fact_col}.")
             else:
-                # Если плановое значение равно нулю, считаем, что расхождения нет
+                # Если плановое значение равно нулю, считаем, что расхождений нет
                 differences.append({
                     'Столбец факта': fact_col,
                     'Столбец плана': plan_col,
@@ -416,10 +417,11 @@ def check_for_differences(df_filtered, existing_cols, plan_cols):
                 })
                 warnings.append(f"✅ Нет данных по {fact_col} для расхождения.")
     
-    # Если есть расхождения, создаем таблицу
-    diff_df = pd.DataFrame(differences)
-    st.write("Таблица расхождений:")
-    st.dataframe(diff_df)  # Отображаем таблицу расхождений
+    # Если расхождения есть, выводим таблицу
+    if differences:
+        diff_df = pd.DataFrame(differences)
+        st.write("Таблица расхождений:")
+        st.dataframe(diff_df)  # Отображаем таблицу расхождений
 
     return warnings
 
@@ -604,8 +606,8 @@ for i in range(1, num_uploads + 1):
                 # Вызываем функцию проверки расхождений только если оба файла загружены
                 warnings = check_for_differences(df_filtered, existing_cols, plan_cols)
             else:
-                # Если хотя бы один файл не загружен, выводим предупреждение
-                st.warning("Не загружены оба файла: медиаплан и отчет.")
+                # Если хотя бы один файл не загружен, не выполняем добавление расхождений
+                warnings = []
 
             # Проверка расхождений и вывод предупреждений
             warnings = check_for_differences(df_filtered, existing_cols, ["показы план", "клики план", "охват план", "бюджет план"])

@@ -489,15 +489,6 @@ if mp_file:
 # Заголовок страницы
 st.header("Загрузите статистику РК")
 
-# Применяем CSS для изменения фона
-st.markdown("""
-    <style>
-        .stNumberInput input {
-            background-color: #f0f8e0;  /* светло-салатовый цвет */
-        }
-    </style>
-""", unsafe_allow_html=True)
-
 num_uploads = st.number_input("Выберите количество файлов для загрузки", min_value=1, max_value=20, value=1, key="num_uploads")
 
 # Цикл для создания соответствующего числа загрузок

@@ -512,6 +512,15 @@ for i in range(1, num_uploads + 1):
     df = None
     campaign_name = None
 
+     # Применяем CSS для изменения фона
+    st.markdown("""
+        <style>
+            .stNumberInput input {
+                background-color: #f0f8e0;  /* светло-салатовый цвет */
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
     if upload_option == "Загрузить Excel-файл":
         uploaded_file = st.file_uploader(f"Загрузите Excel-файл {i}", type=["xlsx"], key=f"file_uploader_{i}")
         if uploaded_file:
@@ -525,15 +534,6 @@ for i in range(1, num_uploads + 1):
             # Читаем данные с выбранного листа
             df = pd.read_excel(xls, sheet_name=selected_sheet)
             campaign_name = uploaded_file.name.split(".")[0]
-
-    # Применяем CSS для изменения фона
-    st.markdown("""
-        <style>
-            .stNumberInput input {
-                background-color: #f0f8e0;  /* светло-салатовый цвет */
-            }
-        </style>
-    """, unsafe_allow_html=True)
 
     elif upload_option == "Ссылка на Google-таблицу":
         google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")

@@ -246,10 +246,8 @@ def calculate_campaign_period(df):
 
     return start_date, end_date
     
-def check_matching_campaign(mp_df, df, campaign_name):
-    # Проверка на наличие данных в mp_df и отчете
-    if mp_df is None or df is None:
-        return "Медиаплан или отчет не загружены. Проверьте загрузку данных.", None
+# Основная функция для проверки совпадений
+def check_matching_campaign(mp_df, campaign_name):
 
     # Приводим название РК к нижнему регистру
     campaign_name = campaign_name.strip().lower()
@@ -306,7 +304,6 @@ def check_matching_campaign(mp_df, df, campaign_name):
         return match_message, saved_matching_rows
     else:
         return "Совпадений по площадке не найдено.", None
-
 
 def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
     """
@@ -371,10 +368,8 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
 
     return df
 
-# Функция проверки расхождений
 def check_for_differences(df_filtered, existing_cols, plan_cols):
     warnings = []
-    differences = []  # Список для хранения расхождений в суммах
     
     # Проверка на наличие столбцов
     for plan_col, fact_col in zip(plan_cols, existing_cols):
@@ -391,39 +386,11 @@ def check_for_differences(df_filtered, existing_cols, plan_cols):
                 diff = fact_total - plan_total
                 diff_percent = (diff / plan_total) * 100
 
-                # Добавляем информацию о расхождении в таблицу
-                differences.append({
-                    'Столбец факта': fact_col,
-                    'Столбец плана': plan_col,
-                    'Фактическое значение': fact_total,
-                    'Плановое значение': plan_total,
-                    'Разница': diff,
-                    'Процентное расхождение': f"{diff_percent:+.2f}%" if abs(diff_percent) > 1 else "0.00%"
-                })
-
                 if abs(diff_percent) > 1:
                     warnings.append(f"⚠️ Разница по {fact_col}: {diff:+,.0f} ({diff_percent:+.2f}%)")
-                else:
-                    warnings.append(f"✅ Нет значительных расхождений по {fact_col}.")
-            else:
-                # Если плановое значение равно нулю, считаем, что расхождений нет
-                differences.append({
-                    'Столбец факта': fact_col,
-                    'Столбец плана': plan_col,
-                    'Фактическое значение': fact_total,
-                    'Плановое значение': plan_total,
-                    'Разница': 0,
-                    'Процентное расхождение': "0.00%"
-                })
-                warnings.append(f"✅ Нет данных по {fact_col} для расхождения.")
-    
-    # Если расхождения есть, выводим таблицу
-    if differences:
-        diff_df = pd.DataFrame(differences)
-        st.write("Таблица расхождений:")
-        st.dataframe(diff_df)  # Отображаем таблицу расхождений
 
     return warnings
+
     
 st.title("Анализ рекламных кампаний")
 
@@ -483,31 +450,25 @@ if mp_file:
         # Отображаем обработанный медиаплан
         st.dataframe(mp_df)
 
-# Заголовок страницы
-st.header("Загрузите статистику РК")
+# === Загрузка отчетов ===
+st.header("Загрузите статискику РК")
 
-# Число загрузок, которое будет определять количество файлов
-num_uploads = st.number_input("Выберите количество файлов для загрузки", min_value=1, max_value=20, value=1)
-
-# Цикл для создания соответствующего числа загрузок
-for i in range(1, num_uploads + 1):
-    # Создание селектора для способа загрузки
+for i in range(1, 11):
     upload_option = st.selectbox(
         f"Способ загрузки статистики площадки {i}", 
         ["Не выбрано", "Загрузить Excel-файл", "Ссылка на Google-таблицу"], 
         key=f"upload_option_{i}"
     )
 
-    # Инициализация переменных внутри цикла
     df = None
     campaign_name = None
 
-    # Логика загрузки Excel
     if upload_option == "Загрузить Excel-файл":
         uploaded_file = st.file_uploader(f"Загрузите Excel-файл {i}", type=["xlsx"], key=f"file_uploader_{i}")
         if uploaded_file:
             xls = pd.ExcelFile(uploaded_file)  # Загружаем файл в объект ExcelFile
             sheet_names_otchet = xls.sheet_names  # Получаем список всех листов
+            # Проверяем, есть ли несколько листов, и предлагаем выбрать нужный
             if len(sheet_names_otchet) > 1:
                 selected_sheet = st.selectbox("Выберите лист со статистикой", sheet_names_otchet, key=f"sheet_names_otchet_{i}")
             else:
@@ -516,7 +477,7 @@ for i in range(1, num_uploads + 1):
             df = pd.read_excel(xls, sheet_name=selected_sheet)
             campaign_name = uploaded_file.name.split(".")[0]
 
-    # Логика загрузки из Google Sheets
+
     elif upload_option == "Ссылка на Google-таблицу":
         google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")
         if google_sheet_url:
@@ -529,7 +490,6 @@ for i in range(1, num_uploads + 1):
             except Exception as e:
                 st.error(f"Ошибка при загрузке CSV: {e}")
 
-    # Если файл загружен и df не пустой
     if df is not None:
         df, col_map = process_data(df)
         custom_campaign_name = st.text_input(
@@ -539,8 +499,8 @@ for i in range(1, num_uploads + 1):
         )
         st.write(f"Название РК: {custom_campaign_name}")
 
-        # Проверка совпадений
-        match_message, saved_matching_rows = check_matching_campaign(mp_df, df, custom_campaign_name)
+        # Проверка совпадений перед обработкой данных
+        match_message, saved_matching_rows = check_matching_campaign(mp_df, custom_campaign_name)
 
         # Определяем период кампании
         start_date, end_date = calculate_campaign_period(df)
@@ -558,12 +518,11 @@ for i in range(1, num_uploads + 1):
             st.write("Обновленная таблица с расчетами:")
             st.write(saved_matching_rows)  
 
-        # Выбор периода
         if "дата" in col_map:
             min_date = df[col_map["дата"]].min().date()
             max_date = df[col_map["дата"]].max().date()
 
-            # Выбор периода
+            # Исправлено: date_input возвращает список, его нужно распаковать
             start_date, end_date = st.date_input(
                 "Выберите период", [min_date, max_date], key=f"date_input_{i}"
             )
@@ -573,7 +532,7 @@ for i in range(1, num_uploads + 1):
                 (df[col_map["дата"]].dt.date <= end_date)
             ]
 
-            # Итоги
+            # Вычисления итогов
             needed_cols = ["показы", "клики", "охват", "расход с ндс"]
             existing_cols = [col for col in needed_cols if col in df_filtered.columns]
             summary = df_filtered[existing_cols].sum()
@@ -584,7 +543,7 @@ for i in range(1, num_uploads + 1):
             total_reach = summary.get("охват", 0)
             total_spend_nds = summary.get("расход с ндс", 0)
 
-            # Форматируем дату
+            # Форматируем даты
             start_date_str = start_date.strftime("%d.%m.%Y")
             end_date_str = end_date.strftime("%d.%m.%Y")
 
@@ -599,14 +558,14 @@ for i in range(1, num_uploads + 1):
             """
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")
             st.text_area(report_text, report_text, height=100)
-  
+
             # Проверка расхождений и вывод предупреждений
             warnings = check_for_differences(df_filtered, existing_cols, ["показы план", "клики план", "охват план", "бюджет план"])
             if warnings:
                 for warning in warnings:
                     st.warning(warning)
 
-            # Вывод графиков
+            # Исправлено: Приводим дату к строке для графиков
             df_filtered["дата_график"] = df_filtered[col_map["дата"]].dt.strftime('%d-%m')
 
             # График показов и охвата
@@ -645,6 +604,5 @@ for i in range(1, num_uploads + 1):
             st.pyplot(plt)
             # Закрываем текущую фигуру, чтобы избежать лишних окон
             plt.close()
-            
-    st.dataframe(df)  # Отображаем данные таблицы
 
+    st.dataframe(df)

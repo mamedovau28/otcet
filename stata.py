@@ -198,8 +198,6 @@ def calculate_campaign_period(df):
         st.error("Не найдены столбцы 'дата' или 'показы'.")
         return None, None
 
-    st.write(f"Столбец с датой: {date_col}, Столбец с показами: {impressions_col}")
-
     # Преобразуем столбец с датами в формат datetime
     df[date_col] = pd.to_datetime(df[date_col], errors='coerce')  # Если ошибка, заменяется на NaT
 
@@ -220,7 +218,7 @@ def calculate_campaign_period(df):
     # Рассчитываем количество дней между началом и концом кампании
     campaign_days = (end_date - start_date).days + 1  # +1, чтобы включить оба дня
 
-    st.write(campaign_days)
+    st.write(f"Количество рекламных дней: {campaign_days}")
 
     return start_date, end_date
     

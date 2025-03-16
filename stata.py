@@ -386,7 +386,7 @@ def check_for_differences(df_filtered, existing_cols, plan_cols):
                 diff = fact_total - plan_total
                 diff_percent = (diff / plan_total) * 100
 
-                if abs(diff_percent) > 3:
+                if abs(diff_percent) > 1:
                     warnings.append(f"⚠️ Разница по {fact_col}: {diff:+,.0f} ({diff_percent:+.2f}%)")
 
     return warnings
@@ -566,7 +566,7 @@ for i in range(1, 11):
                     st.warning(warning)
 
             # Исправлено: Приводим дату к строке для графиков
-            df_filtered["дата_график"] = df_filtered[col_map["дата"]].dt.strftime('%Y-%m-%d')
+            df_filtered["дата_график"] = df_filtered[col_map["дата"]].dt.strftime('%d-%m')
 
             # График показов и охвата
             plt.figure(figsize=(10, 6))

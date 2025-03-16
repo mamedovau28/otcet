@@ -642,10 +642,7 @@ for i in range(1, num_uploads + 1):
             """
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")
             st.text_area(report_text, report_text, height=100)
-
-            # Проверка, что и медиаплан, и отчет загружены
-            if mp_df is not None and df is not None:
-               
+  
             # Вывод предупреждений, если они есть
             for warning in warnings:
                 st.warning(warning)

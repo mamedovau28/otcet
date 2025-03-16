@@ -431,7 +431,7 @@ st.header("Загрузите статискику РК")
 
 for i in range(1, 11):
     upload_option = st.selectbox(
-        f"Способ загрузки файла {i}", 
+        f"Способ загрузки статистики площадки {i}", 
         ["Не выбрано", "Загрузить Excel-файл", "Ссылка на Google-таблицу"], 
         key=f"upload_option_{i}"
     )
@@ -444,6 +444,10 @@ for i in range(1, 11):
         if uploaded_file:
             df = pd.read_excel(uploaded_file)
             campaign_name = uploaded_file.name.split(".")[0]
+            if len(campaign_name) > 1:
+                campaign_name = st.selectbox("Выберите лист со статистикой", campaign_name, key="campaign_select_{i}")
+            else:
+                campaign_name = campaign_name[0]
 
     elif upload_option == "Ссылка на Google-таблицу":
         google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")

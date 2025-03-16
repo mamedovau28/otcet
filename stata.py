@@ -444,7 +444,7 @@ for i in range(1, 11):
         if uploaded_file:
             df = pd.read_excel(uploaded_file)
             campaign_name = uploaded_file.name.split(".")[0]
-            sheet_names_otchet = xls.sheet_names
+            sheet_names_otchet = xls.sheet_names_otchet
             if len(sheet_names_otchet) > 1:
                 sheet_names_otchet = st.selectbox("Выберите лист со статистикой", sheet_names_otchet, key="sheet_names_otchet{i}")
             else:

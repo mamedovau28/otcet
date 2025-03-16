@@ -432,7 +432,7 @@ def check_for_differences(df_filtered, existing_cols, plan_cols):
                 })
 
                 if abs(diff_percent) > 1:
-                    warnings.append(f"⚠️ Разница по {fact_col}: {diff:+,.0f} ({diff_percent:+.2f}%)")
+                    warnings.append(f"⚠️ Разница по {fact_col}: {diff:+.0f} ({diff_percent:+.2f}%)")
                 else:
                     warnings.append(f"✅ Нет значительных расхождений по {fact_col}.")
             else:

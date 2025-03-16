@@ -628,14 +628,14 @@ for i in range(1, num_uploads + 1):
                         warnings = check_for_differences(df_filtered, existing_cols, plan_cols)
                     else:
                         warnings = ["❗ Данные за выбранный период отсутствуют."]
-                    else:
-                        warnings = ["❗ В загруженном отчете нет столбца с датами."]
                 else:
-                    warnings = ["❗ Не загружен медиаплан или отчет."]
+                    warnings = ["❗ В загруженном отчете нет столбца с датами."]
+            else:
+                warnings = ["❗ Не загружен медиаплан или отчет."]
 
-                # Вывод предупреждений, если они есть
-                for warning in warnings:
-                    st.warning(warning)
+            # Вывод предупреждений, если они есть
+            for warning in warnings:
+                st.warning(warning)
 
             # Проверка расхождений и вывод предупреждений
             warnings = check_for_differences(df_filtered, existing_cols, ["показы план", "клики план", "охват план", "бюджет план"])

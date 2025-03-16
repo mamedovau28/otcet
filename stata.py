@@ -512,14 +512,36 @@ for i in range(1, num_uploads + 1):
     df = None
     campaign_name = None
 
-     # Применяем CSS для изменения фона
-    st.markdown("""
-        <style>
-            .stNumberInput input {
-                background-color: #f0f8e0;  /* светло-салатовый цвет */
-            }
-        </style>
-    """, unsafe_allow_html=True)
+# Применяем CSS для изменения фона и уменьшения ширины
+st.markdown("""
+    <style>
+        /* Изменяем стиль для полей загрузки файлов */
+        .stFileUploader div {
+            background-color: #f0f8e0;  /* светло-салатовый цвет */
+            width: 50%;  /* Уменьшаем ширину в два раза */
+            padding: 5px;
+        }
+        
+        /* Изменяем стиль для текстового ввода для Google-таблиц */
+        .stTextInput input {
+            background-color: #f0f8e0;  /* светло-салатовый цвет */
+            width: 50%;  /* Уменьшаем ширину в два раза */
+        }
+
+        /* Применяем стили ко всем полям ввода (как для числовых, так и для текстовых) */
+        .stNumberInput input,
+        .stTextInput input,
+        .stFileUploader div,
+        .stSelectbox select,
+        .stTextArea textarea {
+            background-color: #f0f8e0;  /* светло-салатовый цвет */
+            width: 50%;  /* Уменьшаем ширину */
+            margin: 10px 0;
+            padding: 5px;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 
     if upload_option == "Загрузить Excel-файл":
         uploaded_file = st.file_uploader(f"Загрузите Excel-файл {i}", type=["xlsx"], key=f"file_uploader_{i}")

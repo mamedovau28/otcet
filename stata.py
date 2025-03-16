@@ -142,7 +142,7 @@ def process_data(df):
 
             # Коррекция данных (если покрытие не должно быть в 10 раз меньше показов)
             if coverage > 0 and impressions > 0 and impressions / coverage > 10:
-                return impressions * (coverage / 100)
+                return impressions * coverage
 
             return round(coverage)
 

@@ -12,7 +12,6 @@ st.markdown("""
         /* Применяем стили ко всем полям ввода (как для числовых, так и для текстовых) */
         .stNumberInput input,
         .stTextInput input,
-        .stFileUploader div,
         .stSelectbox select,
         .stTextArea textarea {
             background-color: #f0f8e0;  /* светло-салатовый цвет */

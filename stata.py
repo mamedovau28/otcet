@@ -373,6 +373,7 @@ def transfer_numeric_data(df, saved_matching_rows, campaign_days, start_date):
 
 def check_for_differences(df_filtered, existing_cols, plan_cols):
     warnings = []
+    differences = []  # Список для хранения расхождений в суммах
     
     # Проверка на наличие столбцов
     for plan_col, fact_col in zip(plan_cols, existing_cols):
@@ -391,8 +392,24 @@ def check_for_differences(df_filtered, existing_cols, plan_cols):
 
                 if abs(diff_percent) > 1:
                     warnings.append(f"⚠️ Разница по {fact_col}: {diff:+,.0f} ({diff_percent:+.2f}%)")
+                    # Добавляем информацию о расхождении в таблицу
+                    differences.append({
+                        'Столбец факта': fact_col,
+                        'Столбец плана': plan_col,
+                        'Фактическое значение': fact_total,
+                        'Плановое значение': plan_total,
+                        'Разница': diff,
+                        'Процентное расхождение': f"{diff_percent:+.2f}%"
+                    })
+
+    # Если есть расхождения, создаем таблицу
+    if differences:
+        diff_df = pd.DataFrame(differences)
+        st.write("Таблица расхождений:")
+        st.dataframe(diff_df)  # Отображаем таблицу расхождений
 
     return warnings
+
 
     
 st.title("Анализ рекламных кампаний")

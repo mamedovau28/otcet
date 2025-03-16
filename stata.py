@@ -444,10 +444,11 @@ for i in range(1, 11):
         if uploaded_file:
             df = pd.read_excel(uploaded_file)
             campaign_name = uploaded_file.name.split(".")[0]
-            if len(campaign_name) > 1:
-                campaign_name = st.selectbox("Выберите лист со статистикой", campaign_name, key="campaign_select_{i}")
+            sheet_names_otchet = xls.sheet_names
+            if len(sheet_names_otchet) > 1:
+                sheet_names_otchet = st.selectbox("Выберите лист со статистикой", sheet_names_otchet, key="sheet_names_otchet{i}")
             else:
-                campaign_name = campaign_name[0]
+                sheet_names_otchet = sheet_names_otchet[0]
 
     elif upload_option == "Ссылка на Google-таблицу":
         google_sheet_url = st.text_input(f"Ссылка на Google-таблицу {i}", key=f"google_sheet_url_{i}")

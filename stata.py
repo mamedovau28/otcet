@@ -276,7 +276,6 @@ def check_matching_campaign(mp_df, campaign_name):
 
         # Сохраняем обновленную таблицу в файл
         saved_matching_rows.to_csv("updated_campaign_data.csv", index=False)
-        st.write("Таблица успешно сохранена в файл 'updated_campaign_data.csv'.")
         
         return match_message, saved_matching_rows
     else:

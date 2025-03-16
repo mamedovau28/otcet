@@ -599,6 +599,14 @@ for i in range(1, num_uploads + 1):
             st.subheader(f"Итоговый отчёт {custom_campaign_name}")
             st.text_area(report_text, report_text, height=100)
 
+            # Проверка, что и медиаплан, и отчет загружены
+            if mp_df is not None and df is not None:
+                # Вызываем функцию проверки расхождений только если оба файла загружены
+                warnings = check_for_differences(df_filtered, existing_cols, plan_cols)
+            else:
+                # Если хотя бы один файл не загружен, выводим предупреждение
+                st.warning("Не загружены оба файла: медиаплан и отчет.")
+
             # Проверка расхождений и вывод предупреждений
             warnings = check_for_differences(df_filtered, existing_cols, ["показы план", "клики план", "охват план", "бюджет план"])
             if warnings:

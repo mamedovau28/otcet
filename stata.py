@@ -609,10 +609,6 @@ for i in range(1, num_uploads + 1):
                     min_date = df[col_map["дата"]].min().date()
                     max_date = df[col_map["дата"]].max().date()
 
-                    start_date, end_date = st.date_input(
-                        "Выберите период", [min_date, max_date], key="date_input"
-                    )
-
                     # Фильтрация данных по выбранным датам
                     df_filtered = df[
                         (df[col_map["дата"]].dt.date >= start_date) & 

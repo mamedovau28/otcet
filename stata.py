@@ -5,6 +5,25 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from pandas.tseries.offsets import MonthEnd
 
+st.markdown("""
+    <style>
+        .stSelectbox, .stTextInput, .stFileUploader {
+            background-color: #f0f8e0;  /* светло-салатовый цвет */
+            margin: 10px 0;
+        }
+        .stSelectbox:nth-child(odd), .stTextInput:nth-child(odd), .stFileUploader:nth-child(odd) {
+            background-color: #f8f8f8;  /* серый цвет */
+        }
+        .stTextArea, .stDataFrame {
+            background-color: #f0f8e0;  /* светло-салатовый для текстовых и таблиц */
+            margin: 10px 0;
+        }
+        .stTextArea:nth-child(odd), .stDataFrame:nth-child(odd) {
+            background-color: #f8f8f8;  /* серый для четных */
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # Словарь для сопоставления названий колонок в отчетах
 COLUMN_MAPPING = {
     "дата": ["дата", "date"],

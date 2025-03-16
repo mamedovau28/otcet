@@ -5,20 +5,37 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from pandas.tseries.offsets import MonthEnd
 
+# Используем CSS для кастомизации
 st.markdown("""
     <style>
-        .stSelectbox, .stTextInput, .stFileUploader {
-            background-color: #f0f8e0;  /* светло-салатовый цвет */
+        /* Стили для всех input-ов и селектов */
+        .stSelectbox, .stTextInput, .stFileUploader, .stNumberInput {
             margin: 10px 0;
+            padding: 8px;
         }
-        .stSelectbox:nth-child(odd), .stTextInput:nth-child(odd), .stFileUploader:nth-child(odd) {
-            background-color: #f8f8f8;  /* серый цвет */
+        
+        /* Применяем светло-салатовый фон для всех элементов */
+        .stSelectbox, .stTextInput, .stFileUploader, .stNumberInput {
+            background-color: #f0f8e0;  /* светло-салатовый */
         }
+
+        /* Применяем серый фон для четных элементов */
+        .stSelectbox:nth-child(odd), 
+        .stTextInput:nth-child(odd), 
+        .stFileUploader:nth-child(odd), 
+        .stNumberInput:nth-child(odd) {
+            background-color: #f8f8f8;  /* серый */
+        }
+
+        /* Стили для текстовых полей и таблиц */
         .stTextArea, .stDataFrame {
             background-color: #f0f8e0;  /* светло-салатовый для текстовых и таблиц */
             margin: 10px 0;
         }
-        .stTextArea:nth-child(odd), .stDataFrame:nth-child(odd) {
+
+        /* Для четных строк таблицы и текстовых полей используем серый фон */
+        .stTextArea:nth-child(odd), 
+        .stDataFrame:nth-child(odd) {
             background-color: #f8f8f8;  /* серый для четных */
         }
     </style>

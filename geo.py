@@ -54,7 +54,7 @@ def extract_report_period(file):
         return pd.NaT, pd.NaT
 
 # Интерфейс загрузки файлов в Streamlit
-st.title("Генератор еженедельных отчётов")
+st.title("Генератор еженедельных отчётов ГЕО")
 
 mp_file = st.file_uploader("Загрузите файл с медиапланом", type=["xlsx"])
 metki_file = st.file_uploader("Загрузите файл с метками UTM", type=["xlsx"])
@@ -220,7 +220,6 @@ if mp_file and metki_file:
     
 # Фильтрация меток
     df_filtered = df_metki[df_metki['UTM Campaign'].astype(str).str.contains('arwm', na=False, case=False)]
-    df_filtered = df_filtered[~df_filtered['UTM Source'].astype(str).isin(['yandex_maps', 'navigator'])]
     
 # Вычисления
     df_filtered['Время на сайте'] = pd.to_timedelta(df_filtered['Время на сайте'])

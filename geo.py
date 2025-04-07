@@ -63,12 +63,10 @@ metki_file = st.file_uploader("Загрузите файл с метками UTM
 col1, col2 = st.columns([1, 1])  # Две равные колонки
 
 with col1:
-    tp_primary_calls = st.number_input("Тематика: первичные звонки", min_value=0, step=1)
-    oh_primary_calls = st.number_input("Охват: первичные звонки", min_value=0, step=1)
+    tp_primary_calls = st.number_input("Первичные звонки", min_value=0, step=1)
 
 with col2:
-    tp_target_calls = st.number_input("Тематика: ЦО", min_value=0, step=1)
-    oh_target_calls = st.number_input("Охват: ЦО", min_value=0, step=1)
+    tp_target_calls = st.number_input("ЦО", min_value=0, step=1)
 
 if mp_file and metki_file:
     # Загружаем медиаплан с поиском заголовка, содержащего '№'

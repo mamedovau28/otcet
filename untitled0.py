@@ -142,7 +142,7 @@ if mp_file and metki_file:
             total_days = (end_date - start_date).days + 1  # Все активные дни кампании
 
         # Если в неделе нет активных дней кампании, бюджет = 0
-            week_budget = row['Общая стоимость с учетом НДС и АК'] * (active_days / total_days) if active_days > 0 else 0
+            week_budget = row['Общая стоимость с учетом НДС'] * (active_days / total_days) if active_days > 0 else 0
 
         # Добавляем данные
             weeks.append((week_start, week_end, week_budget))

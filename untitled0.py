@@ -84,7 +84,7 @@ if mp_file and metki_file:
     df_metki = load_excel_with_custom_header(metki_file, 'UTM Source')
 
     # Обрабатываем медиаплан
-    df = df_mp[['№', 'Название сайта', 'Период', 'Общая стоимость с учетом НДС и АК', 'KPI прогноз']].copy()
+    df = df_mp[['№', 'Название сайта', 'Период', 'Общая стоимость с учетом НДС', 'KPI прогноз']].copy()
     df = df.replace('-', '0')
     def determine_category(row):
         if pd.isna(row['№']):
